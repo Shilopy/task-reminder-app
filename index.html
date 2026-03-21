@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#667eea">
+    <meta name="theme-color" content="#667eea" id="themeColor">
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon.png">
-    <title>SmartTasks - Умные заметки и задачи</title>
+    <title>SmartTasks Pro - Умные заметки и задачи</title>
     <style>
         * {
             margin: 0;
@@ -17,28 +17,91 @@
             -webkit-tap-highlight-color: transparent;
         }
         
+        /* ТЕМЫ ОФОРМЛЕНИЯ */
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: #f5f5f5;
             padding: 20px;
             padding-bottom: 80px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
+        /* Светлая тема (по умолчанию) */
+        body.light {
+            background: #f5f5f5;
+            color: #333;
+        }
+        
+        body.light .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        body.light .stat-card,
+        body.light .filter-btn,
+        body.light .category-btn,
+        body.light .search-box,
+        body.light .task-card {
+            background: white;
+            color: #333;
+        }
+        
+        body.light .modal-content {
+            background: white;
+        }
+        
+        /* Темная тема */
+        body.dark {
+            background: #1a1a2e;
+            color: #eee;
+        }
+        
+        body.dark .header {
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 100%);
+            color: white;
+        }
+        
+        body.dark .stat-card,
+        body.dark .filter-btn,
+        body.dark .category-btn,
+        body.dark .search-box,
+        body.dark .task-card {
+            background: #16213e;
+            color: #eee;
+            border-color: #0f3460;
+        }
+        
+        body.dark .search-box input {
+            background: #16213e;
+            color: #eee;
+        }
+        
+        body.dark .modal-content {
+            background: #16213e;
+            color: #eee;
+        }
+        
+        body.dark .input-group input,
+        body.dark .input-group textarea,
+        body.dark .input-group select {
+            background: #0f3460;
+            color: #eee;
+            border-color: #1a4d8c;
+        }
+        
+        body.dark .task-btn {
+            background: #0f3460;
+            color: #eee;
         }
         
         /* Анимации */
         @keyframes slideIn {
-            from {
-                transform: translateY(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
         
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
         }
         
         .modal-content {
@@ -47,12 +110,13 @@
         
         /* Основные стили */
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
             padding: 20px;
             border-radius: 20px;
             margin-bottom: 20px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         
         .header h1 {
@@ -60,7 +124,23 @@
             margin-bottom: 5px;
         }
         
-        .stats {
+        .header-controls {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .theme-btn, .stats-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        /* Статистика с графиками */
+        .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
             gap: 10px;
@@ -68,7 +148,6 @@
         }
         
         .stat-card {
-            background: white;
             padding: 12px;
             border-radius: 15px;
             text-align: center;
@@ -89,10 +168,141 @@
         
         .stat-label {
             font-size: 12px;
-            color: #666;
             margin-top: 5px;
         }
         
+        /* Графики */
+        .charts-container {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .charts-container.show {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+        
+        .chart-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .chart {
+            margin-bottom: 20px;
+        }
+        
+        .chart-bars {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+            height: 200px;
+            margin-top: 10px;
+        }
+        
+        .chart-bar {
+            flex: 1;
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px 10px 0 0;
+            transition: height 0.5s;
+            position: relative;
+            min-width: 40px;
+        }
+        
+        .chart-bar-label {
+            text-align: center;
+            font-size: 11px;
+            margin-top: 5px;
+        }
+        
+        .chart-bar-value {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: bold;
+        }
+        
+        .pie-chart {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            margin: 20px auto;
+            position: relative;
+            background: conic-gradient(
+                #4caf50 0deg 0deg,
+                #ff9800 0deg 0deg,
+                #f44336 0deg 360deg
+            );
+        }
+        
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+        }
+        
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+        }
+        
+        /* Умный поиск */
+        .smart-search {
+            background: white;
+            border-radius: 25px;
+            padding: 12px 20px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .smart-search input {
+            flex: 1;
+            border: none;
+            font-size: 16px;
+            outline: none;
+            background: transparent;
+            min-width: 150px;
+        }
+        
+        .search-filters {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+        
+        .search-filter-chip {
+            padding: 4px 8px;
+            background: #f0f0f0;
+            border-radius: 15px;
+            font-size: 11px;
+            cursor: pointer;
+        }
+        
+        .search-filter-chip.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        /* Фильтры */
         .filter-bar {
             display: flex;
             gap: 8px;
@@ -107,7 +317,6 @@
             border: none;
             border-radius: 20px;
             font-size: 14px;
-            color: #666;
             cursor: pointer;
             white-space: nowrap;
             transition: all 0.3s;
@@ -140,25 +349,7 @@
             color: white;
         }
         
-        .search-box {
-            background: white;
-            border-radius: 25px;
-            padding: 12px 20px;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-        
-        .search-box input {
-            flex: 1;
-            border: none;
-            font-size: 16px;
-            outline: none;
-            background: transparent;
-        }
-        
+        /* Список задач */
         .task-list {
             display: flex;
             flex-direction: column;
@@ -166,7 +357,6 @@
         }
         
         .task-card {
-            background: white;
             border-radius: 15px;
             padding: 15px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
@@ -178,12 +368,10 @@
         
         .task-card.completed {
             opacity: 0.7;
-            background: #f9f9f9;
         }
         
         .task-card.completed .task-title {
             text-decoration: line-through;
-            color: #999;
         }
         
         .task-header {
@@ -229,48 +417,18 @@
             background: #f0f0f0;
             border-radius: 10px;
             font-size: 10px;
-            color: #666;
         }
         
         .task-title {
             font-size: 16px;
             font-weight: 500;
             margin-bottom: 8px;
-            color: #333;
         }
         
         .task-description {
             font-size: 13px;
-            color: #666;
             margin-bottom: 10px;
-        }
-        
-        .media-preview {
-            margin: 10px 0;
-            max-width: 100%;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-        
-        .media-preview img,
-        .media-preview video {
-            max-width: 100%;
-            max-height: 200px;
-            border-radius: 10px;
-        }
-        
-        .audio-player {
-            width: 100%;
-            margin: 10px 0;
-        }
-        
-        .task-meta {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 8px;
-            font-size: 11px;
-            color: #999;
+            opacity: 0.8;
         }
         
         .task-actions {
@@ -285,7 +443,6 @@
             border-radius: 8px;
             font-size: 12px;
             cursor: pointer;
-            background: #f0f0f0;
             transition: all 0.2s;
         }
         
@@ -310,6 +467,7 @@
             transform: scale(0.95);
         }
         
+        /* Модальные окна */
         .modal {
             display: none;
             position: fixed;
@@ -327,7 +485,6 @@
         }
         
         .modal-content {
-            background: white;
             border-radius: 20px 20px 0 0;
             padding: 20px;
             width: 100%;
@@ -349,7 +506,6 @@
         .input-group label {
             display: block;
             margin-bottom: 5px;
-            color: #666;
             font-size: 14px;
             font-weight: 500;
         }
@@ -362,7 +518,6 @@
             border: 1px solid #ddd;
             border-radius: 10px;
             font-size: 16px;
-            background: white;
         }
         
         .input-group textarea {
@@ -370,48 +525,14 @@
             min-height: 80px;
         }
         
-        .tags-input {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            min-height: 50px;
-        }
-        
-        .tag-input-item {
-            background: #667eea;
-            color: white;
-            padding: 4px 10px;
-            border-radius: 15px;
-            font-size: 12px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .tag-input-item button {
-            background: none;
-            border: none;
-            color: white;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        
-        .tag-input-field {
-            flex: 1;
-            border: none;
-            outline: none;
-            padding: 5px;
-        }
-        
-        .priority-buttons {
+        .priority-buttons,
+        .recurring-options {
             display: flex;
             gap: 10px;
         }
         
-        .priority-btn {
+        .priority-btn,
+        .recurring-options button {
             flex: 1;
             padding: 10px;
             border: 1px solid #ddd;
@@ -421,31 +542,11 @@
             text-align: center;
         }
         
-        .priority-btn.active {
+        .priority-btn.active,
+        .recurring-options button.active {
             background: #667eea;
             color: white;
             border-color: #667eea;
-        }
-        
-        .media-buttons {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-        
-        .media-btn {
-            flex: 1;
-            padding: 10px;
-            background: #f0f0f0;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        
-        .media-preview-modal {
-            max-width: 100%;
-            margin-top: 10px;
         }
         
         .modal-buttons {
@@ -470,29 +571,6 @@
         
         .cancel-btn {
             background: #f0f0f0;
-            color: #666;
-        }
-        
-        .export-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        
-        .export-btn {
-            flex: 1;
-            padding: 10px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-        }
-        
-        .empty-state {
-            text-align: center;
-            padding: 50px 20px;
-            color: #999;
         }
         
         .toast {
@@ -509,20 +587,112 @@
             animation: fadeIn 0.3s;
         }
         
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            opacity: 0.6;
+        }
+        
+        /* Виджет (для демонстрации) */
+        .widget-preview {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: white;
+            display: none;
+        }
+        
+        .widget-preview.show {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+        
+        .widget-title {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+        
+        .widget-tasks {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
         @media (max-width: 480px) {
             body {
                 padding: 15px;
             }
+            
+            .smart-search {
+                flex-direction: column;
+                align-items: stretch;
+            }
         }
     </style>
 </head>
-<body>
+<body class="light">
     <div class="header">
-        <h1>✨ SmartTasks</h1>
-        <p>Умные заметки с напоминаниями</p>
+        <div>
+            <h1>✨ SmartTasks Pro</h1>
+            <p>Умные заметки с аналитикой</p>
+        </div>
+        <div class="header-controls">
+            <button class="theme-btn" id="themeToggle">🌙</button>
+            <button class="stats-btn" id="statsToggle">📊</button>
+        </div>
     </div>
     
-    <div class="stats" id="statsContainer">
+    <!-- Виджет (быстрый просмотр) -->
+    <div class="widget-preview" id="widgetPreview">
+        <div class="widget-title">📋 Сегодня нужно сделать</div>
+        <div class="widget-tasks" id="widgetTasks">0 задач</div>
+    </div>
+    
+    <!-- Статистика с графиками -->
+    <div class="charts-container" id="chartsContainer">
+        <div class="chart-title">📊 Статистика выполнения задач</div>
+        
+        <div class="chart">
+            <div class="chart-title">По дням недели</div>
+            <div class="chart-bars" id="weeklyChart"></div>
+        </div>
+        
+        <div class="chart">
+            <div class="chart-title">По типам задач</div>
+            <div id="pieChart" style="width: 200px; height: 200px; margin: 20px auto;"></div>
+            <div class="legend" id="pieLegend"></div>
+        </div>
+        
+        <div class="chart">
+            <div class="chart-title">Прогресс выполнения</div>
+            <div id="progressBar" style="height: 30px; background: #f0f0f0; border-radius: 15px; overflow: hidden;">
+                <div id="progressFill" style="height: 100%; background: linear-gradient(90deg, #4caf50, #8bc34a); width: 0%; transition: width 0.5s;"></div>
+            </div>
+            <div style="text-align: center; margin-top: 5px;" id="progressText">0% выполнено</div>
+        </div>
+        
+        <div class="chart">
+            <div class="chart-title">Продуктивность</div>
+            <div id="productivityScore" style="font-size: 36px; text-align: center; font-weight: bold;">0</div>
+            <div style="text-align: center;">очков продуктивности</div>
+        </div>
+    </div>
+    
+    <!-- Умный поиск -->
+    <div class="smart-search">
+        <span>🔍</span>
+        <input type="text" placeholder="Умный поиск по названию, описанию, тегам, категориям..." id="smartSearchInput">
+        <div class="search-filters" id="searchFilters">
+            <span class="search-filter-chip" data-field="title">Название</span>
+            <span class="search-filter-chip" data-field="description">Описание</span>
+            <span class="search-filter-chip" data-field="tags">Теги</span>
+            <span class="search-filter-chip" data-field="category">Категория</span>
+            <span class="search-filter-chip" data-field="all" class="active">Все поля</span>
+        </div>
+    </div>
+    
+    <div class="stats-grid" id="statsContainer">
         <div class="stat-card" data-filter="all">
             <div class="stat-number" id="totalCount">0</div>
             <div class="stat-label">Всего</div>
@@ -548,24 +718,18 @@
         <button class="filter-btn" data-filter="urgent">🚨 Срочно</button>
     </div>
     
-    <div class="category-bar" id="categoryBar">
-        <button class="category-btn active" data-category="all">Все категории</button>
-    </div>
-    
-    <div class="search-box">
-        <span>🔍</span>
-        <input type="text" placeholder="Поиск по задачам, тегам..." id="searchInput">
-    </div>
+    <div class="category-bar" id="categoryBar"></div>
     
     <div id="taskList" class="task-list"></div>
     
     <button class="fab" id="fabBtn">+</button>
     
+    <!-- Модальное окно добавления/редактирования -->
     <div class="modal" id="taskModal">
         <div class="modal-content">
             <div class="modal-header" id="modalTitle">Новая запись</div>
             
-            <button class="media-btn" id="voiceBtn">🎤 Надиктовать голосом</button>
+            <button class="task-btn" id="voiceBtn" style="width: 100%; margin-bottom: 15px;">🎤 Надиктовать голосом</button>
             
             <div class="input-group">
                 <label>Название *</label>
@@ -601,20 +765,8 @@
             </div>
             
             <div class="input-group">
-                <label>Теги</label>
-                <div class="tags-input" id="tagsInput">
-                    <input type="text" class="tag-input-field" id="tagInputField" placeholder="Введите тег и нажмите Enter">
-                </div>
-            </div>
-            
-            <div class="input-group">
-                <label>Медиафайлы</label>
-                <div class="media-buttons">
-                    <button class="media-btn" id="photoBtn">📷 Фото</button>
-                    <button class="media-btn" id="voiceNoteBtn">🎙️ Голосовая заметка</button>
-                    <button class="media-btn" id="videoBtn">📹 Видео</button>
-                </div>
-                <div id="mediaPreview" class="media-preview-modal"></div>
+                <label>Теги (через запятую)</label>
+                <input type="text" id="taskTags" placeholder="работа, важное, идея">
             </div>
             
             <div class="input-group">
@@ -636,8 +788,7 @@
                 </div>
                 
                 <div id="recurringSettings" style="display: none;">
-                    <label>Периодичность</label>
-                    <div class="priority-buttons">
+                    <div class="recurring-options">
                         <button data-interval="daily">Ежедневно</button>
                         <button data-interval="weekly">Еженедельно</button>
                         <button data-interval="monthly">Ежемесячно</button>
@@ -652,144 +803,121 @@
         </div>
     </div>
     
-    <div class="modal" id="exportModal">
-        <div class="modal-content">
-            <div class="modal-header">Экспорт данных</div>
-            <div class="export-buttons">
-                <button class="export-btn" id="exportJSON">📄 Экспорт JSON</button>
-                <button class="export-btn" id="exportCSV">📊 Экспорт CSV</button>
-                <button class="export-btn" id="exportBackup">💾 Полный бэкап</button>
-            </div>
-            <div class="export-buttons" style="margin-top: 10px;">
-                <button class="export-btn" id="importData">📂 Импорт данных</button>
-                <button class="export-btn" id="clearAllData">🗑️ Очистить всё</button>
-            </div>
-            <input type="file" id="importFile" accept=".json" style="display: none;">
-            <div class="modal-buttons" style="margin-top: 20px;">
-                <button class="cancel-btn" id="closeExportModal">Закрыть</button>
-            </div>
-        </div>
-    </div>
-    
     <script>
-        // ========== ХРАНЕНИЕ ДАННЫХ ==========
+        // ========== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ==========
         let tasks = [];
-        let categories = new Set();
         let currentFilter = 'all';
         let currentCategory = 'all';
         let currentSearch = '';
+        let searchField = 'all';
         let editingTaskId = null;
         let selectedPriority = 'high';
-        let tags = [];
-        let mediaFiles = [];
         let selectedRecurringInterval = 'daily';
-        
-        // Медиа переменные
-        let mediaStream = null;
-        let mediaRecorder = null;
-        let recordedChunks = [];
+        let currentTheme = 'light';
+        let showCharts = false;
         
         // ========== ИНИЦИАЛИЗАЦИЯ ==========
         function init() {
             loadTasks();
+            loadTheme();
             setupEventListeners();
             setupVoiceInput();
-            setupMediaButtons();
             requestNotificationPermission();
             registerServiceWorker();
+            updateWidget();
+        }
+        
+        // Загрузка темы
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            currentTheme = savedTheme;
+            document.body.className = currentTheme;
+            document.getElementById('themeToggle').textContent = currentTheme === 'light' ? '🌙' : '☀️';
+            updateThemeColor();
+        }
+        
+        function updateThemeColor() {
+            const themeColor = document.getElementById('themeColor');
+            if (currentTheme === 'light') {
+                themeColor.setAttribute('content', '#667eea');
+            } else {
+                themeColor.setAttribute('content', '#1a1a2e');
+            }
+        }
+        
+        function toggleTheme() {
+            currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+            document.body.className = currentTheme;
+            localStorage.setItem('theme', currentTheme);
+            document.getElementById('themeToggle').textContent = currentTheme === 'light' ? '🌙' : '☀️';
+            updateThemeColor();
+            showToast(currentTheme === 'light' ? '☀️ Светлая тема' : '🌙 Темная тема');
         }
         
         // Регистрация Service Worker
         function registerServiceWorker() {
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('/sw.js')
-                    .then(reg => console.log('SW registered:', reg))
+                    .then(reg => console.log('SW registered'))
                     .catch(err => console.log('SW error:', err));
             }
         }
         
         // Загрузка задач
         function loadTasks() {
-            const saved = localStorage.getItem('smartTasks');
+            const saved = localStorage.getItem('smartTasksPro');
             if (saved) {
                 tasks = JSON.parse(saved);
-                updateCategories();
             } else {
-                // Примеры задач
-                tasks = [
-                    {
-                        id: Date.now(),
-                        title: 'Купить продукты',
-                        description: 'Молоко, хлеб, яйца, овощи',
-                        type: 'task',
-                        category: 'Личное',
-                        priority: 'high',
-                        tags: ['покупки', 'дом'],
-                        media: [],
-                        reminderTime: null,
-                        isRecurring: false,
-                        recurringInterval: 'daily',
-                        completed: false,
-                        createdAt: new Date().toISOString()
-                    },
-                    {
-                        id: Date.now() + 1,
-                        title: 'Идея для приложения',
-                        description: 'Сделать трекер привычек с уведомлениями',
-                        type: 'idea',
-                        category: 'Работа',
-                        priority: 'medium',
-                        tags: ['разработка', 'идея'],
-                        media: [],
-                        reminderTime: null,
-                        isRecurring: false,
-                        recurringInterval: 'daily',
-                        completed: false,
-                        createdAt: new Date().toISOString()
-                    }
-                ];
-                saveTasks();
+                // Пример данных для демонстрации графиков
+                tasks = generateSampleData();
             }
-            renderTasks();
-            updateStats();
-            renderCategories();
+            updateAll();
         }
         
-        // Сохранение задач
-        function saveTasks() {
-            localStorage.setItem('smartTasks', JSON.stringify(tasks));
-            updateStats();
-            updateCategories();
-        }
-        
-        // Обновление категорий
-        function updateCategories() {
-            categories.clear();
-            tasks.forEach(task => {
-                if (task.category) categories.add(task.category);
-            });
-        }
-        
-        // Отображение категорий
-        function renderCategories() {
-            const categoryBar = document.getElementById('categoryBar');
-            let html = '<button class="category-btn active" data-category="all">Все категории</button>';
+        // Генерация примеров данных
+        function generateSampleData() {
+            const sample = [];
+            const types = ['task', 'idea', 'urgent'];
+            const priorities = ['high', 'medium', 'low'];
+            const categories = ['Работа', 'Личное', 'Учеба', 'Здоровье'];
+            const titles = [
+                'Закончить отчет', 'Купить продукты', 'Позвонить маме', 'Сходить в спортзал',
+                'Изучить React', 'Написать статью', 'Сделать уборку', 'Заплатить налоги'
+            ];
             
-            Array.from(categories).sort().forEach(cat => {
-                html += `<button class="category-btn" data-category="${cat}">${cat}</button>`;
-            });
-            
-            categoryBar.innerHTML = html;
-            
-            // Добавляем обработчики
-            document.querySelectorAll('.category-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    currentCategory = btn.dataset.category;
-                    renderTasks();
+            for (let i = 0; i < 20; i++) {
+                const date = new Date();
+                date.setDate(date.getDate() - Math.floor(Math.random() * 30));
+                
+                sample.push({
+                    id: Date.now() + i,
+                    title: titles[i % titles.length] + (i > 10 ? ' ' + i : ''),
+                    description: 'Описание задачи ' + i,
+                    type: types[Math.floor(Math.random() * types.length)],
+                    category: categories[Math.floor(Math.random() * categories.length)],
+                    priority: priorities[Math.floor(Math.random() * priorities.length)],
+                    tags: ['тег1', 'тег2'].slice(0, Math.random() > 0.5 ? 2 : 0),
+                    completed: Math.random() > 0.6,
+                    createdAt: date.toISOString(),
+                    reminderTime: null,
+                    isRecurring: false
                 });
-            });
+            }
+            return sample;
+        }
+        
+        function saveTasks() {
+            localStorage.setItem('smartTasksPro', JSON.stringify(tasks));
+            updateAll();
+        }
+        
+        function updateAll() {
+            updateStats();
+            updateCharts();
+            renderTasks();
+            renderCategories();
+            updateWidget();
         }
         
         // Обновление статистики
@@ -805,9 +933,128 @@
             document.getElementById('urgentCount').textContent = urgent;
         }
         
-        // Отображение задач
+        // Обновление виджета
+        function updateWidget() {
+            const todayTasks = tasks.filter(t => {
+                if (t.completed) return false;
+                if (!t.reminderTime) return false;
+                const taskDate = new Date(t.reminderTime);
+                const today = new Date();
+                return taskDate.toDateString() === today.toDateString();
+            });
+            
+            const widgetTasks = document.getElementById('widgetTasks');
+            if (todayTasks.length > 0) {
+                widgetTasks.innerHTML = `${todayTasks.length} задача${todayTasks.length > 1 ? 'и' : 'а'} на сегодня`;
+                document.getElementById('widgetPreview').classList.add('show');
+            } else {
+                widgetTasks.innerHTML = 'На сегодня задач нет';
+                document.getElementById('widgetPreview').classList.add('show');
+            }
+        }
+        
+        // ========== ГРАФИКИ И СТАТИСТИКА ==========
+        function updateCharts() {
+            if (!showCharts) return;
+            
+            // Статистика по дням недели
+            const weeklyData = [0, 0, 0, 0, 0, 0, 0];
+            const days = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+            
+            tasks.forEach(task => {
+                if (task.completed && task.createdAt) {
+                    const date = new Date(task.createdAt);
+                    const day = date.getDay();
+                    const index = day === 0 ? 6 : day - 1;
+                    weeklyData[index]++;
+                }
+            });
+            
+            const maxValue = Math.max(...weeklyData, 1);
+            const weeklyChart = document.getElementById('weeklyChart');
+            weeklyChart.innerHTML = weeklyData.map((value, i) => `
+                <div style="flex: 1; text-align: center;">
+                    <div class="chart-bar" style="height: ${(value / maxValue) * 150}px;">
+                        <div class="chart-bar-value">${value}</div>
+                    </div>
+                    <div class="chart-bar-label">${days[i]}</div>
+                </div>
+            `).join('');
+            
+            // Статистика по типам
+            const typeStats = {
+                task: tasks.filter(t => t.type === 'task').length,
+                idea: tasks.filter(t => t.type === 'idea').length,
+                urgent: tasks.filter(t => t.type === 'urgent').length
+            };
+            
+            const total = tasks.length;
+            if (total > 0) {
+                const taskDeg = (typeStats.task / total) * 360;
+                const ideaDeg = (typeStats.idea / total) * 360;
+                
+                const pieChart = document.getElementById('pieChart');
+                pieChart.style.background = `conic-gradient(
+                    #4caf50 0deg ${taskDeg}deg,
+                    #ff9800 ${taskDeg}deg ${taskDeg + ideaDeg}deg,
+                    #f44336 ${taskDeg + ideaDeg}deg 360deg
+                )`;
+                
+                document.getElementById('pieLegend').innerHTML = `
+                    <div class="legend-item"><div class="legend-color" style="background: #4caf50;"></div> Задачи: ${typeStats.task}</div>
+                    <div class="legend-item"><div class="legend-color" style="background: #ff9800;"></div> Идеи: ${typeStats.idea}</div>
+                    <div class="legend-item"><div class="legend-color" style="background: #f44336;"></div> Срочные: ${typeStats.urgent}</div>
+                `;
+            }
+            
+            // Прогресс выполнения
+            const completedCount = tasks.filter(t => t.completed).length;
+            const progressPercent = total > 0 ? (completedCount / total) * 100 : 0;
+            document.getElementById('progressFill').style.width = `${progressPercent}%`;
+            document.getElementById('progressText').textContent = `${Math.round(progressPercent)}% выполнено (${completedCount}/${total})`;
+            
+            // Очки продуктивности
+            let productivity = 0;
+            tasks.forEach(task => {
+                if (task.completed) {
+                    let points = 10;
+                    if (task.priority === 'high') points += 5;
+                    if (task.priority === 'medium') points += 3;
+                    if (task.type === 'urgent') points += 10;
+                    productivity += points;
+                }
+            });
+            document.getElementById('productivityScore').textContent = productivity;
+        }
+        
+        // ========== УМНЫЙ ПОИСК ==========
+        function smartSearch(query, field) {
+            if (!query) return tasks;
+            
+            const lowerQuery = query.toLowerCase();
+            
+            return tasks.filter(task => {
+                switch(field) {
+                    case 'title':
+                        return task.title.toLowerCase().includes(lowerQuery);
+                    case 'description':
+                        return task.description?.toLowerCase().includes(lowerQuery);
+                    case 'tags':
+                        return task.tags?.some(tag => tag.toLowerCase().includes(lowerQuery));
+                    case 'category':
+                        return task.category?.toLowerCase().includes(lowerQuery);
+                    default:
+                        return task.title.toLowerCase().includes(lowerQuery) ||
+                               task.description?.toLowerCase().includes(lowerQuery) ||
+                               task.tags?.some(tag => tag.toLowerCase().includes(lowerQuery)) ||
+                               task.category?.toLowerCase().includes(lowerQuery);
+                }
+            });
+        }
+        
+        // ========== ОТОБРАЖЕНИЕ ЗАДАЧ ==========
         function renderTasks() {
-            let filtered = tasks;
+            let filtered = smartSearch(currentSearch, searchField);
             
             // Фильтр по типу/статусу
             if (currentFilter === 'active') {
@@ -823,24 +1070,10 @@
                 filtered = filtered.filter(t => t.category === currentCategory);
             }
             
-            // Поиск
-            if (currentSearch) {
-                filtered = filtered.filter(t => 
-                    t.title.toLowerCase().includes(currentSearch.toLowerCase()) ||
-                    t.description.toLowerCase().includes(currentSearch.toLowerCase()) ||
-                    (t.tags && t.tags.some(tag => tag.toLowerCase().includes(currentSearch.toLowerCase())))
-                );
-            }
-            
             const taskList = document.getElementById('taskList');
             
             if (filtered.length === 0) {
-                taskList.innerHTML = `
-                    <div class="empty-state">
-                        📭 Нет задач<br>
-                        Нажмите + чтобы добавить
-                    </div>
-                `;
+                taskList.innerHTML = `<div class="empty-state">📭 Нет задач<br>Нажмите + чтобы добавить</div>`;
                 return;
             }
             
@@ -851,48 +1084,25 @@
                     <div class="task-header">
                         <div style="display: flex; gap: 5px; flex-wrap: wrap;">
                             <span class="task-type ${task.type}">${getTypeName(task.type)}</span>
-                            <span class="priority ${task.priority || 'medium'}">${getPriorityName(task.priority)}</span>
+                            <span class="priority ${task.priority}">${getPriorityName(task.priority)}</span>
                         </div>
-                        ${task.reminderTime ? `
-                            <span class="task-reminder">
-                                ⏰ ${formatDate(task.reminderTime)}
-                            </span>
-                        ` : ''}
+                        ${task.reminderTime ? `<span>⏰ ${formatDate(task.reminderTime)}</span>` : ''}
                     </div>
                     <div class="task-title">${escapeHtml(task.title)}</div>
-                    ${task.category ? `<div style="font-size: 11px; color: #667eea; margin-bottom: 5px;">📁 ${escapeHtml(task.category)}</div>` : ''}
+                    ${task.category ? `<div style="font-size: 11px; color: #667eea;">📁 ${escapeHtml(task.category)}</div>` : ''}
                     ${task.tags && task.tags.length > 0 ? `
-                        <div class="tags">
-                            ${task.tags.map(tag => `<span class="tag">#${escapeHtml(tag)}</span>`).join('')}
-                        </div>
-                    ` : ''}
-                    ${task.media && task.media.length > 0 ? `
-                        <div class="media-preview">
-                            ${task.media[0].type === 'image' ? `<img src="${task.media[0].url}" alt="media">` : ''}
-                            ${task.media[0].type === 'audio' ? `<audio controls src="${task.media[0].url}" class="audio-player"></audio>` : ''}
-                        </div>
+                        <div class="tags">${task.tags.map(tag => `<span class="tag">#${escapeHtml(tag)}</span>`).join('')}</div>
                     ` : ''}
                     <div class="task-actions" onclick="event.stopPropagation()">
-                        <button class="task-btn complete-btn" onclick="toggleComplete('${task.id}')">
+                        <button class="task-btn" onclick="toggleComplete('${task.id}')">
                             ${task.completed ? '✅ Выполнено' : '⬜ Выполнить'}
                         </button>
-                        <button class="task-btn delete-btn" onclick="deleteTask('${task.id}')">
-                            🗑️ Удалить
-                        </button>
+                        <button class="task-btn" onclick="deleteTask('${task.id}')">🗑️ Удалить</button>
                     </div>
                 </div>
             `).join('');
         }
         
-        // Открыть детали задачи
-        function openTaskDetail(taskId) {
-            const task = tasks.find(t => t.id == taskId);
-            if (task) {
-                alert(`📝 ${task.title}\n\n${task.description || 'Нет описания'}\n\n📁 Категория: ${task.category || 'Нет'}\n🏷️ Теги: ${task.tags?.join(', ') || 'Нет'}\n⭐ Приоритет: ${getPriorityName(task.priority)}`);
-            }
-        }
-        
-        // Получить цвет типа
         function getTypeColor(type) {
             switch(type) {
                 case 'urgent': return '#f44336';
@@ -901,7 +1111,6 @@
             }
         }
         
-        // Получить название типа
         function getTypeName(type) {
             switch(type) {
                 case 'urgent': return '🚨 Срочно';
@@ -910,7 +1119,6 @@
             }
         }
         
-        // Получить название приоритета
         function getPriorityName(priority) {
             switch(priority) {
                 case 'high': return '🔴 Высокий';
@@ -920,14 +1128,12 @@
             }
         }
         
-        // Форматирование даты
         function formatDate(dateString) {
             if (!dateString) return '';
             const date = new Date(dateString);
             return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
         }
         
-        // Защита от XSS
         function escapeHtml(text) {
             if (!text) return '';
             const div = document.createElement('div');
@@ -935,34 +1141,60 @@
             return div.innerHTML;
         }
         
-        // Переключение выполнения
+        function openTaskDetail(taskId) {
+            const task = tasks.find(t => t.id == taskId);
+            if (task) {
+                alert(`📝 ${task.title}\n\n${task.description || 'Нет описания'}\n\n📁 Категория: ${task.category || 'Нет'}\n🏷️ Теги: ${task.tags?.join(', ') || 'Нет'}\n⭐ Приоритет: ${getPriorityName(task.priority)}`);
+            }
+        }
+        
         function toggleComplete(id) {
             const task = tasks.find(t => t.id == id);
             if (task) {
                 task.completed = !task.completed;
                 saveTasks();
-                renderTasks();
-                showToast(task.completed ? '✅ Задача выполнена!' : '🔄 Задача возвращена в работу');
+                showToast(task.completed ? '✅ Задача выполнена! +10 очков' : '🔄 Задача возвращена');
             }
         }
         
-        // Удаление задачи
         function deleteTask(id) {
-            if (confirm('Удалить задачу? Это действие нельзя отменить')) {
+            if (confirm('Удалить задачу?')) {
                 tasks = tasks.filter(t => t.id != id);
                 saveTasks();
-                renderTasks();
                 showToast('🗑️ Задача удалена');
             }
         }
         
-        // Сохранение задачи
-        function saveTask() {
+        // ========== КАТЕГОРИИ ==========
+        function renderCategories() {
+            const categories = [...new Set(tasks.map(t => t.category).filter(c => c))];
+            const categoryBar = document.getElementById('categoryBar');
+            let html = '<button class="category-btn active" data-category="all">Все категории</button>';
+            categories.forEach(cat => {
+                html += `<button class="category-btn" data-category="${cat}">${escapeHtml(cat)}</button>`;
+            });
+            categoryBar.innerHTML = html;
+            
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentCategory = btn.dataset.category;
+                    renderTasks();
+                });
+            });
+        }
+        
+        // ========== СОХРАНЕНИЕ ЗАДАЧИ ==========
+        function saveTaskToStorage() {
             const title = document.getElementById('taskTitle').value.trim();
             if (!title) {
-                showToast('Введите название задачи');
+                showToast('Введите название');
                 return;
             }
+            
+            const tagsInput = document.getElementById('taskTags').value;
+            const tags = tagsInput ? tagsInput.split(',').map(t => t.trim()).filter(t => t) : [];
             
             const task = {
                 id: editingTaskId || Date.now(),
@@ -972,15 +1204,12 @@
                 category: document.getElementById('taskCategory').value,
                 priority: selectedPriority,
                 tags: tags,
-                media: mediaFiles,
-                reminderTime: null,
-                isRecurring: false,
-                recurringInterval: selectedRecurringInterval,
                 completed: false,
-                createdAt: new Date().toISOString()
+                createdAt: new Date().toISOString(),
+                reminderTime: null,
+                isRecurring: false
             };
             
-            // Напоминание
             if (document.getElementById('hasReminder').checked) {
                 const reminderTime = document.getElementById('reminderTime').value;
                 if (reminderTime) {
@@ -992,76 +1221,42 @@
             
             if (editingTaskId) {
                 const index = tasks.findIndex(t => t.id == editingTaskId);
-                if (index !== -1) {
-                    tasks[index] = { ...tasks[index], ...task };
-                    showToast('✏️ Задача обновлена');
-                }
+                if (index !== -1) tasks[index] = { ...tasks[index], ...task };
+                showToast('✏️ Задача обновлена');
             } else {
                 tasks.unshift(task);
                 showToast('✅ Задача добавлена');
             }
             
             saveTasks();
-            renderTasks();
             closeModal();
         }
         
-        // Планирование уведомления
         function scheduleNotification(task) {
             if (!task.reminderTime) return;
-            
             const reminderDate = new Date(task.reminderTime);
             const now = new Date();
             const delay = reminderDate - now;
             
             if (delay > 0 && delay < 2147483647) {
                 setTimeout(() => {
-                    showNotification(task);
-                    if (task.isRecurring) {
-                        const nextDate = getNextDate(reminderDate, task.recurringInterval);
-                        task.reminderTime = nextDate.toISOString();
-                        scheduleNotification(task);
+                    if (Notification.permission === 'granted') {
+                        new Notification(`${getTypeName(task.type)}: ${task.title}`, {
+                            body: task.description || 'Время выполнить задачу!'
+                        });
                     }
+                    if (navigator.vibrate) navigator.vibrate(500);
                 }, delay);
             }
         }
         
-        // Получить следующую дату
-        function getNextDate(date, interval) {
-            const next = new Date(date);
-            switch(interval) {
-                case 'daily': next.setDate(next.getDate() + 1); break;
-                case 'weekly': next.setDate(next.getDate() + 7); break;
-                case 'monthly': next.setMonth(next.getMonth() + 1); break;
-            }
-            return next;
-        }
-        
-        // Показать уведомление
-        function showNotification(task) {
-            if (Notification.permission === 'granted') {
-                new Notification(`${getTypeName(task.type)}: ${task.title}`, {
-                    body: task.description || 'Время выполнить задачу!',
-                    icon: '/icon.png'
-                });
-            }
-            
-            if (navigator.vibrate) {
-                navigator.vibrate(500);
-            }
-        }
-        
-        // Запрос разрешения
         function requestNotificationPermission() {
-            if (Notification.permission === 'default') {
-                Notification.requestPermission();
-            }
+            if (Notification.permission === 'default') Notification.requestPermission();
         }
         
-        // Голосовой ввод
+        // ========== ГОЛОСОВОЙ ВВОД ==========
         function setupVoiceInput() {
             const voiceBtn = document.getElementById('voiceBtn');
-            
             if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
                 voiceBtn.style.display = 'none';
                 return;
@@ -1070,12 +1265,10 @@
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             const recognition = new SpeechRecognition();
             recognition.lang = 'ru-RU';
-            recognition.interimResults = false;
             
             voiceBtn.addEventListener('click', () => {
                 voiceBtn.textContent = '🎤 Слушаю...';
                 voiceBtn.disabled = true;
-                
                 recognition.start();
                 
                 recognition.onresult = (event) => {
@@ -1090,167 +1283,12 @@
                 recognition.onerror = () => {
                     voiceBtn.textContent = '🎤 Надиктовать голосом';
                     voiceBtn.disabled = false;
-                    showToast('Не удалось распознать голос');
+                    showToast('Не удалось распознать');
                 };
             });
         }
         
-        // Медиа кнопки
-        function setupMediaButtons() {
-            document.getElementById('photoBtn').addEventListener('click', () => captureMedia('photo'));
-            document.getElementById('voiceNoteBtn').addEventListener('click', () => captureMedia('audio'));
-            document.getElementById('videoBtn').addEventListener('click', () => captureMedia('video'));
-        }
-        
-        // Захват медиа
-        function captureMedia(type) {
-            if (type === 'photo') {
-                const input = document.createElement('input');
-                input.type = 'file';
-                input.accept = 'image/*';
-                input.capture = 'environment';
-                input.onchange = (e) => {
-                    const file = e.target.files[0];
-                    if (file) {
-                        const url = URL.createObjectURL(file);
-                        mediaFiles.push({ type: 'image', url: url, name: file.name });
-                        updateMediaPreview();
-                    }
-                };
-                input.click();
-            } else if (type === 'audio') {
-                const input = document.createElement('input');
-                input.type = 'file';
-                input.accept = 'audio/*';
-                input.onchange = (e) => {
-                    const file = e.target.files[0];
-                    if (file) {
-                        const url = URL.createObjectURL(file);
-                        mediaFiles.push({ type: 'audio', url: url, name: file.name });
-                        updateMediaPreview();
-                    }
-                };
-                input.click();
-            } else if (type === 'video') {
-                const input = document.createElement('input');
-                input.type = 'file';
-                input.accept = 'video/*';
-                input.capture = 'environment';
-                input.onchange = (e) => {
-                    const file = e.target.files[0];
-                    if (file) {
-                        const url = URL.createObjectURL(file);
-                        mediaFiles.push({ type: 'video', url: url, name: file.name });
-                        updateMediaPreview();
-                    }
-                };
-                input.click();
-            }
-        }
-        
-        // Обновление превью медиа
-        function updateMediaPreview() {
-            const preview = document.getElementById('mediaPreview');
-            if (mediaFiles.length === 0) {
-                preview.innerHTML = '';
-                return;
-            }
-            
-            preview.innerHTML = mediaFiles.map((media, index) => `
-                <div style="position: relative; margin-bottom: 10px;">
-                    ${media.type === 'image' ? `<img src="${media.url}" style="max-width: 100%; border-radius: 10px;">` : ''}
-                    ${media.type === 'audio' ? `<audio controls src="${media.url}" class="audio-player"></audio>` : ''}
-                    ${media.type === 'video' ? `<video controls src="${media.url}" style="max-width: 100%; border-radius: 10px;"></video>` : ''}
-                    <button onclick="removeMedia(${index})" style="position: absolute; top: 5px; right: 5px; background: red; color: white; border: none; border-radius: 50%; width: 24px; height: 24px;">✕</button>
-                </div>
-            `).join('');
-        }
-        
-        // Удаление медиа
-        function removeMedia(index) {
-            mediaFiles.splice(index, 1);
-            updateMediaPreview();
-        }
-        
-        // Экспорт данных
-        function exportJSON() {
-            const dataStr = JSON.stringify(tasks, null, 2);
-            downloadFile(dataStr, 'tasks.json', 'application/json');
-            showToast('Данные экспортированы в JSON');
-        }
-        
-        function exportCSV() {
-            const headers = ['ID', 'Название', 'Описание', 'Тип', 'Категория', 'Приоритет', 'Теги', 'Выполнено', 'Создано'];
-            const rows = tasks.map(task => [
-                task.id,
-                task.title,
-                task.description,
-                task.type,
-                task.category || '',
-                task.priority,
-                (task.tags || []).join(';'),
-                task.completed,
-                task.createdAt
-            ]);
-            
-            const csvContent = [headers, ...rows].map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
-            downloadFile(csvContent, 'tasks.csv', 'text/csv;charset=utf-8;');
-            showToast('Данные экспортированы в CSV');
-        }
-        
-        function exportBackup() {
-            const backup = {
-                version: '1.0',
-                exportDate: new Date().toISOString(),
-                tasks: tasks,
-                categories: Array.from(categories)
-            };
-            const dataStr = JSON.stringify(backup, null, 2);
-            downloadFile(dataStr, `backup_${new Date().toISOString().slice(0,19)}.json`, 'application/json');
-            showToast('Полный бэкап создан');
-        }
-        
-        function importData(file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                try {
-                    const data = JSON.parse(e.target.result);
-                    if (data.tasks) {
-                        tasks = data.tasks;
-                    } else if (Array.isArray(data)) {
-                        tasks = data;
-                    }
-                    saveTasks();
-                    renderTasks();
-                    showToast('Данные успешно импортированы');
-                    closeExportModal();
-                } catch (err) {
-                    showToast('Ошибка импорта: неверный формат файла');
-                }
-            };
-            reader.readAsText(file);
-        }
-        
-        function clearAllData() {
-            if (confirm('⚠️ ВНИМАНИЕ! Это действие удалит ВСЕ задачи без возможности восстановления. Продолжить?')) {
-                tasks = [];
-                saveTasks();
-                renderTasks();
-                showToast('Все данные удалены');
-                closeExportModal();
-            }
-        }
-        
-        function downloadFile(content, filename, type) {
-            const blob = new Blob([content], { type: type });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = filename;
-            link.click();
-            URL.revokeObjectURL(link.href);
-        }
-        
-        // Показать уведомление
+        // ========== UI УПРАВЛЕНИЕ ==========
         function showToast(message) {
             const toast = document.createElement('div');
             toast.className = 'toast';
@@ -1259,58 +1297,78 @@
             setTimeout(() => toast.remove(), 2000);
         }
         
-        // Теги
-        function setupTags() {
-            const tagInput = document.getElementById('tagInputField');
-            const tagsContainer = document.getElementById('tagsInput');
-            
-            tagInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter' && tagInput.value.trim()) {
-                    e.preventDefault();
-                    const newTag = tagInput.value.trim();
-                    if (!tags.includes(newTag)) {
-                        tags.push(newTag);
-                        renderTags();
-                    }
-                    tagInput.value = '';
-                }
-            });
-        }
-        
-        function renderTags() {
-            const tagsContainer = document.getElementById('tagsInput');
-            const tagInput = document.getElementById('tagInputField');
-            
-            const tagElements = tags.map((tag, index) => `
-                <div class="tag-input-item">
-                    ${escapeHtml(tag)}
-                    <button onclick="removeTag(${index})">✕</button>
-                </div>
-            `).join('');
-            
-            tagsContainer.innerHTML = tagElements + '<input type="text" class="tag-input-field" id="tagInputField" placeholder="Введите тег и нажмите Enter">';
-            
-            const newInput = document.getElementById('tagInputField');
-            newInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter' && newInput.value.trim()) {
-                    e.preventDefault();
-                    const newTag = newInput.value.trim();
-                    if (!tags.includes(newTag)) {
-                        tags.push(newTag);
-                        renderTags();
+        function openModal(taskId = null) {
+            editingTaskId = taskId;
+            if (taskId) {
+                const task = tasks.find(t => t.id == taskId);
+                if (task) {
+                    document.getElementById('modalTitle').textContent = 'Редактировать';
+                    document.getElementById('taskTitle').value = task.title;
+                    document.getElementById('taskDesc').value = task.description || '';
+                    document.getElementById('taskType').value = task.type;
+                    document.getElementById('taskCategory').value = task.category || '';
+                    document.getElementById('taskTags').value = (task.tags || []).join(', ');
+                    selectedPriority = task.priority || 'high';
+                    
+                    document.querySelectorAll('[data-priority]').forEach(btn => {
+                        btn.classList.toggle('active', btn.dataset.priority === selectedPriority);
+                    });
+                    
+                    if (task.reminderTime) {
+                        document.getElementById('hasReminder').checked = true;
+                        document.getElementById('reminderSettings').style.display = 'block';
+                        document.getElementById('reminderTime').value = new Date(task.reminderTime).toISOString().slice(0, 16);
                     }
                 }
-            });
+            } else {
+                document.getElementById('modalTitle').textContent = 'Новая запись';
+                document.getElementById('taskTitle').value = '';
+                document.getElementById('taskDesc').value = '';
+                document.getElementById('taskType').value = 'task';
+                document.getElementById('taskCategory').value = '';
+                document.getElementById('taskTags').value = '';
+                document.getElementById('hasReminder').checked = false;
+                document.getElementById('reminderSettings').style.display = 'none';
+                selectedPriority = 'high';
+                document.querySelectorAll('[data-priority]').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.priority === 'high');
+                });
+            }
+            document.getElementById('taskModal').classList.add('show');
         }
         
-        function removeTag(index) {
-            tags.splice(index, 1);
-            renderTags();
+        function closeModal() {
+            document.getElementById('taskModal').classList.remove('show');
+            editingTaskId = null;
         }
         
-        // Настройка обработчиков
+        function toggleCharts() {
+            showCharts = !showCharts;
+            const chartsContainer = document.getElementById('chartsContainer');
+            chartsContainer.classList.toggle('show', showCharts);
+            document.getElementById('statsToggle').textContent = showCharts ? '📈' : '📊';
+            if (showCharts) updateCharts();
+        }
+        
+        // ========== НАСТРОЙКА ОБРАБОТЧИКОВ ==========
         function setupEventListeners() {
-            // Фильтры
+            // Поиск
+            document.getElementById('smartSearchInput').addEventListener('input', (e) => {
+                currentSearch = e.target.value;
+                renderTasks();
+            });
+            
+            // Фильтры поиска
+            document.querySelectorAll('.search-filter-chip').forEach(chip => {
+                chip.addEventListener('click', () => {
+                    document.querySelectorAll('.search-filter-chip').forEach(c => c.classList.remove('active'));
+                    chip.classList.add('active');
+                    searchField = chip.dataset.field;
+                    renderTasks();
+                });
+            });
+            
+            // Фильтры типов
             document.querySelectorAll('.filter-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -1327,27 +1385,19 @@
                     if (filter) {
                         currentFilter = filter;
                         document.querySelectorAll('.filter-btn').forEach(btn => {
-                            if (btn.dataset.filter === filter) {
-                                btn.classList.add('active');
-                            } else {
-                                btn.classList.remove('active');
-                            }
+                            btn.classList.toggle('active', btn.dataset.filter === filter);
                         });
                         renderTasks();
                     }
                 });
             });
             
-            // Поиск
-            document.getElementById('searchInput').addEventListener('input', (e) => {
-                currentSearch = e.target.value;
-                renderTasks();
-            });
-            
-            // Кнопка добавления
-            document.getElementById('fabBtn').addEventListener('click', () => {
-                openModal();
-            });
+            // Кнопки
+            document.getElementById('fabBtn').addEventListener('click', () => openModal());
+            document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+            document.getElementById('statsToggle').addEventListener('click', toggleCharts);
+            document.getElementById('cancelModalBtn').addEventListener('click', closeModal);
+            document.getElementById('saveTaskBtn').addEventListener('click', saveTaskToStorage);
             
             // Приоритеты
             document.querySelectorAll('[data-priority]').forEach(btn => {
@@ -1358,11 +1408,9 @@
                 });
             });
             
-            // Чекбокс напоминания
+            // Напоминания
             document.getElementById('hasReminder').addEventListener('change', (e) => {
-                const reminderSettings = document.getElementById('reminderSettings');
-                reminderSettings.style.display = e.target.checked ? 'block' : 'none';
-                
+                document.getElementById('reminderSettings').style.display = e.target.checked ? 'block' : 'none';
                 if (e.target.checked && !document.getElementById('reminderTime').value) {
                     const defaultDate = new Date();
                     defaultDate.setHours(defaultDate.getHours() + 1);
@@ -1370,106 +1418,10 @@
                 }
             });
             
-            // Чекбокс повторения
             document.getElementById('isRecurring').addEventListener('change', (e) => {
-                const recurringSettings = document.getElementById('recurringSettings');
-                recurringSettings.style.display = e.target.checked ? 'block' : 'none';
+                document.getElementById('recurringSettings').style.display = e.target.checked ? 'block' : 'none';
             });
-            
-            // Кнопки модального окна
-            document.getElementById('cancelModalBtn').addEventListener('click', () => closeModal());
-            document.getElementById('saveTaskBtn').addEventListener('click', () => saveTask());
-            
-            // Экспорт
-            document.getElementById('exportJSON').addEventListener('click', exportJSON);
-            document.getElementById('exportCSV').addEventListener('click', exportCSV);
-            document.getElementById('exportBackup').addEventListener('click', exportBackup);
-            document.getElementById('importData').addEventListener('click', () => {
-                document.getElementById('importFile').click();
-            });
-            document.getElementById('importFile').addEventListener('change', (e) => {
-                if (e.target.files[0]) importData(e.target.files[0]);
-            });
-            document.getElementById('clearAllData').addEventListener('click', clearAllData);
-            document.getElementById('closeExportModal').addEventListener('click', () => closeExportModal());
-            
-            // Теги
-            setupTags();
         }
-        
-        // Открыть модальное окно
-        function openModal(taskId = null) {
-            editingTaskId = taskId;
-            tags = [];
-            mediaFiles = [];
-            selectedPriority = 'high';
-            
-            if (taskId) {
-                const task = tasks.find(t => t.id == taskId);
-                if (task) {
-                    document.getElementById('modalTitle').textContent = 'Редактировать';
-                    document.getElementById('taskTitle').value = task.title;
-                    document.getElementById('taskDesc').value = task.description || '';
-                    document.getElementById('taskType').value = task.type;
-                    document.getElementById('taskCategory').value = task.category || '';
-                    tags = task.tags || [];
-                    selectedPriority = task.priority || 'high';
-                    mediaFiles = task.media || [];
-                    
-                    document.querySelectorAll('[data-priority]').forEach(btn => {
-                        if (btn.dataset.priority === selectedPriority) {
-                            btn.classList.add('active');
-                        } else {
-                            btn.classList.remove('active');
-                        }
-                    });
-                    
-                    renderTags();
-                    updateMediaPreview();
-                    
-                    if (task.reminderTime) {
-                        document.getElementById('hasReminder').checked = true;
-                        document.getElementById('reminderSettings').style.display = 'block';
-                        document.getElementById('reminderTime').value = new Date(task.reminderTime).toISOString().slice(0, 16);
-                        
-                        if (task.isRecurring) {
-                            document.getElementById('isRecurring').checked = true;
-                            document.getElementById('recurringSettings').style.display = 'block';
-                        }
-                    }
-                }
-            } else {
-                document.getElementById('modalTitle').textContent = 'Новая запись';
-                document.getElementById('taskTitle').value = '';
-                document.getElementById('taskDesc').value = '';
-                document.getElementById('taskType').value = 'task';
-                document.getElementById('taskCategory').value = '';
-                document.getElementById('hasReminder').checked = false;
-                document.getElementById('reminderSettings').style.display = 'none';
-                document.getElementById('isRecurring').checked = false;
-                tags = [];
-                mediaFiles = [];
-                renderTags();
-                updateMediaPreview();
-            }
-            
-            document.getElementById('taskModal').classList.add('show');
-        }
-        
-        // Закрыть модальное окно
-        function closeModal() {
-            document.getElementById('taskModal').classList.remove('show');
-            editingTaskId = null;
-        }
-        
-        function closeExportModal() {
-            document.getElementById('exportModal').classList.remove('show');
-        }
-        
-        // Открыть экспорт
-        window.openExport = function() {
-            document.getElementById('exportModal').classList.add('show');
-        };
         
         // Запуск
         init();
