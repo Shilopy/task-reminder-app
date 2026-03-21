@@ -1099,6 +1099,7 @@
             const widgetTasks = document.getElementById('widgetTasks');
             if (todayTasks.length > 0) {
                 widgetTasks.textContent = `${todayTasks.length} ${todayTasks.length === 1 ? 'задача' : (todayTasks.length >= 2 && todayTasks.length <= 4 ? 'задачи' : 'задач')} на сегодня`;
+                widgetPreview.classList.add('show');
             } else {
                 widgetTasks.textContent = 'На сегодня задач нет';
                 document.getElementById('widgetPreview').classList.add('show');
