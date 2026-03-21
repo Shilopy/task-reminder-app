@@ -10,22 +10,9 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#667eea" id="themeColor">
     
-    <!-- Content Security Policy -->
-    <meta http-equiv="Content-Security-Policy" content="
-        default-src 'self';
-        script-src 'self' 'unsafe-inline';
-        style-src 'self' 'unsafe-inline';
-        img-src 'self' data: blob:;
-        media-src 'self' data: blob:;
-        connect-src 'self';
-        font-src 'self';
-        worker-src 'self';
-        manifest-src 'self';
-    ">
-    
     <link rel="manifest" href="/task-reminder-app/manifest.json">
     <link rel="apple-touch-icon" href="/task-reminder-app/icon.png">
-    <title>SmartTasks Pro - Безопасные заметки</title>
+    <title>SmartTasks Pro - Умные заметки</title>
     <style>
         * {
             margin: 0;
@@ -34,7 +21,6 @@
             -webkit-tap-highlight-color: transparent;
         }
         
-        /* ТЕМЫ ОФОРМЛЕНИЯ */
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             padding: 20px;
@@ -108,7 +94,6 @@
             color: #eee;
         }
         
-        /* Анимации */
         @keyframes slideIn {
             from { transform: translateY(100%); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
@@ -123,7 +108,6 @@
             animation: slideIn 0.3s ease-out;
         }
         
-        /* Основные стили */
         .header {
             padding: 20px;
             border-radius: 20px;
@@ -155,11 +139,6 @@
             transition: transform 0.2s;
         }
         
-        .theme-btn:active, .stats-btn:active {
-            transform: scale(0.95);
-        }
-        
-        /* Статистика */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -191,7 +170,6 @@
             margin-top: 5px;
         }
         
-        /* Графики */
         .charts-container {
             background: rgba(255,255,255,0.1);
             border-radius: 15px;
@@ -269,7 +247,6 @@
             border-radius: 2px;
         }
         
-        /* Умный поиск */
         .smart-search {
             background: white;
             border-radius: 25px;
@@ -310,7 +287,6 @@
             color: white;
         }
         
-        /* Фильтры */
         .filter-bar {
             display: flex;
             gap: 8px;
@@ -358,7 +334,6 @@
             color: white;
         }
         
-        /* Список задач */
         .task-list {
             display: flex;
             flex-direction: column;
@@ -433,12 +408,6 @@
             margin-bottom: 8px;
         }
         
-        .task-description {
-            font-size: 13px;
-            margin-bottom: 10px;
-            opacity: 0.8;
-        }
-        
         .task-actions {
             display: flex;
             gap: 10px;
@@ -475,7 +444,6 @@
             transform: scale(0.95);
         }
         
-        /* Модальные окна */
         .modal {
             display: none;
             position: fixed;
@@ -582,10 +550,6 @@
             transition: opacity 0.2s;
         }
         
-        .modal-buttons button:active {
-            opacity: 0.8;
-        }
-        
         .save-btn {
             background: #4caf50;
             color: white;
@@ -615,7 +579,6 @@
             opacity: 0.6;
         }
         
-        /* Виджет-превью */
         .widget-preview {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border-radius: 20px;
@@ -641,6 +604,14 @@
             font-weight: bold;
         }
         
+        .timezone-info {
+            font-size: 11px;
+            text-align: center;
+            color: #999;
+            margin-top: 5px;
+            padding: 5px;
+        }
+        
         @media (max-width: 480px) {
             body {
                 padding: 15px;
@@ -657,7 +628,7 @@
     <div class="header">
         <div>
             <h1>🔒 SmartTasks Pro</h1>
-            <p>Безопасные заметки с аналитикой</p>
+            <p>Умные заметки с напоминаниями</p>
         </div>
         <div class="header-controls">
             <button class="theme-btn" id="themeToggle" aria-label="Переключить тему">🌙</button>
@@ -665,27 +636,22 @@
         </div>
     </div>
     
-    <!-- Виджет -->
     <div class="widget-preview" id="widgetPreview">
         <div class="widget-title">📋 Сегодня нужно сделать</div>
         <div class="widget-tasks" id="widgetTasks">0 задач</div>
     </div>
     
-    <!-- Статистика с графиками -->
     <div class="charts-container" id="chartsContainer">
         <div class="chart-title">📊 Статистика выполнения задач</div>
-        
         <div class="chart">
             <div class="chart-title">По дням недели</div>
             <div class="chart-bars" id="weeklyChart"></div>
         </div>
-        
         <div class="chart">
             <div class="chart-title">По типам задач</div>
             <div id="pieChart" style="width: 200px; height: 200px; margin: 20px auto; border-radius: 50%;"></div>
             <div class="legend" id="pieLegend"></div>
         </div>
-        
         <div class="chart">
             <div class="chart-title">Прогресс выполнения</div>
             <div style="height: 30px; background: #f0f0f0; border-radius: 15px; overflow: hidden;">
@@ -693,7 +659,6 @@
             </div>
             <div style="text-align: center; margin-top: 5px;" id="progressText">0% выполнено</div>
         </div>
-        
         <div class="chart">
             <div class="chart-title">Продуктивность</div>
             <div id="productivityScore" style="font-size: 36px; text-align: center; font-weight: bold;">0</div>
@@ -701,10 +666,9 @@
         </div>
     </div>
     
-    <!-- Умный поиск -->
     <div class="smart-search">
         <span>🔍</span>
-        <input type="text" placeholder="Умный поиск по названию, описанию, тегам, категориям..." id="smartSearchInput" maxlength="100">
+        <input type="text" placeholder="Умный поиск..." id="smartSearchInput" maxlength="100">
         <div class="search-filters" id="searchFilters">
             <span class="search-filter-chip" data-field="title">Название</span>
             <span class="search-filter-chip" data-field="description">Описание</span>
@@ -715,22 +679,10 @@
     </div>
     
     <div class="stats-grid" id="statsContainer">
-        <div class="stat-card" data-filter="all">
-            <div class="stat-number" id="totalCount">0</div>
-            <div class="stat-label">Всего</div>
-        </div>
-        <div class="stat-card" data-filter="active">
-            <div class="stat-number" id="activeCount">0</div>
-            <div class="stat-label">Активных</div>
-        </div>
-        <div class="stat-card" data-filter="completed">
-            <div class="stat-number" id="completedCount">0</div>
-            <div class="stat-label">Выполнено</div>
-        </div>
-        <div class="stat-card" data-filter="urgent">
-            <div class="stat-number" id="urgentCount">0</div>
-            <div class="stat-label">Срочных</div>
-        </div>
+        <div class="stat-card" data-filter="all"><div class="stat-number" id="totalCount">0</div><div class="stat-label">Всего</div></div>
+        <div class="stat-card" data-filter="active"><div class="stat-number" id="activeCount">0</div><div class="stat-label">Активных</div></div>
+        <div class="stat-card" data-filter="completed"><div class="stat-number" id="completedCount">0</div><div class="stat-label">Выполнено</div></div>
+        <div class="stat-card" data-filter="urgent"><div class="stat-number" id="urgentCount">0</div><div class="stat-label">Срочных</div></div>
     </div>
     
     <div class="filter-bar">
@@ -746,7 +698,6 @@
     
     <button class="fab" id="fabBtn" aria-label="Добавить задачу">+</button>
     
-    <!-- Модальное окно добавления/редактирования -->
     <div class="modal" id="taskModal">
         <div class="modal-content">
             <div class="modal-header" id="modalTitle">Новая запись</div>
@@ -787,26 +738,22 @@
             </div>
             
             <div class="input-group">
-                <label>Теги (через запятую, макс. 10 тегов, каждый до 30 символов)</label>
+                <label>Теги (через запятую)</label>
                 <input type="text" id="taskTags" placeholder="работа, важное, идея">
             </div>
             
             <div class="input-group">
-                <label>
-                    <input type="checkbox" id="hasReminder"> Напомнить
-                </label>
+                <label><input type="checkbox" id="hasReminder"> Напомнить</label>
             </div>
             
             <div id="reminderSettings" style="display: none;">
                 <div class="input-group">
-                    <label>Дата и время</label>
+                    <label>Дата и время (ваш часовой пояс)</label>
                     <input type="datetime-local" id="reminderTime">
                 </div>
                 
                 <div class="input-group">
-                    <label>
-                        <input type="checkbox" id="isRecurring"> Повторять
-                    </label>
+                    <label><input type="checkbox" id="isRecurring"> Повторять</label>
                 </div>
                 
                 <div id="recurringSettings" style="display: none;">
@@ -817,6 +764,8 @@
                     </div>
                 </div>
             </div>
+            
+            <div class="timezone-info" id="timezoneInfo"></div>
             
             <div class="modal-buttons">
                 <button class="cancel-btn" id="cancelModalBtn">Отмена</button>
@@ -833,116 +782,6 @@
         const MAX_TAGS_COUNT = 10;
         const MAX_CATEGORY_LENGTH = 50;
         
-        // ========== БЕЗОПАСНОЕ ХРАНИЛИЩЕ С ШИФРОВАНИЕМ ==========
-        class SecureStorage {
-            constructor() {
-                this.secret = this.getOrCreateSecret();
-            }
-            
-            getOrCreateSecret() {
-                let secret = localStorage.getItem('app_secret_v2');
-                if (!secret) {
-                    secret = this.generateSecret();
-                    localStorage.setItem('app_secret_v2', secret);
-                }
-                return secret;
-            }
-            
-            generateSecret() {
-                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
-                let result = '';
-                for (let i = 0; i < 64; i++) {
-                    result += chars.charAt(Math.floor(Math.random() * chars.length));
-                }
-                return result;
-            }
-            
-            encrypt(text) {
-                if (!text) return text;
-                try {
-                    let result = '';
-                    for (let i = 0; i < text.length; i++) {
-                        const charCode = text.charCodeAt(i) ^ this.secret.charCodeAt(i % this.secret.length);
-                        result += String.fromCharCode(charCode);
-                    }
-                    return btoa(result);
-                } catch(e) {
-                    console.error('Encryption error:', e);
-                    return text;
-                }
-            }
-            
-            decrypt(encrypted) {
-                if (!encrypted) return encrypted;
-                try {
-                    const decoded = atob(encrypted);
-                    let result = '';
-                    for (let i = 0; i < decoded.length; i++) {
-                        const charCode = decoded.charCodeAt(i) ^ this.secret.charCodeAt(i % this.secret.length);
-                        result += String.fromCharCode(charCode);
-                    }
-                    return result;
-                } catch(e) {
-                    console.error('Decryption error:', e);
-                    return encrypted;
-                }
-            }
-        }
-        
-        const secureStorage = new SecureStorage();
-        
-        // ========== БЕЗОПАСНОЕ ЭКРАНИРОВАНИЕ ==========
-        function escapeHtml(text) {
-            if (!text) return '';
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-        
-        // ========== ВАЛИДАЦИЯ ==========
-        function validateTask(task) {
-            if (!task.title || task.title.trim().length === 0) {
-                throw new Error('Название задачи не может быть пустым');
-            }
-            
-            if (task.title.length > MAX_TITLE_LENGTH) {
-                throw new Error(`Название не может быть длиннее ${MAX_TITLE_LENGTH} символов`);
-            }
-            
-            if (task.description && task.description.length > MAX_DESCRIPTION_LENGTH) {
-                throw new Error(`Описание не может быть длиннее ${MAX_DESCRIPTION_LENGTH} символов`);
-            }
-            
-            if (task.category && task.category.length > MAX_CATEGORY_LENGTH) {
-                throw new Error(`Категория не может быть длиннее ${MAX_CATEGORY_LENGTH} символов`);
-            }
-            
-            if (task.tags) {
-                if (task.tags.length > MAX_TAGS_COUNT) {
-                    throw new Error(`Не более ${MAX_TAGS_COUNT} тегов`);
-                }
-                
-                for (const tag of task.tags) {
-                    if (tag.length > MAX_TAG_LENGTH) {
-                        throw new Error(`Тег не может быть длиннее ${MAX_TAG_LENGTH} символов`);
-                    }
-                    if (!/^[a-zA-Zа-яА-Я0-9_\-\s]+$/.test(tag)) {
-                        throw new Error('Тег может содержать только буквы, цифры, дефис, пробел и подчеркивание');
-                    }
-                }
-            }
-            
-            task.title = task.title.trim().substring(0, MAX_TITLE_LENGTH);
-            if (task.description) {
-                task.description = task.description.trim().substring(0, MAX_DESCRIPTION_LENGTH);
-            }
-            if (task.category) {
-                task.category = task.category.trim().substring(0, MAX_CATEGORY_LENGTH);
-            }
-            
-            return task;
-        }
-        
         // ========== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ==========
         let tasks = [];
         let currentFilter = 'all';
@@ -954,6 +793,62 @@
         let selectedRecurringInterval = 'daily';
         let currentTheme = 'light';
         let showCharts = false;
+        let scheduledTimeouts = [];
+        
+        // ========== БЕЗОПАСНОЕ ЭКРАНИРОВАНИЕ ==========
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // ========== ФУНКЦИЯ ДЛЯ СКЛОНЕНИЯ ==========
+        function pluralize(count, one, few, many) {
+            const lastDigit = count % 10;
+            const lastTwoDigits = count % 100;
+            if (lastTwoDigits >= 11 && lastTwoDigits <= 19) return many;
+            if (lastDigit === 1) return one;
+            if (lastDigit >= 2 && lastDigit <= 4) return few;
+            return many;
+        }
+        
+        // ========== РАБОТА С ЧАСОВЫМИ ПОЯСАМИ ==========
+        function getLocalDateTimeString(date) {
+            if (!date) return '';
+            const d = new Date(date);
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            const hours = String(d.getHours()).padStart(2, '0');
+            const minutes = String(d.getMinutes()).padStart(2, '0');
+            return `${year}-${month}-${day}T${hours}:${minutes}`;
+        }
+        
+        function convertLocalToUTC(localDateTime) {
+            if (!localDateTime) return null;
+            const localDate = new Date(localDateTime);
+            const utcDate = new Date(localDate.getTime() - localDate.getTimezoneOffset() * 60000);
+            return utcDate.toISOString();
+        }
+        
+        function convertUTCToLocal(utcString) {
+            if (!utcString) return null;
+            const utcDate = new Date(utcString);
+            const localDate = new Date(utcDate.getTime() + utcDate.getTimezoneOffset() * 60000);
+            return getLocalDateTimeString(localDate);
+        }
+        
+        function formatDisplayDate(dateString) {
+            if (!dateString) return '';
+            try {
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) return '';
+                return `${date.toLocaleDateString()} ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+            } catch(e) {
+                return '';
+            }
+        }
         
         // ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
         function getTypeColor(type) {
@@ -981,17 +876,6 @@
             }
         }
         
-        function formatDate(dateString) {
-            if (!dateString) return '';
-            try {
-                const date = new Date(dateString);
-                if (isNaN(date.getTime())) return '';
-                return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
-            } catch(e) {
-                return '';
-            }
-        }
-        
         function showToast(message) {
             const toast = document.createElement('div');
             toast.className = 'toast';
@@ -1003,11 +887,11 @@
         // ========== УПРАВЛЕНИЕ ДАННЫМИ ==========
         function saveTasks() {
             try {
-                const encrypted = secureStorage.encrypt(JSON.stringify(tasks));
-                localStorage.setItem('smartTasksPro', encrypted);
+                localStorage.setItem('smartTasksPro', JSON.stringify(tasks));
                 updateStats();
                 updateCharts();
                 updateWidget();
+                rescheduleAllNotifications();
             } catch(e) {
                 console.error('Save error:', e);
                 showToast('Ошибка сохранения');
@@ -1018,13 +902,10 @@
             try {
                 const saved = localStorage.getItem('smartTasksPro');
                 if (saved) {
-                    const decrypted = secureStorage.decrypt(saved);
-                    tasks = JSON.parse(decrypted);
-                } else {
-                    tasks = [];
+                    tasks = JSON.parse(saved);
                 }
                 
-                if (!tasks.length) {
+                if (!tasks || !tasks.length) {
                     tasks = [
                         {
                             id: Date.now(),
@@ -1037,7 +918,8 @@
                             completed: false,
                             createdAt: new Date().toISOString(),
                             reminderTime: null,
-                            isRecurring: false
+                            isRecurring: false,
+                            recurringInterval: 'daily'
                         },
                         {
                             id: Date.now() + 1,
@@ -1050,7 +932,8 @@
                             completed: false,
                             createdAt: new Date().toISOString(),
                             reminderTime: null,
-                            isRecurring: false
+                            isRecurring: false,
+                            recurringInterval: 'daily'
                         }
                     ];
                     saveTasks();
@@ -1069,6 +952,16 @@
             renderTasks();
             renderCategories();
             updateWidget();
+            updateTimezoneInfo();
+        }
+        
+        function updateTimezoneInfo() {
+            const infoDiv = document.getElementById('timezoneInfo');
+            if (infoDiv) {
+                const now = new Date();
+                const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                infoDiv.textContent = `⏰ Ваш часовой пояс: ${timezone} | Текущее время: ${now.toLocaleTimeString()}`;
+            }
         }
         
         // ========== СТАТИСТИКА ==========
@@ -1097,12 +990,16 @@
             });
             
             const widgetTasks = document.getElementById('widgetTasks');
-            if (todayTasks.length > 0) {
-                widgetTasks.textContent = `${todayTasks.length} ${todayTasks.length === 1 ? 'задача' : (todayTasks.length >= 2 && todayTasks.length <= 4 ? 'задачи' : 'задач')} на сегодня`;
+            const widgetPreview = document.getElementById('widgetPreview');
+            const count = todayTasks.length;
+            
+            if (count > 0) {
+                const taskWord = pluralize(count, 'задача', 'задачи', 'задач');
+                widgetTasks.textContent = `${count} ${taskWord} на сегодня`;
                 widgetPreview.classList.add('show');
             } else {
                 widgetTasks.textContent = 'На сегодня задач нет';
-                document.getElementById('widgetPreview').classList.add('show');
+                widgetPreview.classList.add('show');
             }
         }
         
@@ -1146,14 +1043,12 @@
             if (total > 0) {
                 const taskDeg = (typeStats.task / total) * 360;
                 const ideaDeg = (typeStats.idea / total) * 360;
-                
                 const pieChart = document.getElementById('pieChart');
                 pieChart.style.background = `conic-gradient(
                     #4caf50 0deg ${taskDeg}deg,
                     #ff9800 ${taskDeg}deg ${taskDeg + ideaDeg}deg,
                     #f44336 ${taskDeg + ideaDeg}deg 360deg
                 )`;
-                
                 document.getElementById('pieLegend').innerHTML = `
                     <div class="legend-item"><div class="legend-color" style="background: #4caf50;"></div> Задачи: ${typeStats.task}</div>
                     <div class="legend-item"><div class="legend-color" style="background: #ff9800;"></div> Идеи: ${typeStats.idea}</div>
@@ -1182,26 +1077,73 @@
         // ========== УМНЫЙ ПОИСК ==========
         function smartSearch(query, field) {
             if (!query) return tasks;
-            
             const lowerQuery = query.toLowerCase();
-            
             return tasks.filter(task => {
                 switch(field) {
-                    case 'title':
-                        return task.title.toLowerCase().includes(lowerQuery);
-                    case 'description':
-                        return task.description?.toLowerCase().includes(lowerQuery);
-                    case 'tags':
-                        return task.tags?.some(tag => tag.toLowerCase().includes(lowerQuery));
-                    case 'category':
-                        return task.category?.toLowerCase().includes(lowerQuery);
-                    default:
-                        return task.title.toLowerCase().includes(lowerQuery) ||
+                    case 'title': return task.title.toLowerCase().includes(lowerQuery);
+                    case 'description': return task.description?.toLowerCase().includes(lowerQuery);
+                    case 'tags': return task.tags?.some(tag => tag.toLowerCase().includes(lowerQuery));
+                    case 'category': return task.category?.toLowerCase().includes(lowerQuery);
+                    default: return task.title.toLowerCase().includes(lowerQuery) ||
                                task.description?.toLowerCase().includes(lowerQuery) ||
                                task.tags?.some(tag => tag.toLowerCase().includes(lowerQuery)) ||
                                task.category?.toLowerCase().includes(lowerQuery);
                 }
             });
+        }
+        
+        // ========== НАПОМИНАНИЯ ==========
+        function scheduleNotification(task) {
+            if (!task.reminderTime) return;
+            try {
+                const reminderDate = new Date(task.reminderTime);
+                const now = new Date();
+                const delay = reminderDate - now;
+                
+                if (delay > 0 && delay < 2147483647) {
+                    const timeoutId = setTimeout(() => {
+                        if (Notification.permission === 'granted') {
+                            new Notification(`⏰ ${getTypeName(task.type)}: ${task.title}`, {
+                                body: task.description || 'Время выполнить задачу!',
+                                icon: '/task-reminder-app/icon.png',
+                                requireInteraction: true
+                            });
+                        }
+                        if (navigator.vibrate) navigator.vibrate([500, 300, 500]);
+                        
+                        if (task.isRecurring) {
+                            const nextDate = new Date(reminderDate);
+                            switch(task.recurringInterval) {
+                                case 'daily': nextDate.setDate(nextDate.getDate() + 1); break;
+                                case 'weekly': nextDate.setDate(nextDate.getDate() + 7); break;
+                                case 'monthly': nextDate.setMonth(nextDate.getMonth() + 1); break;
+                            }
+                            task.reminderTime = nextDate.toISOString();
+                            saveTasks();
+                        }
+                    }, delay);
+                    scheduledTimeouts.push(timeoutId);
+                    console.log(`⏰ Напоминание установлено на ${reminderDate.toLocaleString()}`);
+                }
+            } catch(e) {
+                console.error('Notification error:', e);
+            }
+        }
+        
+        function rescheduleAllNotifications() {
+            scheduledTimeouts.forEach(timeout => clearTimeout(timeout));
+            scheduledTimeouts = [];
+            tasks.forEach(task => {
+                if (task.reminderTime && !task.completed) {
+                    scheduleNotification(task);
+                }
+            });
+        }
+        
+        function requestNotificationPermission() {
+            if (Notification.permission === 'default') {
+                Notification.requestPermission();
+            }
         }
         
         // ========== ОТОБРАЖЕНИЕ ЗАДАЧ ==========
@@ -1221,7 +1163,6 @@
             }
             
             const taskList = document.getElementById('taskList');
-            
             if (filtered.length === 0) {
                 taskList.innerHTML = '<div class="empty-state">📭 Нет задач<br>Нажмите + чтобы добавить</div>';
                 return;
@@ -1229,14 +1170,14 @@
             
             taskList.innerHTML = filtered.map(task => `
                 <div class="task-card ${task.completed ? 'completed' : ''}" 
-                     style="border-left-color: ${escapeHtml(getTypeColor(task.type))}"
-                     data-task-id="${escapeHtml(String(task.id))}">
+                     style="border-left-color: ${getTypeColor(task.type)}"
+                     data-task-id="${task.id}">
                     <div class="task-header">
                         <div style="display: flex; gap: 5px; flex-wrap: wrap;">
-                            <span class="task-type ${escapeHtml(task.type)}">${escapeHtml(getTypeName(task.type))}</span>
-                            <span class="priority ${escapeHtml(task.priority || 'medium')}">${escapeHtml(getPriorityName(task.priority))}</span>
+                            <span class="task-type ${task.type}">${getTypeName(task.type)}</span>
+                            <span class="priority ${task.priority || 'medium'}">${getPriorityName(task.priority)}</span>
                         </div>
-                        ${task.reminderTime ? `<span>⏰ ${escapeHtml(formatDate(task.reminderTime))}</span>` : ''}
+                        ${task.reminderTime ? `<span>⏰ ${formatDisplayDate(task.reminderTime)}</span>` : ''}
                     </div>
                     <div class="task-title">${escapeHtml(task.title)}</div>
                     ${task.category ? `<div style="font-size: 11px; color: #667eea;">📁 ${escapeHtml(task.category)}</div>` : ''}
@@ -1246,89 +1187,57 @@
                         </div>
                     ` : ''}
                     <div class="task-actions">
-                        <button class="task-btn complete-btn" data-task-id="${escapeHtml(String(task.id))}" data-action="complete">
+                        <button class="task-btn" data-action="complete" data-id="${task.id}">
                             ${task.completed ? '✅ Выполнено' : '⬜ Выполнить'}
                         </button>
-                        <button class="task-btn delete-btn" data-task-id="${escapeHtml(String(task.id))}" data-action="delete">
+                        <button class="task-btn" data-action="delete" data-id="${task.id}">
                             🗑️ Удалить
                         </button>
                     </div>
                 </div>
             `).join('');
             
-            // Безопасные обработчики через addEventListener
             document.querySelectorAll('.task-card').forEach(card => {
                 card.addEventListener('click', (e) => {
                     if (e.target.tagName === 'BUTTON') return;
-                    const taskId = card.dataset.taskId;
-                    if (taskId) openTaskDetail(taskId);
+                    const taskId = parseInt(card.dataset.taskId);
+                    openModal(taskId);
                 });
             });
             
             document.querySelectorAll('[data-action="complete"]').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    const taskId = btn.dataset.taskId;
-                    if (taskId) toggleComplete(taskId);
+                    const taskId = parseInt(btn.dataset.id);
+                    toggleComplete(taskId);
                 });
             });
             
             document.querySelectorAll('[data-action="delete"]').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    const taskId = btn.dataset.taskId;
-                    if (taskId) deleteTask(taskId);
+                    const taskId = parseInt(btn.dataset.id);
+                    deleteTask(taskId);
                 });
             });
         }
         
-        // ========== УПРАВЛЕНИЕ ЗАДАЧАМИ (ИСПРАВЛЕНО) ==========
-        function openTaskDetail(taskId) {
-            // Преобразуем строковый ID в число для правильного сравнения
-            const idToFind = Number(taskId);
-            const task = tasks.find(t => t.id === idToFind);
-            if (task) {
-                const message = `📝 ${task.title}\n\n${task.description || 'Нет описания'}\n\n📁 Категория: ${task.category || 'Нет'}\n🏷️ Теги: ${task.tags?.join(', ') || 'Нет'}\n⭐ Приоритет: ${getPriorityName(task.priority)}`;
-                alert(message);
-            } else {
-                showToast('Ошибка: задача не найдена');
-            }
-        }
-        
         function toggleComplete(taskId) {
-            // Преобразуем строковый ID в число для правильного сравнения
-            const idToToggle = Number(taskId);
-            const task = tasks.find(t => t.id === idToToggle);
+            const task = tasks.find(t => t.id === taskId);
             if (task) {
                 task.completed = !task.completed;
                 saveTasks();
                 renderTasks();
-                showToast(task.completed ? '✅ Задача выполнена! +10 очков' : '🔄 Задача возвращена');
-            } else {
-                showToast('Ошибка: задача не найдена');
+                showToast(task.completed ? '✅ Задача выполнена!' : '🔄 Задача возвращена');
             }
         }
         
         function deleteTask(taskId) {
             if (confirm('Удалить задачу? Это действие нельзя отменить')) {
-                // Преобразуем строковый ID в число для правильного сравнения
-                const idToDelete = Number(taskId);
-                const taskToDelete = tasks.find(t => t.id === idToDelete);
-                
-                if (taskToDelete) {
-                    const originalLength = tasks.length;
-                    tasks = tasks.filter(t => t.id !== idToDelete);
-                    
-                    if (tasks.length < originalLength) {
-                        saveTasks();
-                        renderTasks();
-                        showToast('🗑️ Задача "' + escapeHtml(taskToDelete.title.substring(0, 50)) + '" удалена');
-                    } else {
-                        showToast('Ошибка: задача не найдена');
-                    }
-                } else {
-                    showToast('Ошибка: задача не найдена');
-                }
+                tasks = tasks.filter(t => t.id !== taskId);
+                saveTasks();
+                renderTasks();
+                showToast('🗑️ Задача удалена');
             }
         }
         
@@ -1361,7 +1270,7 @@
             }
             
             const tagsInput = document.getElementById('taskTags').value;
-            const tags = tagsInput ? tagsInput.split(',').map(t => t.trim().substring(0, MAX_TAG_LENGTH)).filter(t => t) : [];
+            const tags = tagsInput ? tagsInput.split(',').map(t => t.trim()).filter(t => t) : [];
             
             const taskData = {
                 id: editingTaskId || Date.now(),
@@ -1374,37 +1283,36 @@
                 completed: false,
                 createdAt: new Date().toISOString(),
                 reminderTime: null,
-                isRecurring: false
+                isRecurring: false,
+                recurringInterval: selectedRecurringInterval
             };
             
-            try {
-                const validatedTask = validateTask(taskData);
-                
-                if (document.getElementById('hasReminder').checked) {
-                    const reminderTime = document.getElementById('reminderTime').value;
-                    if (reminderTime) {
-                        validatedTask.reminderTime = reminderTime;
-                        validatedTask.isRecurring = document.getElementById('isRecurring').checked;
-                        scheduleNotification(validatedTask);
-                    }
+            if (document.getElementById('hasReminder').checked) {
+                const reminderTimeLocal = document.getElementById('reminderTime').value;
+                if (reminderTimeLocal) {
+                    taskData.reminderTime = convertLocalToUTC(reminderTimeLocal);
+                    taskData.isRecurring = document.getElementById('isRecurring').checked;
                 }
-                
-                if (editingTaskId) {
-                    const index = tasks.findIndex(t => t.id === editingTaskId);
-                    if (index !== -1) tasks[index] = { ...tasks[index], ...validatedTask };
-                    showToast('✏️ Задача обновлена');
-                } else {
-                    tasks.unshift(validatedTask);
-                    showToast('✅ Задача добавлена');
-                }
-                
-                saveTasks();
-                renderTasks();
-                closeModal();
-                clearModalForm();
-            } catch (error) {
-                showToast(error.message);
             }
+            
+            if (editingTaskId) {
+                const existingTask = tasks.find(t => t.id === editingTaskId);
+                if (existingTask) {
+                    taskData.completed = existingTask.completed;
+                    taskData.createdAt = existingTask.createdAt;
+                }
+                const index = tasks.findIndex(t => t.id === editingTaskId);
+                if (index !== -1) tasks[index] = { ...tasks[index], ...taskData };
+                showToast('✏️ Задача обновлена');
+            } else {
+                tasks.unshift(taskData);
+                showToast('✅ Задача добавлена');
+            }
+            
+            saveTasks();
+            renderTasks();
+            closeModal();
+            clearModalForm();
         }
         
         function clearModalForm() {
@@ -1415,42 +1323,18 @@
             document.getElementById('taskTags').value = '';
             document.getElementById('hasReminder').checked = false;
             document.getElementById('reminderSettings').style.display = 'none';
+            document.getElementById('reminderTime').value = '';
+            document.getElementById('isRecurring').checked = false;
+            document.getElementById('recurringSettings').style.display = 'none';
             selectedPriority = 'high';
             document.querySelectorAll('[data-priority]').forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.priority === 'high');
             });
         }
         
-        function scheduleNotification(task) {
-            if (!task.reminderTime) return;
-            try {
-                const reminderDate = new Date(task.reminderTime);
-                const now = new Date();
-                const delay = reminderDate - now;
-                
-                if (delay > 0 && delay < 2147483647) {
-                    setTimeout(() => {
-                        if (Notification.permission === 'granted') {
-                            const maskedTitle = task.title.length > 30 ? task.title.substring(0, 27) + '...' : task.title;
-                            new Notification(`📌 ${getTypeName(task.type)}`, {
-                                body: `🔒 ${maskedTitle}`,
-                                icon: '/task-reminder-app/icon.png',
-                                silent: false,
-                                requireInteraction: true
-                            });
-                        }
-                        if (navigator.vibrate) navigator.vibrate(200);
-                    }, delay);
-                }
-            } catch(e) {
-                console.error('Notification scheduling error:', e);
-            }
-        }
-        
         // ========== ГОЛОСОВОЙ ВВОД ==========
         function setupVoiceInput() {
             const voiceBtn = document.getElementById('voiceBtn');
-            
             if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
                 voiceBtn.style.display = 'none';
                 return;
@@ -1459,19 +1343,16 @@
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             const recognition = new SpeechRecognition();
             recognition.lang = 'ru-RU';
-            recognition.maxAlternatives = 1;
             
             voiceBtn.addEventListener('click', () => {
                 voiceBtn.textContent = '🎤 Слушаю...';
                 voiceBtn.disabled = true;
-                
                 recognition.start();
                 
                 recognition.onresult = (event) => {
                     const text = event.results[0][0].transcript;
-                    const safeText = text.substring(0, MAX_TITLE_LENGTH);
-                    document.getElementById('taskTitle').value = safeText;
-                    document.getElementById('taskDesc').value = safeText;
+                    document.getElementById('taskTitle').value = text;
+                    document.getElementById('taskDesc').value = text;
                     voiceBtn.textContent = '🎤 Надиктовать голосом';
                     voiceBtn.disabled = false;
                     showToast('Голос распознан');
@@ -1481,11 +1362,6 @@
                     voiceBtn.textContent = '🎤 Надиктовать голосом';
                     voiceBtn.disabled = false;
                     showToast('Не удалось распознать голос');
-                };
-                
-                recognition.onend = () => {
-                    voiceBtn.textContent = '🎤 Надиктовать голосом';
-                    voiceBtn.disabled = false;
                 };
             });
         }
@@ -1497,14 +1373,6 @@
             document.body.className = currentTheme;
             const themeToggle = document.getElementById('themeToggle');
             if (themeToggle) themeToggle.textContent = currentTheme === 'light' ? '🌙' : '☀️';
-            updateThemeColor();
-        }
-        
-        function updateThemeColor() {
-            const themeColor = document.getElementById('themeColor');
-            if (themeColor) {
-                themeColor.setAttribute('content', currentTheme === 'light' ? '#667eea' : '#1a1a2e');
-            }
         }
         
         function toggleTheme() {
@@ -1513,7 +1381,6 @@
             localStorage.setItem('theme', currentTheme);
             const themeToggle = document.getElementById('themeToggle');
             if (themeToggle) themeToggle.textContent = currentTheme === 'light' ? '🌙' : '☀️';
-            updateThemeColor();
             showToast(currentTheme === 'light' ? '☀️ Светлая тема' : '🌙 Темная тема');
         }
         
@@ -1532,7 +1399,7 @@
             if (taskId) {
                 const task = tasks.find(t => t.id === taskId);
                 if (task) {
-                    document.getElementById('modalTitle').textContent = 'Редактировать';
+                    document.getElementById('modalTitle').textContent = 'Редактировать запись';
                     document.getElementById('taskTitle').value = task.title;
                     document.getElementById('taskDesc').value = task.description || '';
                     document.getElementById('taskType').value = task.type;
@@ -1547,12 +1414,18 @@
                     if (task.reminderTime) {
                         document.getElementById('hasReminder').checked = true;
                         document.getElementById('reminderSettings').style.display = 'block';
-                        try {
-                            const reminderDate = new Date(task.reminderTime);
-                            if (!isNaN(reminderDate.getTime())) {
-                                document.getElementById('reminderTime').value = reminderDate.toISOString().slice(0, 16);
-                            }
-                        } catch(e) {}
+                        const localTime = convertUTCToLocal(task.reminderTime);
+                        if (localTime) {
+                            document.getElementById('reminderTime').value = localTime;
+                        }
+                        if (task.isRecurring) {
+                            document.getElementById('isRecurring').checked = true;
+                            document.getElementById('recurringSettings').style.display = 'block';
+                            selectedRecurringInterval = task.recurringInterval || 'daily';
+                            document.querySelectorAll('[data-interval]').forEach(btn => {
+                                btn.classList.toggle('active', btn.dataset.interval === selectedRecurringInterval);
+                            });
+                        }
                     }
                 }
             } else {
@@ -1560,6 +1433,7 @@
                 clearModalForm();
             }
             document.getElementById('taskModal').classList.add('show');
+            updateTimezoneInfo();
         }
         
         function closeModal() {
@@ -1569,7 +1443,6 @@
         
         // ========== НАСТРОЙКА ОБРАБОТЧИКОВ ==========
         function setupEventListeners() {
-            // Поиск
             const searchInput = document.getElementById('smartSearchInput');
             if (searchInput) {
                 searchInput.addEventListener('input', (e) => {
@@ -1578,7 +1451,6 @@
                 });
             }
             
-            // Фильтры поиска
             document.querySelectorAll('.search-filter-chip').forEach(chip => {
                 chip.addEventListener('click', () => {
                     document.querySelectorAll('.search-filter-chip').forEach(c => c.classList.remove('active'));
@@ -1588,7 +1460,6 @@
                 });
             });
             
-            // Фильтры типов
             document.querySelectorAll('.filter-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -1598,7 +1469,6 @@
                 });
             });
             
-            // Статистика как фильтр
             document.querySelectorAll('.stat-card').forEach(card => {
                 card.addEventListener('click', () => {
                     const filter = card.dataset.filter;
@@ -1612,23 +1482,12 @@
                 });
             });
             
-            // Кнопки
-            const fabBtn = document.getElementById('fabBtn');
-            if (fabBtn) fabBtn.addEventListener('click', () => openModal());
+            document.getElementById('fabBtn').addEventListener('click', () => openModal());
+            document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+            document.getElementById('statsToggle').addEventListener('click', toggleCharts);
+            document.getElementById('cancelModalBtn').addEventListener('click', closeModal);
+            document.getElementById('saveTaskBtn').addEventListener('click', saveTaskToStorage);
             
-            const themeToggle = document.getElementById('themeToggle');
-            if (themeToggle) themeToggle.addEventListener('click', toggleTheme);
-            
-            const statsToggle = document.getElementById('statsToggle');
-            if (statsToggle) statsToggle.addEventListener('click', toggleCharts);
-            
-            const cancelModalBtn = document.getElementById('cancelModalBtn');
-            if (cancelModalBtn) cancelModalBtn.addEventListener('click', closeModal);
-            
-            const saveTaskBtn = document.getElementById('saveTaskBtn');
-            if (saveTaskBtn) saveTaskBtn.addEventListener('click', saveTaskToStorage);
-            
-            // Приоритеты
             document.querySelectorAll('[data-priority]').forEach(btn => {
                 btn.addEventListener('click', () => {
                     document.querySelectorAll('[data-priority]').forEach(b => b.classList.remove('active'));
@@ -1637,7 +1496,6 @@
                 });
             });
             
-            // Напоминания
             const hasReminder = document.getElementById('hasReminder');
             if (hasReminder) {
                 hasReminder.addEventListener('change', (e) => {
@@ -1646,7 +1504,7 @@
                     if (e.target.checked && !document.getElementById('reminderTime').value) {
                         const defaultDate = new Date();
                         defaultDate.setHours(defaultDate.getHours() + 1);
-                        document.getElementById('reminderTime').value = defaultDate.toISOString().slice(0, 16);
+                        document.getElementById('reminderTime').value = getLocalDateTimeString(defaultDate);
                     }
                 });
             }
@@ -1659,7 +1517,6 @@
                 });
             }
             
-            // Интервалы повторения
             document.querySelectorAll('[data-interval]').forEach(btn => {
                 btn.addEventListener('click', () => {
                     document.querySelectorAll('[data-interval]').forEach(b => b.classList.remove('active'));
@@ -1669,22 +1526,14 @@
             });
         }
         
-        // ========== SERVICE WORKER ==========
         function registerServiceWorker() {
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('/task-reminder-app/sw.js')
-                    .then(reg => console.log('Service Worker registered:', reg))
-                    .catch(err => console.log('Service Worker error:', err));
+                    .then(reg => console.log('SW registered'))
+                    .catch(err => console.log('SW error:', err));
             }
         }
         
-        function requestNotificationPermission() {
-            if (Notification.permission === 'default') {
-                Notification.requestPermission();
-            }
-        }
-        
-        // ========== ИНИЦИАЛИЗАЦИЯ ==========
         function init() {
             loadTheme();
             loadTasks();
@@ -1692,9 +1541,13 @@
             setupVoiceInput();
             registerServiceWorker();
             requestNotificationPermission();
+            setInterval(updateTimezoneInfo, 60000);
+            setInterval(() => {
+                updateWidget();
+                if (showCharts) updateCharts();
+            }, 30000);
         }
         
-        // Запуск
         init();
     </script>
 </body>
