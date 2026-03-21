@@ -9,7 +9,7 @@
     <meta name="application-name" content="SmartTasks Pro">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#667eea" id="themeColor">
-    
+
     <link rel="manifest" href="/task-reminder-app/manifest.json">
     <link rel="apple-touch-icon" href="/task-reminder-app/icon.png">
     <title>SmartTasks Pro - Умные заметки</title>
@@ -612,6 +612,19 @@
             padding: 5px;
         }
         
+        .notif-status {
+            font-size: 11px;
+            text-align: center;
+            padding: 4px 10px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: inline-block;
+        }
+        
+        .notif-status.granted { background: #e8f5e9; color: #4caf50; }
+        .notif-status.denied { background: #ffebee; color: #c62828; }
+        .notif-status.default { background: #fff3e0; color: #ff9800; cursor: pointer; }
+        
         @media (max-width: 480px) {
             body {
                 padding: 15px;
@@ -627,8 +640,8 @@
 <body class="light">
     <div class="header">
         <div>
-            <h1>🇷🇺 SmartTasks Pro</h1>
-            <p>Умные заметки с напоминаниями (МСК)</p>
+            <h1>🔒 SmartTasks Pro</h1>
+            <p>Умные заметки с напоминаниями</p>
         </div>
         <div class="header-controls">
             <button class="theme-btn" id="themeToggle" aria-label="Переключить тему">🌙</button>
@@ -702,6 +715,10 @@
         <div class="modal-content">
             <div class="modal-header" id="modalTitle">Новая запись</div>
             
+            <div style="text-align: center; margin-bottom: 10px;">
+                <span class="notif-status" id="notifStatus">...</span>
+            </div>
+            
             <button class="task-btn" id="voiceBtn" style="width: 100%; margin-bottom: 15px; background: #ff9800; color: white;">🎤 Надиктовать голосом</button>
             
             <div class="input-group">
@@ -748,7 +765,7 @@
             
             <div id="reminderSettings" style="display: none;">
                 <div class="input-group">
-                    <label>Дата и время (Московское время UTC+3)</label>
+                    <label>Дата и время (МСК, UTC+3)</label>
                     <input type="datetime-local" id="reminderTime">
                 </div>
                 
@@ -782,56 +799,8 @@
         const MAX_TAGS_COUNT = 10;
         const MAX_CATEGORY_LENGTH = 50;
         
-        // ========== ЧАСОВОЙ ПОЯС МОСКВА (UTC+3) ==========
-        const MSK_OFFSET = 3; // Москва UTC+3
-        
-        // Получить текущее московское время
-        function getMoscowTime(date = new Date()) {
-            return new Date(date.getTime() + MSK_OFFSET * 60 * 60 * 1000);
-        }
-        
-        // Преобразовать дату в строку для input datetime-local (московское время)
-        function getMoscowDateTimeString(date) {
-            const moscowDate = getMoscowTime(date);
-            const year = moscowDate.getFullYear();
-            const month = String(moscowDate.getMonth() + 1).padStart(2, '0');
-            const day = String(moscowDate.getDate()).padStart(2, '0');
-            const hours = String(moscowDate.getHours()).padStart(2, '0');
-            const minutes = String(moscowDate.getMinutes()).padStart(2, '0');
-            return `${year}-${month}-${day}T${hours}:${minutes}`;
-        }
-        
-        // Преобразовать локальное (московское) время в UTC для хранения
-        function moscowToUTC(localDateTime) {
-            if (!localDateTime) return null;
-            const [datePart, timePart] = localDateTime.split('T');
-            const [year, month, day] = datePart.split('-');
-            const [hours, minutes] = timePart.split(':');
-            // Создаем дату в московском времени и вычитаем 3 часа для UTC
-            const moscowDate = new Date(Date.UTC(year, month - 1, day, hours - MSK_OFFSET, minutes));
-            return moscowDate.toISOString();
-        }
-        
-        // Преобразовать UTC в московское время для отображения
-        function utcToMoscow(utcString) {
-            if (!utcString) return null;
-            const utcDate = new Date(utcString);
-            const moscowDate = new Date(utcDate.getTime() + MSK_OFFSET * 60 * 60 * 1000);
-            return moscowDate;
-        }
-        
-        // Форматировать дату для отображения (московское время)
-        function formatMoscowDate(dateString) {
-            if (!dateString) return '';
-            try {
-                const utcDate = new Date(dateString);
-                if (isNaN(utcDate.getTime())) return '';
-                const moscowDate = new Date(utcDate.getTime() + MSK_OFFSET * 60 * 60 * 1000);
-                return `${moscowDate.toLocaleDateString('ru-RU')} ${moscowDate.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`;
-            } catch(e) {
-                return '';
-            }
-        }
+        // Москва UTC+3 — фиксированный офсет в минутах
+        const MSK_OFFSET_MINUTES = 3 * 60; // 180 минут
         
         // ========== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ==========
         let tasks = [];
@@ -862,6 +831,89 @@
             if (lastDigit === 1) return one;
             if (lastDigit >= 2 && lastDigit <= 4) return few;
             return many;
+        }
+        
+        // ========== РАБОТА С ВРЕМЕНЕМ МСК ==========
+        
+        /**
+         * Возвращает текущее время МСК в виде строки для datetime-local input
+         * МСК = UTC+3, не зависит от часового пояса браузера
+         */
+        function getMskNow() {
+            const now = new Date();
+            // UTC время + 3 часа = МСК
+            const mskMs = now.getTime() + MSK_OFFSET_MINUTES * 60 * 1000;
+            return new Date(mskMs);
+        }
+        
+        /**
+         * Форматирует Date объект для datetime-local input (YYYY-MM-DDTHH:MM)
+         */
+        function formatForDatetimeLocal(date) {
+            const year = date.getUTCFullYear();
+            const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+            const day = String(date.getUTCDate()).padStart(2, '0');
+            const hours = String(date.getUTCHours()).padStart(2, '0');
+            const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+            return `${year}-${month}-${day}T${hours}:${minutes}`;
+        }
+        
+        /**
+         * Конвертирует значение datetime-local (введённое как МСК) в UTC ISO строку
+         * Пользователь вводит МСК -> мы вычитаем 3 часа -> получаем UTC
+         */
+        function mskInputToUtc(mskDatetimeLocalValue) {
+            if (!mskDatetimeLocalValue) return null;
+            // datetime-local возвращает "YYYY-MM-DDTHH:MM" без timezone
+            // Трактуем как МСК (UTC+3), конвертируем в UTC
+            const mskDate = new Date(mskDatetimeLocalValue + ':00'); // добавляем секунды
+            // new Date без timezone интерпретирует как локальное время браузера
+            // Чтобы избежать этого, парсим вручную
+            const [datePart, timePart] = mskDatetimeLocalValue.split('T');
+            const [year, month, day] = datePart.split('-').map(Number);
+            const [hours, minutes] = timePart.split(':').map(Number);
+            
+            // Создаём UTC дату из МСК: UTC = МСК - 3 часа
+            const utcDate = new Date(Date.UTC(year, month - 1, day, hours - 3, minutes, 0));
+            return utcDate.toISOString();
+        }
+        
+        /**
+         * Конвертирует UTC ISO строку в значение для datetime-local (в МСК)
+         * UTC -> МСК (+3 часа) -> строка для input
+         */
+        function utcToMskInput(utcString) {
+            if (!utcString) return '';
+            const utcDate = new Date(utcString);
+            if (isNaN(utcDate.getTime())) return '';
+            // Добавляем 3 часа для МСК
+            const mskMs = utcDate.getTime() + MSK_OFFSET_MINUTES * 60 * 1000;
+            const mskDate = new Date(mskMs);
+            return formatForDatetimeLocal(mskDate);
+        }
+        
+        /**
+         * Форматирует UTC строку для отображения в карточке (в МСК)
+         */
+        function formatDisplayDate(utcString) {
+            if (!utcString) return '';
+            try {
+                const utcDate = new Date(utcString);
+                if (isNaN(utcDate.getTime())) return '';
+                // Переводим в МСК
+                const mskMs = utcDate.getTime() + MSK_OFFSET_MINUTES * 60 * 1000;
+                const mskDate = new Date(mskMs);
+                
+                const day = String(mskDate.getUTCDate()).padStart(2, '0');
+                const month = String(mskDate.getUTCMonth() + 1).padStart(2, '0');
+                const year = mskDate.getUTCFullYear();
+                const hours = String(mskDate.getUTCHours()).padStart(2, '0');
+                const minutes = String(mskDate.getUTCMinutes()).padStart(2, '0');
+                
+                return `${day}.${month}.${year} ${hours}:${minutes} МСК`;
+            } catch(e) {
+                return '';
+            }
         }
         
         // ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
@@ -895,7 +947,7 @@
             toast.className = 'toast';
             toast.textContent = message;
             document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 2000);
+            setTimeout(() => toast.remove(), 2500);
         }
         
         // ========== УПРАВЛЕНИЕ ДАННЫМИ ==========
@@ -920,11 +972,6 @@
                 }
                 
                 if (!tasks || !tasks.length) {
-                    const now = new Date();
-                    const tomorrow = new Date(now);
-                    tomorrow.setDate(tomorrow.getDate() + 1);
-                    tomorrow.setHours(10, 0, 0, 0);
-                    
                     tasks = [
                         {
                             id: Date.now(),
@@ -936,7 +983,7 @@
                             tags: ['покупки', 'дом'],
                             completed: false,
                             createdAt: new Date().toISOString(),
-                            reminderTime: moscowToUTC(getMoscowDateTimeString(tomorrow)),
+                            reminderTime: null,
                             isRecurring: false,
                             recurringInterval: 'daily'
                         },
@@ -977,8 +1024,38 @@
         function updateTimezoneInfo() {
             const infoDiv = document.getElementById('timezoneInfo');
             if (infoDiv) {
-                const nowMoscow = getMoscowTime();
-                infoDiv.textContent = `🇷🇺 Московское время (UTC+3): ${nowMoscow.toLocaleString('ru-RU')}`;
+                const mskNow = getMskNow();
+                const hours = String(mskNow.getUTCHours()).padStart(2, '0');
+                const minutes = String(mskNow.getUTCMinutes()).padStart(2, '0');
+                const seconds = String(mskNow.getUTCSeconds()).padStart(2, '0');
+                infoDiv.textContent = `🕐 Московское время (UTC+3): ${hours}:${minutes}:${seconds}`;
+            }
+        }
+        
+        // ========== СТАТУС УВЕДОМЛЕНИЙ ==========
+        function updateNotifStatus() {
+            const el = document.getElementById('notifStatus');
+            if (!el) return;
+            if (!('Notification' in window)) {
+                el.textContent = '🔕 Уведомления не поддерживаются браузером';
+                el.className = 'notif-status denied';
+                return;
+            }
+            switch (Notification.permission) {
+                case 'granted':
+                    el.textContent = '🔔 Уведомления включены';
+                    el.className = 'notif-status granted';
+                    break;
+                case 'denied':
+                    el.textContent = '🔕 Уведомления заблокированы — разрешите в настройках браузера';
+                    el.className = 'notif-status denied';
+                    break;
+                default:
+                    el.textContent = '🔔 Нажмите, чтобы разрешить уведомления';
+                    el.className = 'notif-status default';
+                    el.onclick = () => {
+                        Notification.requestPermission().then(updateNotifStatus);
+                    };
             }
         }
         
@@ -996,15 +1073,17 @@
         }
         
         function updateWidget() {
-            const nowMoscow = getMoscowTime();
-            const todayStr = nowMoscow.toDateString();
+            // Сравниваем по дате МСК
+            const mskNow = getMskNow();
+            const todayMsk = `${mskNow.getUTCFullYear()}-${mskNow.getUTCMonth()}-${mskNow.getUTCDate()}`;
             
             const todayTasks = tasks.filter(t => {
                 if (t.completed) return false;
                 if (!t.reminderTime) return false;
                 try {
-                    const taskMoscow = utcToMoscow(t.reminderTime);
-                    return taskMoscow && taskMoscow.toDateString() === todayStr;
+                    const taskMsk = new Date(new Date(t.reminderTime).getTime() + MSK_OFFSET_MINUTES * 60 * 1000);
+                    const taskDay = `${taskMsk.getUTCFullYear()}-${taskMsk.getUTCMonth()}-${taskMsk.getUTCDate()}`;
+                    return taskDay === todayMsk;
                 } catch(e) {
                     return false;
                 }
@@ -1014,14 +1093,9 @@
             const widgetPreview = document.getElementById('widgetPreview');
             const count = todayTasks.length;
             
-            if (count > 0) {
-                const taskWord = pluralize(count, 'задача', 'задачи', 'задач');
-                widgetTasks.textContent = `${count} ${taskWord} на сегодня (МСК)`;
-                widgetPreview.classList.add('show');
-            } else {
-                widgetTasks.textContent = 'На сегодня задач нет';
-                widgetPreview.classList.add('show');
-            }
+            const taskWord = pluralize(count, 'задача', 'задачи', 'задач');
+            widgetTasks.textContent = count > 0 ? `${count} ${taskWord} на сегодня` : 'На сегодня задач нет';
+            widgetPreview.classList.add('show');
         }
         
         function updateCharts() {
@@ -1114,40 +1188,60 @@
         }
         
         // ========== НАПОМИНАНИЯ ==========
+        
+        /**
+         * ИСПРАВЛЕНО: показываем уведомление через Notification API напрямую,
+         * без Service Worker postMessage, т.к. push через SW требует серверной инфраструктуры.
+         * Используем setTimeout для точного срабатывания.
+         */
         function scheduleNotification(task) {
-            if (!task.reminderTime) return;
+            if (!task.reminderTime || task.completed) return;
             try {
-                const reminderMoscow = utcToMoscow(task.reminderTime);
-                const nowMoscow = getMoscowTime();
-                const delay = reminderMoscow - nowMoscow;
+                const reminderDate = new Date(task.reminderTime);
+                const now = new Date();
+                const delay = reminderDate.getTime() - now.getTime();
                 
-                if (delay > 0 && delay < 2147483647) {
-                    const timeoutId = setTimeout(() => {
-                        if (Notification.permission === 'granted') {
+                if (delay <= 0) return; // Время уже прошло
+                if (delay > 2147483647) return; // Слишком далеко (>24 дней), setTimeout не поддерживает
+                
+                const timeoutId = setTimeout(() => {
+                    // Показываем уведомление
+                    if (Notification.permission === 'granted') {
+                        try {
                             new Notification(`⏰ ${getTypeName(task.type)}: ${task.title}`, {
                                 body: task.description || 'Время выполнить задачу!',
                                 icon: '/task-reminder-app/icon.png',
-                                requireInteraction: true
+                                requireInteraction: true,
+                                tag: `task-${task.id}`
                             });
+                        } catch (notifErr) {
+                            console.error('Notification error:', notifErr);
                         }
-                        if (navigator.vibrate) navigator.vibrate([500, 300, 500]);
-                        
-                        if (task.isRecurring) {
-                            const nextMoscow = new Date(reminderMoscow);
+                    }
+                    
+                    if (navigator.vibrate) navigator.vibrate([500, 300, 500]);
+                    
+                    // Обработка повторяющихся задач
+                    if (task.isRecurring) {
+                        const taskIndex = tasks.findIndex(t => t.id === task.id);
+                        if (taskIndex !== -1) {
+                            const nextDate = new Date(reminderDate);
                             switch(task.recurringInterval) {
-                                case 'daily': nextMoscow.setDate(nextMoscow.getDate() + 1); break;
-                                case 'weekly': nextMoscow.setDate(nextMoscow.getDate() + 7); break;
-                                case 'monthly': nextMoscow.setMonth(nextMoscow.getMonth() + 1); break;
+                                case 'daily': nextDate.setDate(nextDate.getDate() + 1); break;
+                                case 'weekly': nextDate.setDate(nextDate.getDate() + 7); break;
+                                case 'monthly': nextDate.setMonth(nextDate.getMonth() + 1); break;
                             }
-                            task.reminderTime = moscowToUTC(getMoscowDateTimeString(nextMoscow));
+                            tasks[taskIndex].reminderTime = nextDate.toISOString();
                             saveTasks();
                         }
-                    }, delay);
-                    scheduledTimeouts.push(timeoutId);
-                    console.log(`⏰ Напоминание (МСК) установлено на ${reminderMoscow.toLocaleString('ru-RU')}`);
-                }
+                    }
+                }, delay);
+                
+                scheduledTimeouts.push(timeoutId);
+                const mskStr = formatDisplayDate(task.reminderTime);
+                console.log(`⏰ Напоминание «${task.title}» запланировано на ${mskStr} (через ${Math.round(delay/60000)} мин.)`);
             } catch(e) {
-                console.error('Notification error:', e);
+                console.error('scheduleNotification error:', e);
             }
         }
         
@@ -1161,10 +1255,15 @@
             });
         }
         
-        function requestNotificationPermission() {
-            if (Notification.permission === 'default') {
-                Notification.requestPermission();
+        async function requestNotificationPermission() {
+            if (!('Notification' in window)) {
+                console.log('Уведомления не поддерживаются');
+                return;
             }
+            if (Notification.permission === 'default') {
+                await Notification.requestPermission();
+            }
+            updateNotifStatus();
         }
         
         // ========== ОТОБРАЖЕНИЕ ЗАДАЧ ==========
@@ -1198,7 +1297,7 @@
                             <span class="task-type ${task.type}">${getTypeName(task.type)}</span>
                             <span class="priority ${task.priority || 'medium'}">${getPriorityName(task.priority)}</span>
                         </div>
-                        ${task.reminderTime ? `<span>⏰ ${formatMoscowDate(task.reminderTime)}</span>` : ''}
+                        ${task.reminderTime ? `<span style="font-size: 12px;">⏰ ${formatDisplayDate(task.reminderTime)}</span>` : ''}
                     </div>
                     <div class="task-title">${escapeHtml(task.title)}</div>
                     ${task.category ? `<div style="font-size: 11px; color: #667eea;">📁 ${escapeHtml(task.category)}</div>` : ''}
@@ -1263,20 +1362,26 @@
         }
         
         // ========== КАТЕГОРИИ ==========
+        // ИСПРАВЛЕНО: храним категории в массиве, сравниваем по индексу, избегаем проблем с escapeHtml
         function renderCategories() {
             const categories = [...new Set(tasks.map(t => t.category).filter(c => c))];
             const categoryBar = document.getElementById('categoryBar');
-            let html = '<button class="category-btn active" data-category="all">Все категории</button>';
-            categories.forEach(cat => {
-                html += `<button class="category-btn" data-category="${escapeHtml(cat)}">${escapeHtml(cat)}</button>`;
+            let html = `<button class="category-btn ${currentCategory === 'all' ? 'active' : ''}" data-category-index="-1">Все категории</button>`;
+            categories.forEach((cat, idx) => {
+                const isActive = currentCategory === cat ? 'active' : '';
+                html += `<button class="category-btn ${isActive}" data-category-index="${idx}">${escapeHtml(cat)}</button>`;
             });
             categoryBar.innerHTML = html;
+            
+            // Сохраняем массив категорий на элементе для обращения по индексу
+            categoryBar._categories = categories;
             
             document.querySelectorAll('.category-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
-                    currentCategory = btn.dataset.category;
+                    const idx = parseInt(btn.dataset.categoryIndex);
+                    currentCategory = idx === -1 ? 'all' : categoryBar._categories[idx];
                     renderTasks();
                 });
             });
@@ -1287,18 +1392,25 @@
             const title = document.getElementById('taskTitle').value.trim();
             if (!title) {
                 showToast('Введите название задачи');
+                document.getElementById('taskTitle').focus();
                 return;
             }
             
-            const tagsInput = document.getElementById('taskTags').value;
-            const tags = tagsInput ? tagsInput.split(',').map(t => t.trim()).filter(t => t) : [];
+            const tagsRaw = document.getElementById('taskTags').value;
+            const tags = tagsRaw
+                ? tagsRaw.split(',')
+                    .map(t => t.trim())
+                    .filter(t => t)
+                    .slice(0, MAX_TAGS_COUNT)
+                    .map(t => t.substring(0, MAX_TAG_LENGTH))
+                : [];
             
             const taskData = {
                 id: editingTaskId || Date.now(),
-                title: title,
-                description: document.getElementById('taskDesc').value,
+                title: title.substring(0, MAX_TITLE_LENGTH),
+                description: (document.getElementById('taskDesc').value || '').substring(0, MAX_DESCRIPTION_LENGTH),
                 type: document.getElementById('taskType').value,
-                category: document.getElementById('taskCategory').value,
+                category: (document.getElementById('taskCategory').value || '').substring(0, MAX_CATEGORY_LENGTH).trim(),
                 priority: selectedPriority,
                 tags: tags,
                 completed: false,
@@ -1309,10 +1421,12 @@
             };
             
             if (document.getElementById('hasReminder').checked) {
-                const reminderTimeLocal = document.getElementById('reminderTime').value;
-                if (reminderTimeLocal) {
-                    taskData.reminderTime = moscowToUTC(reminderTimeLocal);
+                const reminderTimeInput = document.getElementById('reminderTime').value;
+                if (reminderTimeInput) {
+                    // ИСПРАВЛЕНО: корректная конвертация МСК → UTC
+                    taskData.reminderTime = mskInputToUtc(reminderTimeInput);
                     taskData.isRecurring = document.getElementById('isRecurring').checked;
+                    taskData.recurringInterval = selectedRecurringInterval;
                 }
             }
             
@@ -1332,6 +1446,7 @@
             
             saveTasks();
             renderTasks();
+            renderCategories();
             closeModal();
             clearModalForm();
         }
@@ -1348,8 +1463,12 @@
             document.getElementById('isRecurring').checked = false;
             document.getElementById('recurringSettings').style.display = 'none';
             selectedPriority = 'high';
+            selectedRecurringInterval = 'daily';
             document.querySelectorAll('[data-priority]').forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.priority === 'high');
+            });
+            document.querySelectorAll('[data-interval]').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.interval === 'daily');
             });
         }
         
@@ -1364,25 +1483,38 @@
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             const recognition = new SpeechRecognition();
             recognition.lang = 'ru-RU';
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
             
             voiceBtn.addEventListener('click', () => {
                 voiceBtn.textContent = '🎤 Слушаю...';
                 voiceBtn.disabled = true;
-                recognition.start();
+                try {
+                    recognition.start();
+                } catch(e) {
+                    voiceBtn.textContent = '🎤 Надиктовать голосом';
+                    voiceBtn.disabled = false;
+                    showToast('Не удалось запустить микрофон');
+                }
                 
                 recognition.onresult = (event) => {
                     const text = event.results[0][0].transcript;
-                    document.getElementById('taskTitle').value = text;
-                    document.getElementById('taskDesc').value = text;
+                    document.getElementById('taskTitle').value = text.substring(0, MAX_TITLE_LENGTH);
                     voiceBtn.textContent = '🎤 Надиктовать голосом';
                     voiceBtn.disabled = false;
-                    showToast('Голос распознан');
+                    showToast('✅ Голос распознан: ' + text.substring(0, 30));
                 };
                 
-                recognition.onerror = () => {
+                recognition.onerror = (e) => {
+                    console.error('Speech error:', e.error);
                     voiceBtn.textContent = '🎤 Надиктовать голосом';
                     voiceBtn.disabled = false;
-                    showToast('Не удалось распознать голос');
+                    showToast('Не удалось распознать голос: ' + e.error);
+                };
+                
+                recognition.onend = () => {
+                    voiceBtn.textContent = '🎤 Надиктовать голосом';
+                    voiceBtn.disabled = false;
                 };
             });
         }
@@ -1417,6 +1549,8 @@
         // ========== МОДАЛЬНЫЕ ОКНА ==========
         function openModal(taskId = null) {
             editingTaskId = taskId;
+            updateNotifStatus();
+            
             if (taskId) {
                 const task = tasks.find(t => t.id === taskId);
                 if (task) {
@@ -1435,9 +1569,10 @@
                     if (task.reminderTime) {
                         document.getElementById('hasReminder').checked = true;
                         document.getElementById('reminderSettings').style.display = 'block';
-                        const moscowDate = utcToMoscow(task.reminderTime);
-                        if (moscowDate) {
-                            document.getElementById('reminderTime').value = getMoscowDateTimeString(moscowDate);
+                        // ИСПРАВЛЕНО: конвертируем UTC → МСК для отображения
+                        const mskInput = utcToMskInput(task.reminderTime);
+                        if (mskInput) {
+                            document.getElementById('reminderTime').value = mskInput;
                         }
                         if (task.isRecurring) {
                             document.getElementById('isRecurring').checked = true;
@@ -1509,6 +1644,11 @@
             document.getElementById('cancelModalBtn').addEventListener('click', closeModal);
             document.getElementById('saveTaskBtn').addEventListener('click', saveTaskToStorage);
             
+            // Закрытие модалки по клику на фон
+            document.getElementById('taskModal').addEventListener('click', (e) => {
+                if (e.target === document.getElementById('taskModal')) closeModal();
+            });
+            
             document.querySelectorAll('[data-priority]').forEach(btn => {
                 btn.addEventListener('click', () => {
                     document.querySelectorAll('[data-priority]').forEach(b => b.classList.remove('active'));
@@ -1523,9 +1663,10 @@
                     const reminderSettings = document.getElementById('reminderSettings');
                     reminderSettings.style.display = e.target.checked ? 'block' : 'none';
                     if (e.target.checked && !document.getElementById('reminderTime').value) {
-                        const defaultDate = getMoscowTime();
-                        defaultDate.setHours(defaultDate.getHours() + 1);
-                        document.getElementById('reminderTime').value = getMoscowDateTimeString(defaultDate);
+                        // ИСПРАВЛЕНО: подставляем текущее МСК время + 1 час
+                        const mskPlus1h = getMskNow();
+                        mskPlus1h.setUTCHours(mskPlus1h.getUTCHours() + 1);
+                        document.getElementById('reminderTime').value = formatForDatetimeLocal(mskPlus1h);
                     }
                 });
             }
@@ -1548,11 +1689,14 @@
         }
         
         function registerServiceWorker() {
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('/task-reminder-app/sw.js')
-                    .then(reg => console.log('SW registered'))
-                    .catch(err => console.log('SW error:', err));
-            }
+            if (!('serviceWorker' in navigator)) return;
+            // SW работает только на собственном домене (не на preview-доменах типа claudeusercontent.com)
+            const swUrl = '/task-reminder-app/sw.js';
+            navigator.serviceWorker.register(swUrl)
+                .then(reg => console.log('✅ SW зарегистрирован:', reg.scope))
+                .catch(() => {
+                    // Тихо игнорируем — SW недоступен на этом домене, уведомления работают через Notification API
+                });
         }
         
         function init() {
@@ -1562,7 +1706,11 @@
             setupVoiceInput();
             registerServiceWorker();
             requestNotificationPermission();
-            setInterval(updateTimezoneInfo, 60000);
+            
+            // Обновляем время каждую секунду
+            setInterval(updateTimezoneInfo, 1000);
+            
+            // Обновляем виджет и графики
             setInterval(() => {
                 updateWidget();
                 if (showCharts) updateCharts();
