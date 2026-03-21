@@ -9,8 +9,7 @@
     <meta name="application-name" content="SmartTasks Pro">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#667eea" id="themeColor">
-
-  
+    
     <link rel="manifest" href="/task-reminder-app/manifest.json">
     <link rel="apple-touch-icon" href="/task-reminder-app/icon.png">
     <title>SmartTasks Pro - Умные заметки</title>
@@ -628,8 +627,8 @@
 <body class="light">
     <div class="header">
         <div>
-            <h1>🔒 SmartTasks Pro</h1>
-            <p>Умные заметки с напоминаниями</p>
+            <h1>🇷🇺 SmartTasks Pro</h1>
+            <p>Умные заметки с напоминаниями (МСК)</p>
         </div>
         <div class="header-controls">
             <button class="theme-btn" id="themeToggle" aria-label="Переключить тему">🌙</button>
@@ -749,7 +748,7 @@
             
             <div id="reminderSettings" style="display: none;">
                 <div class="input-group">
-                    <label>Дата и время (ваш часовой пояс)</label>
+                    <label>Дата и время (Московское время UTC+3)</label>
                     <input type="datetime-local" id="reminderTime">
                 </div>
                 
@@ -783,6 +782,57 @@
         const MAX_TAGS_COUNT = 10;
         const MAX_CATEGORY_LENGTH = 50;
         
+        // ========== ЧАСОВОЙ ПОЯС МОСКВА (UTC+3) ==========
+        const MSK_OFFSET = 3; // Москва UTC+3
+        
+        // Получить текущее московское время
+        function getMoscowTime(date = new Date()) {
+            return new Date(date.getTime() + MSK_OFFSET * 60 * 60 * 1000);
+        }
+        
+        // Преобразовать дату в строку для input datetime-local (московское время)
+        function getMoscowDateTimeString(date) {
+            const moscowDate = getMoscowTime(date);
+            const year = moscowDate.getFullYear();
+            const month = String(moscowDate.getMonth() + 1).padStart(2, '0');
+            const day = String(moscowDate.getDate()).padStart(2, '0');
+            const hours = String(moscowDate.getHours()).padStart(2, '0');
+            const minutes = String(moscowDate.getMinutes()).padStart(2, '0');
+            return `${year}-${month}-${day}T${hours}:${minutes}`;
+        }
+        
+        // Преобразовать локальное (московское) время в UTC для хранения
+        function moscowToUTC(localDateTime) {
+            if (!localDateTime) return null;
+            const [datePart, timePart] = localDateTime.split('T');
+            const [year, month, day] = datePart.split('-');
+            const [hours, minutes] = timePart.split(':');
+            // Создаем дату в московском времени и вычитаем 3 часа для UTC
+            const moscowDate = new Date(Date.UTC(year, month - 1, day, hours - MSK_OFFSET, minutes));
+            return moscowDate.toISOString();
+        }
+        
+        // Преобразовать UTC в московское время для отображения
+        function utcToMoscow(utcString) {
+            if (!utcString) return null;
+            const utcDate = new Date(utcString);
+            const moscowDate = new Date(utcDate.getTime() + MSK_OFFSET * 60 * 60 * 1000);
+            return moscowDate;
+        }
+        
+        // Форматировать дату для отображения (московское время)
+        function formatMoscowDate(dateString) {
+            if (!dateString) return '';
+            try {
+                const utcDate = new Date(dateString);
+                if (isNaN(utcDate.getTime())) return '';
+                const moscowDate = new Date(utcDate.getTime() + MSK_OFFSET * 60 * 60 * 1000);
+                return `${moscowDate.toLocaleDateString('ru-RU')} ${moscowDate.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`;
+            } catch(e) {
+                return '';
+            }
+        }
+        
         // ========== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ==========
         let tasks = [];
         let currentFilter = 'all';
@@ -812,43 +862,6 @@
             if (lastDigit === 1) return one;
             if (lastDigit >= 2 && lastDigit <= 4) return few;
             return many;
-        }
-        
-        // ========== РАБОТА С ЧАСОВЫМИ ПОЯСАМИ ==========
-        function getLocalDateTimeString(date) {
-            if (!date) return '';
-            const d = new Date(date);
-            const year = d.getFullYear();
-            const month = String(d.getMonth() + 1).padStart(2, '0');
-            const day = String(d.getDate()).padStart(2, '0');
-            const hours = String(d.getHours()).padStart(2, '0');
-            const minutes = String(d.getMinutes()).padStart(2, '0');
-            return `${year}-${month}-${day}T${hours}:${minutes}`;
-        }
-        
-        function convertLocalToUTC(localDateTime) {
-            if (!localDateTime) return null;
-            const localDate = new Date(localDateTime);
-            const utcDate = new Date(localDate.getTime() - localDate.getTimezoneOffset() * 60000);
-            return utcDate.toISOString();
-        }
-        
-        function convertUTCToLocal(utcString) {
-            if (!utcString) return null;
-            const utcDate = new Date(utcString);
-            const localDate = new Date(utcDate.getTime() + utcDate.getTimezoneOffset() * 60000);
-            return getLocalDateTimeString(localDate);
-        }
-        
-        function formatDisplayDate(dateString) {
-            if (!dateString) return '';
-            try {
-                const date = new Date(dateString);
-                if (isNaN(date.getTime())) return '';
-                return `${date.toLocaleDateString()} ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-            } catch(e) {
-                return '';
-            }
         }
         
         // ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
@@ -907,6 +920,11 @@
                 }
                 
                 if (!tasks || !tasks.length) {
+                    const now = new Date();
+                    const tomorrow = new Date(now);
+                    tomorrow.setDate(tomorrow.getDate() + 1);
+                    tomorrow.setHours(10, 0, 0, 0);
+                    
                     tasks = [
                         {
                             id: Date.now(),
@@ -918,7 +936,7 @@
                             tags: ['покупки', 'дом'],
                             completed: false,
                             createdAt: new Date().toISOString(),
-                            reminderTime: null,
+                            reminderTime: moscowToUTC(getMoscowDateTimeString(tomorrow)),
                             isRecurring: false,
                             recurringInterval: 'daily'
                         },
@@ -959,9 +977,8 @@
         function updateTimezoneInfo() {
             const infoDiv = document.getElementById('timezoneInfo');
             if (infoDiv) {
-                const now = new Date();
-                const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-                infoDiv.textContent = `⏰ Ваш часовой пояс: ${timezone} | Текущее время: ${now.toLocaleTimeString()}`;
+                const nowMoscow = getMoscowTime();
+                infoDiv.textContent = `🇷🇺 Московское время (UTC+3): ${nowMoscow.toLocaleString('ru-RU')}`;
             }
         }
         
@@ -979,12 +996,15 @@
         }
         
         function updateWidget() {
-            const today = new Date().toDateString();
+            const nowMoscow = getMoscowTime();
+            const todayStr = nowMoscow.toDateString();
+            
             const todayTasks = tasks.filter(t => {
                 if (t.completed) return false;
                 if (!t.reminderTime) return false;
                 try {
-                    return new Date(t.reminderTime).toDateString() === today;
+                    const taskMoscow = utcToMoscow(t.reminderTime);
+                    return taskMoscow && taskMoscow.toDateString() === todayStr;
                 } catch(e) {
                     return false;
                 }
@@ -996,7 +1016,7 @@
             
             if (count > 0) {
                 const taskWord = pluralize(count, 'задача', 'задачи', 'задач');
-                widgetTasks.textContent = `${count} ${taskWord} на сегодня`;
+                widgetTasks.textContent = `${count} ${taskWord} на сегодня (МСК)`;
                 widgetPreview.classList.add('show');
             } else {
                 widgetTasks.textContent = 'На сегодня задач нет';
@@ -1097,9 +1117,9 @@
         function scheduleNotification(task) {
             if (!task.reminderTime) return;
             try {
-                const reminderDate = new Date(task.reminderTime);
-                const now = new Date();
-                const delay = reminderDate - now;
+                const reminderMoscow = utcToMoscow(task.reminderTime);
+                const nowMoscow = getMoscowTime();
+                const delay = reminderMoscow - nowMoscow;
                 
                 if (delay > 0 && delay < 2147483647) {
                     const timeoutId = setTimeout(() => {
@@ -1113,18 +1133,18 @@
                         if (navigator.vibrate) navigator.vibrate([500, 300, 500]);
                         
                         if (task.isRecurring) {
-                            const nextDate = new Date(reminderDate);
+                            const nextMoscow = new Date(reminderMoscow);
                             switch(task.recurringInterval) {
-                                case 'daily': nextDate.setDate(nextDate.getDate() + 1); break;
-                                case 'weekly': nextDate.setDate(nextDate.getDate() + 7); break;
-                                case 'monthly': nextDate.setMonth(nextDate.getMonth() + 1); break;
+                                case 'daily': nextMoscow.setDate(nextMoscow.getDate() + 1); break;
+                                case 'weekly': nextMoscow.setDate(nextMoscow.getDate() + 7); break;
+                                case 'monthly': nextMoscow.setMonth(nextMoscow.getMonth() + 1); break;
                             }
-                            task.reminderTime = nextDate.toISOString();
+                            task.reminderTime = moscowToUTC(getMoscowDateTimeString(nextMoscow));
                             saveTasks();
                         }
                     }, delay);
                     scheduledTimeouts.push(timeoutId);
-                    console.log(`⏰ Напоминание установлено на ${reminderDate.toLocaleString()}`);
+                    console.log(`⏰ Напоминание (МСК) установлено на ${reminderMoscow.toLocaleString('ru-RU')}`);
                 }
             } catch(e) {
                 console.error('Notification error:', e);
@@ -1178,7 +1198,7 @@
                             <span class="task-type ${task.type}">${getTypeName(task.type)}</span>
                             <span class="priority ${task.priority || 'medium'}">${getPriorityName(task.priority)}</span>
                         </div>
-                        ${task.reminderTime ? `<span>⏰ ${formatDisplayDate(task.reminderTime)}</span>` : ''}
+                        ${task.reminderTime ? `<span>⏰ ${formatMoscowDate(task.reminderTime)}</span>` : ''}
                     </div>
                     <div class="task-title">${escapeHtml(task.title)}</div>
                     ${task.category ? `<div style="font-size: 11px; color: #667eea;">📁 ${escapeHtml(task.category)}</div>` : ''}
@@ -1291,7 +1311,7 @@
             if (document.getElementById('hasReminder').checked) {
                 const reminderTimeLocal = document.getElementById('reminderTime').value;
                 if (reminderTimeLocal) {
-                    taskData.reminderTime = convertLocalToUTC(reminderTimeLocal);
+                    taskData.reminderTime = moscowToUTC(reminderTimeLocal);
                     taskData.isRecurring = document.getElementById('isRecurring').checked;
                 }
             }
@@ -1415,9 +1435,9 @@
                     if (task.reminderTime) {
                         document.getElementById('hasReminder').checked = true;
                         document.getElementById('reminderSettings').style.display = 'block';
-                        const localTime = convertUTCToLocal(task.reminderTime);
-                        if (localTime) {
-                            document.getElementById('reminderTime').value = localTime;
+                        const moscowDate = utcToMoscow(task.reminderTime);
+                        if (moscowDate) {
+                            document.getElementById('reminderTime').value = getMoscowDateTimeString(moscowDate);
                         }
                         if (task.isRecurring) {
                             document.getElementById('isRecurring').checked = true;
@@ -1503,9 +1523,9 @@
                     const reminderSettings = document.getElementById('reminderSettings');
                     reminderSettings.style.display = e.target.checked ? 'block' : 'none';
                     if (e.target.checked && !document.getElementById('reminderTime').value) {
-                        const defaultDate = new Date();
+                        const defaultDate = getMoscowTime();
                         defaultDate.setHours(defaultDate.getHours() + 1);
-                        document.getElementById('reminderTime').value = getLocalDateTimeString(defaultDate);
+                        document.getElementById('reminderTime').value = getMoscowDateTimeString(defaultDate);
                     }
                 });
             }
