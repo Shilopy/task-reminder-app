@@ -1282,30 +1282,53 @@
             });
         }
         
+        // ========== УПРАВЛЕНИЕ ЗАДАЧАМИ (ИСПРАВЛЕНО) ==========
         function openTaskDetail(taskId) {
-            const task = tasks.find(t => t.id === taskId);
+            // Преобразуем строковый ID в число для правильного сравнения
+            const idToFind = Number(taskId);
+            const task = tasks.find(t => t.id === idToFind);
             if (task) {
                 const message = `📝 ${task.title}\n\n${task.description || 'Нет описания'}\n\n📁 Категория: ${task.category || 'Нет'}\n🏷️ Теги: ${task.tags?.join(', ') || 'Нет'}\n⭐ Приоритет: ${getPriorityName(task.priority)}`;
                 alert(message);
+            } else {
+                showToast('Ошибка: задача не найдена');
             }
         }
         
         function toggleComplete(taskId) {
-            const task = tasks.find(t => t.id === taskId);
+            // Преобразуем строковый ID в число для правильного сравнения
+            const idToToggle = Number(taskId);
+            const task = tasks.find(t => t.id === idToToggle);
             if (task) {
                 task.completed = !task.completed;
                 saveTasks();
                 renderTasks();
                 showToast(task.completed ? '✅ Задача выполнена! +10 очков' : '🔄 Задача возвращена');
+            } else {
+                showToast('Ошибка: задача не найдена');
             }
         }
         
         function deleteTask(taskId) {
-            if (confirm('Удалить задачу?')) {
-                tasks = tasks.filter(t => t.id !== taskId);
-                saveTasks();
-                renderTasks();
-                showToast('🗑️ Задача удалена');
+            if (confirm('Удалить задачу? Это действие нельзя отменить')) {
+                // Преобразуем строковый ID в число для правильного сравнения
+                const idToDelete = Number(taskId);
+                const taskToDelete = tasks.find(t => t.id === idToDelete);
+                
+                if (taskToDelete) {
+                    const originalLength = tasks.length;
+                    tasks = tasks.filter(t => t.id !== idToDelete);
+                    
+                    if (tasks.length < originalLength) {
+                        saveTasks();
+                        renderTasks();
+                        showToast('🗑️ Задача "' + escapeHtml(taskToDelete.title.substring(0, 50)) + '" удалена');
+                    } else {
+                        showToast('Ошибка: задача не найдена');
+                    }
+                } else {
+                    showToast('Ошибка: задача не найдена');
+                }
             }
         }
         
