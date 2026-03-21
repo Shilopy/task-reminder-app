@@ -3,6 +3,7 @@
   "short_name": "Задачи Pro",
   "description": "Умные заметки с аналитикой, графиками и виджетами",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#667eea",
   "theme_color": "#667eea",
