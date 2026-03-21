@@ -813,7 +813,7 @@
         let selectedRecurringInterval = 'daily';
         let currentTheme = 'light';
         let showCharts = false;
-        let scheduledTimeouts = [];
+        let alarmCheckInterval = null;
         
         // ========== БЕЗОПАСНОЕ ЭКРАНИРОВАНИЕ ==========
         function escapeHtml(text) {
@@ -1187,84 +1187,245 @@
             });
         }
         
-        // ========== НАПОМИНАНИЯ ==========
+        // ========== БУДИЛЬНИК ==========
+        // Используем polling (setInterval каждую секунду) вместо setTimeout —
+        // setTimeout ненадёжен: браузер throttle-ит его когда вкладка неактивна.
+        // Polling работает стабильнее для коротких интервалов.
         
-        /**
-         * ИСПРАВЛЕНО: показываем уведомление через Notification API напрямую,
-         * без Service Worker postMessage, т.к. push через SW требует серверной инфраструктуры.
-         * Используем setTimeout для точного срабатывания.
-         */
-        function scheduleNotification(task) {
-            if (!task.reminderTime || task.completed) return;
+        let alarmAudioCtx = null;
+        let alarmOscillators = [];
+        let firedAlarms = new Set(); // id задач, по которым уже сработал будильник в этой сессии
+        
+        function getAlarmAudioCtx() {
+            if (!alarmAudioCtx) {
+                alarmAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            // iOS требует resume после user interaction
+            if (alarmAudioCtx.state === 'suspended') {
+                alarmAudioCtx.resume();
+            }
+            return alarmAudioCtx;
+        }
+        
+        function playAlarmSound() {
             try {
-                const reminderDate = new Date(task.reminderTime);
-                const now = new Date();
-                const delay = reminderDate.getTime() - now.getTime();
+                const ctx = getAlarmAudioCtx();
+                stopAlarmSound();
                 
-                if (delay <= 0) return; // Время уже прошло
-                if (delay > 2147483647) return; // Слишком далеко (>24 дней), setTimeout не поддерживает
+                // Три тона будильника: 880Hz → 1100Hz → 880Hz, повторяются
+                const pattern = [880, 1100, 880, 0]; // 0 = пауза
+                let step = 0;
                 
-                const timeoutId = setTimeout(() => {
-                    // Показываем уведомление
-                    if (Notification.permission === 'granted') {
-                        try {
-                            new Notification(`⏰ ${getTypeName(task.type)}: ${task.title}`, {
-                                body: task.description || 'Время выполнить задачу!',
-                                icon: '/task-reminder-app/icon.png',
-                                requireInteraction: true,
-                                tag: `task-${task.id}`
-                            });
-                        } catch (notifErr) {
-                            console.error('Notification error:', notifErr);
-                        }
+                function playStep() {
+                    if (alarmOscillators._stopped) return;
+                    const freq = pattern[step % pattern.length];
+                    if (freq > 0) {
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.value = freq;
+                        gain.gain.setValueAtTime(0.4, ctx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.18);
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.start();
+                        osc.stop(ctx.currentTime + 0.2);
+                        alarmOscillators.push(osc);
                     }
-                    
-                    if (navigator.vibrate) navigator.vibrate([500, 300, 500]);
-                    
-                    // Обработка повторяющихся задач
-                    if (task.isRecurring) {
-                        const taskIndex = tasks.findIndex(t => t.id === task.id);
-                        if (taskIndex !== -1) {
-                            const nextDate = new Date(reminderDate);
-                            switch(task.recurringInterval) {
-                                case 'daily': nextDate.setDate(nextDate.getDate() + 1); break;
-                                case 'weekly': nextDate.setDate(nextDate.getDate() + 7); break;
-                                case 'monthly': nextDate.setMonth(nextDate.getMonth() + 1); break;
-                            }
-                            tasks[taskIndex].reminderTime = nextDate.toISOString();
-                            saveTasks();
-                        }
-                    }
-                }, delay);
+                    step++;
+                    const tid = setTimeout(playStep, step % pattern.length === 0 ? 600 : 200);
+                    alarmOscillators._tid = tid;
+                }
                 
-                scheduledTimeouts.push(timeoutId);
-                const mskStr = formatDisplayDate(task.reminderTime);
-                console.log(`⏰ Напоминание «${task.title}» запланировано на ${mskStr} (через ${Math.round(delay/60000)} мин.)`);
+                alarmOscillators._stopped = false;
+                playStep();
             } catch(e) {
-                console.error('scheduleNotification error:', e);
+                console.warn('Audio error:', e);
             }
         }
         
-        function rescheduleAllNotifications() {
-            scheduledTimeouts.forEach(timeout => clearTimeout(timeout));
-            scheduledTimeouts = [];
+        function stopAlarmSound() {
+            try {
+                if (alarmOscillators._tid) clearTimeout(alarmOscillators._tid);
+                alarmOscillators._stopped = true;
+                alarmOscillators.forEach(osc => { try { osc.stop(); } catch(e) {} });
+            } catch(e) {}
+            alarmOscillators = [];
+        }
+        
+        function showAlarmOverlay(task) {
+            // Убираем старый оверлей если есть
+            const old = document.getElementById('alarmOverlay');
+            if (old) old.remove();
+            
+            const overlay = document.createElement('div');
+            overlay.id = 'alarmOverlay';
+            overlay.style.cssText = `
+                position: fixed; inset: 0; z-index: 9999;
+                background: rgba(0,0,0,0.85);
+                display: flex; flex-direction: column;
+                align-items: center; justify-content: center;
+                animation: fadeIn 0.3s;
+                padding: 20px;
+            `;
+            overlay.innerHTML = `
+                <div style="font-size: 64px; margin-bottom: 16px; animation: pulse 0.6s infinite alternate;">⏰</div>
+                <div style="color: white; font-size: 22px; font-weight: bold; text-align: center; margin-bottom: 10px;">
+                    ${escapeHtml(task.title)}
+                </div>
+                <div style="color: rgba(255,255,255,0.7); font-size: 15px; text-align: center; margin-bottom: 8px;">
+                    ${escapeHtml(task.description || '')}
+                </div>
+                <div style="color: #ffcc00; font-size: 13px; margin-bottom: 28px;">
+                    ${getTypeName(task.type)} · ${getPriorityName(task.priority)}
+                </div>
+                <button id="alarmDismissBtn" style="
+                    background: #4caf50; color: white; border: none;
+                    padding: 14px 40px; border-radius: 30px;
+                    font-size: 18px; cursor: pointer;
+                    box-shadow: 0 4px 20px rgba(76,175,80,0.5);
+                    margin-bottom: 12px; width: 220px;
+                ">✅ Понял, закрыть</button>
+                <button id="alarmCompleteBtn" style="
+                    background: transparent; color: rgba(255,255,255,0.6);
+                    border: 1px solid rgba(255,255,255,0.3);
+                    padding: 10px 24px; border-radius: 20px;
+                    font-size: 14px; cursor: pointer; width: 220px;
+                ">✔ Отметить выполненной</button>
+            `;
+            
+            // Добавляем стиль pulse если нет
+            if (!document.getElementById('alarmStyle')) {
+                const style = document.createElement('style');
+                style.id = 'alarmStyle';
+                style.textContent = `@keyframes pulse { from { transform: scale(1); } to { transform: scale(1.15); } }`;
+                document.head.appendChild(style);
+            }
+            
+            document.body.appendChild(overlay);
+            
+            overlay.querySelector('#alarmDismissBtn').addEventListener('click', () => {
+                stopAlarmSound();
+                overlay.remove();
+            });
+            
+            overlay.querySelector('#alarmCompleteBtn').addEventListener('click', () => {
+                stopAlarmSound();
+                overlay.remove();
+                toggleComplete(task.id);
+            });
+            
+            // Вибрация
+            if (navigator.vibrate) navigator.vibrate([500, 200, 500, 200, 500]);
+        }
+        
+        function fireAlarm(task) {
+            const title = `⏰ ${getTypeName(task.type)}: ${task.title}`;
+            const body = task.description || 'Время выполнить задачу!';
+            const tag = `task-${task.id}`;
+
+            // 1. In-app оверлей (работает пока вкладка открыта/свёрнута)
+            showAlarmOverlay(task);
+            playAlarmSound();
+
+            // 2. Системное уведомление — через SW (надёжнее, видно в шторке)
+            if ('Notification' in window && Notification.permission === 'granted') {
+                if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+                    navigator.serviceWorker.controller.postMessage({
+                        type: 'SHOW_NOTIFICATION',
+                        title,
+                        body,
+                        tag
+                    });
+                } else {
+                    try { new Notification(title, { body, requireInteraction: true, tag }); } catch(e) {}
+                }
+            }
+            
+            // Обработка повторяющихся задач
+            if (task.isRecurring) {
+                const taskIndex = tasks.findIndex(t => t.id === task.id);
+                if (taskIndex !== -1) {
+                    const reminderDate = new Date(task.reminderTime);
+                    const nextDate = new Date(reminderDate);
+                    switch(task.recurringInterval) {
+                        case 'daily': nextDate.setDate(nextDate.getDate() + 1); break;
+                        case 'weekly': nextDate.setDate(nextDate.getDate() + 7); break;
+                        case 'monthly': nextDate.setMonth(nextDate.getMonth() + 1); break;
+                    }
+                    tasks[taskIndex].reminderTime = nextDate.toISOString();
+                    // Сбрасываем fired для этой задачи, чтобы следующий повтор тоже сработал
+                    firedAlarms.delete(task.id);
+                    saveTasks();
+                }
+            }
+        }
+        
+        /**
+         * Polling-проверка каждую секунду.
+         * Ищем задачи, время которых наступило (±30 сек от текущего момента),
+         * и которые ещё не сработали в этой сессии.
+         */
+        function checkAlarms() {
+            const now = Date.now();
             tasks.forEach(task => {
-                if (task.reminderTime && !task.completed) {
-                    scheduleNotification(task);
+                if (!task.reminderTime || task.completed) return;
+                if (firedAlarms.has(task.id)) return;
+                
+                const reminderMs = new Date(task.reminderTime).getTime();
+                const diff = now - reminderMs; // положительное = время прошло
+                
+                // Срабатываем если время наступило (от 0 до 59 секунд назад)
+                // Окно 59 сек покрывает погрешность polling'а и throttling браузера
+                if (diff >= 0 && diff < 59000) {
+                    firedAlarms.add(task.id);
+                    fireAlarm(task);
+                }
+            });
+        }
+        
+        function rescheduleAllNotifications() {
+            // Очищаем fired-кэш только для задач у которых время ещё не наступило
+            // (чтобы не перестрелять при перезагрузке)
+            const now = Date.now();
+            firedAlarms.forEach(id => {
+                const task = tasks.find(t => t.id === id);
+                if (!task || !task.reminderTime) {
+                    firedAlarms.delete(id);
+                    return;
+                }
+                const reminderMs = new Date(task.reminderTime).getTime();
+                // Если время задачи сильно в прошлом (>2 мин) — убираем из fired
+                // чтобы при следующем сохранении не было лишних срабатываний
+                if (now - reminderMs > 120000) {
+                    firedAlarms.delete(id);
                 }
             });
         }
         
         async function requestNotificationPermission() {
-            if (!('Notification' in window)) {
-                console.log('Уведомления не поддерживаются');
-                return;
-            }
+            if (!('Notification' in window)) return;
             if (Notification.permission === 'default') {
-                await Notification.requestPermission();
+                // На Android Chrome requestPermission() ДОЛЖЕН вызываться из user gesture.
+                // Вызываем сразу при старте — браузер покажет системный диалог.
+                try {
+                    const result = await Notification.requestPermission();
+                    if (result === 'granted') showToast('🔔 Уведомления включены!');
+                } catch(e) {
+                    console.warn('Notification permission error:', e);
+                }
             }
             updateNotifStatus();
         }
+        
+        // Разблокируем AudioContext по первому касанию (требование iOS/Chrome)
+        function unlockAudio() {
+            try { getAlarmAudioCtx(); } catch(e) {}
+            document.removeEventListener('touchstart', unlockAudio);
+            document.removeEventListener('click', unlockAudio);
+        }
+        document.addEventListener('touchstart', unlockAudio, { once: true });
+        document.addEventListener('click', unlockAudio, { once: true });
         
         // ========== ОТОБРАЖЕНИЕ ЗАДАЧ ==========
         function renderTasks() {
@@ -1706,6 +1867,9 @@
             setupVoiceInput();
             registerServiceWorker();
             requestNotificationPermission();
+            
+            // Polling будильника каждую секунду — надёжнее setTimeout
+            alarmCheckInterval = setInterval(checkAlarms, 1000);
             
             // Обновляем время каждую секунду
             setInterval(updateTimezoneInfo, 1000);
