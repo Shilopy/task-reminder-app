@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartTasks Widget</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 12px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 20px;
+        }
+        .widget-title {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 8px;
+        }
+        .task-count {
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .task-list-widget {
+            font-size: 12px;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="widget-title">📋 Сегодня</div>
+    <div class="task-count" id="taskCount">0</div>
+    <div class="task-list-widget" id="taskList"></div>
+    
+    <script>
+        function updateWidget() {
+            const tasks = JSON.parse(localStorage.getItem('smartTasksPro') || '[]');
+            const today = new Date().toDateString();
+            const todayTasks = tasks.filter(t => {
+                if (t.completed) return false;
+                if (!t.reminderTime) return false;
+                return new Date(t.reminderTime).toDateString() === today;
+            });
+            
+            document.getElementById('taskCount').textContent = todayTasks.length;
+            if (todayTasks.length > 0) {
+                document.getElementById('taskList').innerHTML = todayTasks.slice(0, 3)
+                    .map(t => `<div>• ${t.title.substring(0, 20)}</div>`)
+                    .join('');
+            }
+        }
+        
+        updateWidget();
+        setInterval(updateWidget, 60000);
+    </script>
+</body>
+</html>
