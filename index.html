@@ -1,0 +1,1478 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#667eea">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon.png">
+    <title>SmartTasks - Умные заметки и задачи</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+            padding-bottom: 80px;
+        }
+        
+        /* Анимации */
+        @keyframes slideIn {
+            from {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .modal-content {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        /* Основные стили */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 12px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .stat-card:active {
+            transform: scale(0.98);
+        }
+        
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .filter-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+        }
+        
+        .filter-btn {
+            padding: 8px 16px;
+            background: white;
+            border: none;
+            border-radius: 20px;
+            font-size: 14px;
+            color: #666;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.3s;
+        }
+        
+        .filter-btn.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .category-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+            overflow-x: auto;
+        }
+        
+        .category-btn {
+            padding: 6px 12px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 15px;
+            font-size: 12px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        
+        .category-btn.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .search-box {
+            background: white;
+            border-radius: 25px;
+            padding: 12px 20px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .search-box input {
+            flex: 1;
+            border: none;
+            font-size: 16px;
+            outline: none;
+            background: transparent;
+        }
+        
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .task-card {
+            background: white;
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: all 0.3s;
+            border-left: 4px solid;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .task-card.completed {
+            opacity: 0.7;
+            background: #f9f9f9;
+        }
+        
+        .task-card.completed .task-title {
+            text-decoration: line-through;
+            color: #999;
+        }
+        
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        
+        .task-type {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        
+        .task-type.task { background: #e3f2fd; color: #1976d2; }
+        .task-type.idea { background: #f3e5f5; color: #7b1fa2; }
+        .task-type.urgent { background: #ffebee; color: #c62828; }
+        
+        .priority {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        
+        .priority.high { background: #ffebee; color: #c62828; }
+        .priority.medium { background: #fff3e0; color: #ff9800; }
+        .priority.low { background: #e8f5e9; color: #4caf50; }
+        
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin: 8px 0;
+        }
+        
+        .tag {
+            padding: 2px 8px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            font-size: 10px;
+            color: #666;
+        }
+        
+        .task-title {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        
+        .task-description {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .media-preview {
+            margin: 10px 0;
+            max-width: 100%;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .media-preview img,
+        .media-preview video {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 10px;
+        }
+        
+        .audio-player {
+            width: 100%;
+            margin: 10px 0;
+        }
+        
+        .task-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 8px;
+            font-size: 11px;
+            color: #999;
+        }
+        
+        .task-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+        }
+        
+        .task-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+            background: #f0f0f0;
+            transition: all 0.2s;
+        }
+        
+        .fab {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            border-radius: 28px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            font-size: 30px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+            z-index: 1000;
+        }
+        
+        .fab:active {
+            transform: scale(0.95);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            align-items: flex-end;
+        }
+        
+        .modal.show {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 20px 20px 0 0;
+            padding: 20px;
+            width: 100%;
+            max-height: 90%;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #666;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .input-group input,
+        .input-group textarea,
+        .input-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            background: white;
+        }
+        
+        .input-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .tags-input {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            min-height: 50px;
+        }
+        
+        .tag-input-item {
+            background: #667eea;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .tag-input-item button {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .tag-input-field {
+            flex: 1;
+            border: none;
+            outline: none;
+            padding: 5px;
+        }
+        
+        .priority-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .priority-btn {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: center;
+        }
+        
+        .priority-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .media-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .media-btn {
+            flex: 1;
+            padding: 10px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .media-preview-modal {
+            max-width: 100%;
+            margin-top: 10px;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .modal-buttons button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        .save-btn {
+            background: #4caf50;
+            color: white;
+        }
+        
+        .cancel-btn {
+            background: #f0f0f0;
+            color: #666;
+        }
+        
+        .export-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .export-btn {
+            flex: 1;
+            padding: 10px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            color: #999;
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 80px;
+            left: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+            z-index: 3000;
+            animation: fadeIn 0.3s;
+        }
+        
+        @media (max-width: 480px) {
+            body {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>✨ SmartTasks</h1>
+        <p>Умные заметки с напоминаниями</p>
+    </div>
+    
+    <div class="stats" id="statsContainer">
+        <div class="stat-card" data-filter="all">
+            <div class="stat-number" id="totalCount">0</div>
+            <div class="stat-label">Всего</div>
+        </div>
+        <div class="stat-card" data-filter="active">
+            <div class="stat-number" id="activeCount">0</div>
+            <div class="stat-label">Активных</div>
+        </div>
+        <div class="stat-card" data-filter="completed">
+            <div class="stat-number" id="completedCount">0</div>
+            <div class="stat-label">Выполнено</div>
+        </div>
+        <div class="stat-card" data-filter="urgent">
+            <div class="stat-number" id="urgentCount">0</div>
+            <div class="stat-label">Срочных</div>
+        </div>
+    </div>
+    
+    <div class="filter-bar">
+        <button class="filter-btn active" data-filter="all">Все</button>
+        <button class="filter-btn" data-filter="task">📋 Задачи</button>
+        <button class="filter-btn" data-filter="idea">💡 Идеи</button>
+        <button class="filter-btn" data-filter="urgent">🚨 Срочно</button>
+    </div>
+    
+    <div class="category-bar" id="categoryBar">
+        <button class="category-btn active" data-category="all">Все категории</button>
+    </div>
+    
+    <div class="search-box">
+        <span>🔍</span>
+        <input type="text" placeholder="Поиск по задачам, тегам..." id="searchInput">
+    </div>
+    
+    <div id="taskList" class="task-list"></div>
+    
+    <button class="fab" id="fabBtn">+</button>
+    
+    <div class="modal" id="taskModal">
+        <div class="modal-content">
+            <div class="modal-header" id="modalTitle">Новая запись</div>
+            
+            <button class="media-btn" id="voiceBtn">🎤 Надиктовать голосом</button>
+            
+            <div class="input-group">
+                <label>Название *</label>
+                <input type="text" id="taskTitle" placeholder="Что нужно сделать?">
+            </div>
+            
+            <div class="input-group">
+                <label>Описание</label>
+                <textarea id="taskDesc" placeholder="Подробности..."></textarea>
+            </div>
+            
+            <div class="input-group">
+                <label>Тип</label>
+                <select id="taskType">
+                    <option value="task">📋 Задача</option>
+                    <option value="idea">💡 Идея</option>
+                    <option value="urgent">🚨 Срочно</option>
+                </select>
+            </div>
+            
+            <div class="input-group">
+                <label>Категория</label>
+                <input type="text" id="taskCategory" placeholder="Работа, Личное, Учеба...">
+            </div>
+            
+            <div class="input-group">
+                <label>Приоритет</label>
+                <div class="priority-buttons" id="priorityButtons">
+                    <button class="priority-btn" data-priority="low">🟢 Низкий</button>
+                    <button class="priority-btn" data-priority="medium">🟡 Средний</button>
+                    <button class="priority-btn active" data-priority="high">🔴 Высокий</button>
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <label>Теги</label>
+                <div class="tags-input" id="tagsInput">
+                    <input type="text" class="tag-input-field" id="tagInputField" placeholder="Введите тег и нажмите Enter">
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <label>Медиафайлы</label>
+                <div class="media-buttons">
+                    <button class="media-btn" id="photoBtn">📷 Фото</button>
+                    <button class="media-btn" id="voiceNoteBtn">🎙️ Голосовая заметка</button>
+                    <button class="media-btn" id="videoBtn">📹 Видео</button>
+                </div>
+                <div id="mediaPreview" class="media-preview-modal"></div>
+            </div>
+            
+            <div class="input-group">
+                <label>
+                    <input type="checkbox" id="hasReminder"> Напомнить
+                </label>
+            </div>
+            
+            <div id="reminderSettings" style="display: none;">
+                <div class="input-group">
+                    <label>Дата и время</label>
+                    <input type="datetime-local" id="reminderTime">
+                </div>
+                
+                <div class="input-group">
+                    <label>
+                        <input type="checkbox" id="isRecurring"> Повторять
+                    </label>
+                </div>
+                
+                <div id="recurringSettings" style="display: none;">
+                    <label>Периодичность</label>
+                    <div class="priority-buttons">
+                        <button data-interval="daily">Ежедневно</button>
+                        <button data-interval="weekly">Еженедельно</button>
+                        <button data-interval="monthly">Ежемесячно</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-buttons">
+                <button class="cancel-btn" id="cancelModalBtn">Отмена</button>
+                <button class="save-btn" id="saveTaskBtn">Сохранить</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal" id="exportModal">
+        <div class="modal-content">
+            <div class="modal-header">Экспорт данных</div>
+            <div class="export-buttons">
+                <button class="export-btn" id="exportJSON">📄 Экспорт JSON</button>
+                <button class="export-btn" id="exportCSV">📊 Экспорт CSV</button>
+                <button class="export-btn" id="exportBackup">💾 Полный бэкап</button>
+            </div>
+            <div class="export-buttons" style="margin-top: 10px;">
+                <button class="export-btn" id="importData">📂 Импорт данных</button>
+                <button class="export-btn" id="clearAllData">🗑️ Очистить всё</button>
+            </div>
+            <input type="file" id="importFile" accept=".json" style="display: none;">
+            <div class="modal-buttons" style="margin-top: 20px;">
+                <button class="cancel-btn" id="closeExportModal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // ========== ХРАНЕНИЕ ДАННЫХ ==========
+        let tasks = [];
+        let categories = new Set();
+        let currentFilter = 'all';
+        let currentCategory = 'all';
+        let currentSearch = '';
+        let editingTaskId = null;
+        let selectedPriority = 'high';
+        let tags = [];
+        let mediaFiles = [];
+        let selectedRecurringInterval = 'daily';
+        
+        // Медиа переменные
+        let mediaStream = null;
+        let mediaRecorder = null;
+        let recordedChunks = [];
+        
+        // ========== ИНИЦИАЛИЗАЦИЯ ==========
+        function init() {
+            loadTasks();
+            setupEventListeners();
+            setupVoiceInput();
+            setupMediaButtons();
+            requestNotificationPermission();
+            registerServiceWorker();
+        }
+        
+        // Регистрация Service Worker
+        function registerServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('SW registered:', reg))
+                    .catch(err => console.log('SW error:', err));
+            }
+        }
+        
+        // Загрузка задач
+        function loadTasks() {
+            const saved = localStorage.getItem('smartTasks');
+            if (saved) {
+                tasks = JSON.parse(saved);
+                updateCategories();
+            } else {
+                // Примеры задач
+                tasks = [
+                    {
+                        id: Date.now(),
+                        title: 'Купить продукты',
+                        description: 'Молоко, хлеб, яйца, овощи',
+                        type: 'task',
+                        category: 'Личное',
+                        priority: 'high',
+                        tags: ['покупки', 'дом'],
+                        media: [],
+                        reminderTime: null,
+                        isRecurring: false,
+                        recurringInterval: 'daily',
+                        completed: false,
+                        createdAt: new Date().toISOString()
+                    },
+                    {
+                        id: Date.now() + 1,
+                        title: 'Идея для приложения',
+                        description: 'Сделать трекер привычек с уведомлениями',
+                        type: 'idea',
+                        category: 'Работа',
+                        priority: 'medium',
+                        tags: ['разработка', 'идея'],
+                        media: [],
+                        reminderTime: null,
+                        isRecurring: false,
+                        recurringInterval: 'daily',
+                        completed: false,
+                        createdAt: new Date().toISOString()
+                    }
+                ];
+                saveTasks();
+            }
+            renderTasks();
+            updateStats();
+            renderCategories();
+        }
+        
+        // Сохранение задач
+        function saveTasks() {
+            localStorage.setItem('smartTasks', JSON.stringify(tasks));
+            updateStats();
+            updateCategories();
+        }
+        
+        // Обновление категорий
+        function updateCategories() {
+            categories.clear();
+            tasks.forEach(task => {
+                if (task.category) categories.add(task.category);
+            });
+        }
+        
+        // Отображение категорий
+        function renderCategories() {
+            const categoryBar = document.getElementById('categoryBar');
+            let html = '<button class="category-btn active" data-category="all">Все категории</button>';
+            
+            Array.from(categories).sort().forEach(cat => {
+                html += `<button class="category-btn" data-category="${cat}">${cat}</button>`;
+            });
+            
+            categoryBar.innerHTML = html;
+            
+            // Добавляем обработчики
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentCategory = btn.dataset.category;
+                    renderTasks();
+                });
+            });
+        }
+        
+        // Обновление статистики
+        function updateStats() {
+            const total = tasks.length;
+            const active = tasks.filter(t => !t.completed).length;
+            const completed = tasks.filter(t => t.completed).length;
+            const urgent = tasks.filter(t => t.type === 'urgent' && !t.completed).length;
+            
+            document.getElementById('totalCount').textContent = total;
+            document.getElementById('activeCount').textContent = active;
+            document.getElementById('completedCount').textContent = completed;
+            document.getElementById('urgentCount').textContent = urgent;
+        }
+        
+        // Отображение задач
+        function renderTasks() {
+            let filtered = tasks;
+            
+            // Фильтр по типу/статусу
+            if (currentFilter === 'active') {
+                filtered = filtered.filter(t => !t.completed);
+            } else if (currentFilter === 'completed') {
+                filtered = filtered.filter(t => t.completed);
+            } else if (currentFilter !== 'all') {
+                filtered = filtered.filter(t => t.type === currentFilter);
+            }
+            
+            // Фильтр по категории
+            if (currentCategory !== 'all') {
+                filtered = filtered.filter(t => t.category === currentCategory);
+            }
+            
+            // Поиск
+            if (currentSearch) {
+                filtered = filtered.filter(t => 
+                    t.title.toLowerCase().includes(currentSearch.toLowerCase()) ||
+                    t.description.toLowerCase().includes(currentSearch.toLowerCase()) ||
+                    (t.tags && t.tags.some(tag => tag.toLowerCase().includes(currentSearch.toLowerCase())))
+                );
+            }
+            
+            const taskList = document.getElementById('taskList');
+            
+            if (filtered.length === 0) {
+                taskList.innerHTML = `
+                    <div class="empty-state">
+                        📭 Нет задач<br>
+                        Нажмите + чтобы добавить
+                    </div>
+                `;
+                return;
+            }
+            
+            taskList.innerHTML = filtered.map(task => `
+                <div class="task-card ${task.completed ? 'completed' : ''}" 
+                     style="border-left-color: ${getTypeColor(task.type)}"
+                     onclick="openTaskDetail('${task.id}')">
+                    <div class="task-header">
+                        <div style="display: flex; gap: 5px; flex-wrap: wrap;">
+                            <span class="task-type ${task.type}">${getTypeName(task.type)}</span>
+                            <span class="priority ${task.priority || 'medium'}">${getPriorityName(task.priority)}</span>
+                        </div>
+                        ${task.reminderTime ? `
+                            <span class="task-reminder">
+                                ⏰ ${formatDate(task.reminderTime)}
+                            </span>
+                        ` : ''}
+                    </div>
+                    <div class="task-title">${escapeHtml(task.title)}</div>
+                    ${task.category ? `<div style="font-size: 11px; color: #667eea; margin-bottom: 5px;">📁 ${escapeHtml(task.category)}</div>` : ''}
+                    ${task.tags && task.tags.length > 0 ? `
+                        <div class="tags">
+                            ${task.tags.map(tag => `<span class="tag">#${escapeHtml(tag)}</span>`).join('')}
+                        </div>
+                    ` : ''}
+                    ${task.media && task.media.length > 0 ? `
+                        <div class="media-preview">
+                            ${task.media[0].type === 'image' ? `<img src="${task.media[0].url}" alt="media">` : ''}
+                            ${task.media[0].type === 'audio' ? `<audio controls src="${task.media[0].url}" class="audio-player"></audio>` : ''}
+                        </div>
+                    ` : ''}
+                    <div class="task-actions" onclick="event.stopPropagation()">
+                        <button class="task-btn complete-btn" onclick="toggleComplete('${task.id}')">
+                            ${task.completed ? '✅ Выполнено' : '⬜ Выполнить'}
+                        </button>
+                        <button class="task-btn delete-btn" onclick="deleteTask('${task.id}')">
+                            🗑️ Удалить
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Открыть детали задачи
+        function openTaskDetail(taskId) {
+            const task = tasks.find(t => t.id == taskId);
+            if (task) {
+                alert(`📝 ${task.title}\n\n${task.description || 'Нет описания'}\n\n📁 Категория: ${task.category || 'Нет'}\n🏷️ Теги: ${task.tags?.join(', ') || 'Нет'}\n⭐ Приоритет: ${getPriorityName(task.priority)}`);
+            }
+        }
+        
+        // Получить цвет типа
+        function getTypeColor(type) {
+            switch(type) {
+                case 'urgent': return '#f44336';
+                case 'idea': return '#9c27b0';
+                default: return '#2196f3';
+            }
+        }
+        
+        // Получить название типа
+        function getTypeName(type) {
+            switch(type) {
+                case 'urgent': return '🚨 Срочно';
+                case 'idea': return '💡 Идея';
+                default: return '📋 Задача';
+            }
+        }
+        
+        // Получить название приоритета
+        function getPriorityName(priority) {
+            switch(priority) {
+                case 'high': return '🔴 Высокий';
+                case 'medium': return '🟡 Средний';
+                case 'low': return '🟢 Низкий';
+                default: return '🟡 Средний';
+            }
+        }
+        
+        // Форматирование даты
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
+        }
+        
+        // Защита от XSS
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Переключение выполнения
+        function toggleComplete(id) {
+            const task = tasks.find(t => t.id == id);
+            if (task) {
+                task.completed = !task.completed;
+                saveTasks();
+                renderTasks();
+                showToast(task.completed ? '✅ Задача выполнена!' : '🔄 Задача возвращена в работу');
+            }
+        }
+        
+        // Удаление задачи
+        function deleteTask(id) {
+            if (confirm('Удалить задачу? Это действие нельзя отменить')) {
+                tasks = tasks.filter(t => t.id != id);
+                saveTasks();
+                renderTasks();
+                showToast('🗑️ Задача удалена');
+            }
+        }
+        
+        // Сохранение задачи
+        function saveTask() {
+            const title = document.getElementById('taskTitle').value.trim();
+            if (!title) {
+                showToast('Введите название задачи');
+                return;
+            }
+            
+            const task = {
+                id: editingTaskId || Date.now(),
+                title: title,
+                description: document.getElementById('taskDesc').value,
+                type: document.getElementById('taskType').value,
+                category: document.getElementById('taskCategory').value,
+                priority: selectedPriority,
+                tags: tags,
+                media: mediaFiles,
+                reminderTime: null,
+                isRecurring: false,
+                recurringInterval: selectedRecurringInterval,
+                completed: false,
+                createdAt: new Date().toISOString()
+            };
+            
+            // Напоминание
+            if (document.getElementById('hasReminder').checked) {
+                const reminderTime = document.getElementById('reminderTime').value;
+                if (reminderTime) {
+                    task.reminderTime = reminderTime;
+                    task.isRecurring = document.getElementById('isRecurring').checked;
+                    scheduleNotification(task);
+                }
+            }
+            
+            if (editingTaskId) {
+                const index = tasks.findIndex(t => t.id == editingTaskId);
+                if (index !== -1) {
+                    tasks[index] = { ...tasks[index], ...task };
+                    showToast('✏️ Задача обновлена');
+                }
+            } else {
+                tasks.unshift(task);
+                showToast('✅ Задача добавлена');
+            }
+            
+            saveTasks();
+            renderTasks();
+            closeModal();
+        }
+        
+        // Планирование уведомления
+        function scheduleNotification(task) {
+            if (!task.reminderTime) return;
+            
+            const reminderDate = new Date(task.reminderTime);
+            const now = new Date();
+            const delay = reminderDate - now;
+            
+            if (delay > 0 && delay < 2147483647) {
+                setTimeout(() => {
+                    showNotification(task);
+                    if (task.isRecurring) {
+                        const nextDate = getNextDate(reminderDate, task.recurringInterval);
+                        task.reminderTime = nextDate.toISOString();
+                        scheduleNotification(task);
+                    }
+                }, delay);
+            }
+        }
+        
+        // Получить следующую дату
+        function getNextDate(date, interval) {
+            const next = new Date(date);
+            switch(interval) {
+                case 'daily': next.setDate(next.getDate() + 1); break;
+                case 'weekly': next.setDate(next.getDate() + 7); break;
+                case 'monthly': next.setMonth(next.getMonth() + 1); break;
+            }
+            return next;
+        }
+        
+        // Показать уведомление
+        function showNotification(task) {
+            if (Notification.permission === 'granted') {
+                new Notification(`${getTypeName(task.type)}: ${task.title}`, {
+                    body: task.description || 'Время выполнить задачу!',
+                    icon: '/icon.png'
+                });
+            }
+            
+            if (navigator.vibrate) {
+                navigator.vibrate(500);
+            }
+        }
+        
+        // Запрос разрешения
+        function requestNotificationPermission() {
+            if (Notification.permission === 'default') {
+                Notification.requestPermission();
+            }
+        }
+        
+        // Голосовой ввод
+        function setupVoiceInput() {
+            const voiceBtn = document.getElementById('voiceBtn');
+            
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                voiceBtn.style.display = 'none';
+                return;
+            }
+            
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'ru-RU';
+            recognition.interimResults = false;
+            
+            voiceBtn.addEventListener('click', () => {
+                voiceBtn.textContent = '🎤 Слушаю...';
+                voiceBtn.disabled = true;
+                
+                recognition.start();
+                
+                recognition.onresult = (event) => {
+                    const text = event.results[0][0].transcript;
+                    document.getElementById('taskTitle').value = text;
+                    document.getElementById('taskDesc').value = text;
+                    voiceBtn.textContent = '🎤 Надиктовать голосом';
+                    voiceBtn.disabled = false;
+                    showToast('Голос распознан');
+                };
+                
+                recognition.onerror = () => {
+                    voiceBtn.textContent = '🎤 Надиктовать голосом';
+                    voiceBtn.disabled = false;
+                    showToast('Не удалось распознать голос');
+                };
+            });
+        }
+        
+        // Медиа кнопки
+        function setupMediaButtons() {
+            document.getElementById('photoBtn').addEventListener('click', () => captureMedia('photo'));
+            document.getElementById('voiceNoteBtn').addEventListener('click', () => captureMedia('audio'));
+            document.getElementById('videoBtn').addEventListener('click', () => captureMedia('video'));
+        }
+        
+        // Захват медиа
+        function captureMedia(type) {
+            if (type === 'photo') {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                input.capture = 'environment';
+                input.onchange = (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const url = URL.createObjectURL(file);
+                        mediaFiles.push({ type: 'image', url: url, name: file.name });
+                        updateMediaPreview();
+                    }
+                };
+                input.click();
+            } else if (type === 'audio') {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'audio/*';
+                input.onchange = (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const url = URL.createObjectURL(file);
+                        mediaFiles.push({ type: 'audio', url: url, name: file.name });
+                        updateMediaPreview();
+                    }
+                };
+                input.click();
+            } else if (type === 'video') {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'video/*';
+                input.capture = 'environment';
+                input.onchange = (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const url = URL.createObjectURL(file);
+                        mediaFiles.push({ type: 'video', url: url, name: file.name });
+                        updateMediaPreview();
+                    }
+                };
+                input.click();
+            }
+        }
+        
+        // Обновление превью медиа
+        function updateMediaPreview() {
+            const preview = document.getElementById('mediaPreview');
+            if (mediaFiles.length === 0) {
+                preview.innerHTML = '';
+                return;
+            }
+            
+            preview.innerHTML = mediaFiles.map((media, index) => `
+                <div style="position: relative; margin-bottom: 10px;">
+                    ${media.type === 'image' ? `<img src="${media.url}" style="max-width: 100%; border-radius: 10px;">` : ''}
+                    ${media.type === 'audio' ? `<audio controls src="${media.url}" class="audio-player"></audio>` : ''}
+                    ${media.type === 'video' ? `<video controls src="${media.url}" style="max-width: 100%; border-radius: 10px;"></video>` : ''}
+                    <button onclick="removeMedia(${index})" style="position: absolute; top: 5px; right: 5px; background: red; color: white; border: none; border-radius: 50%; width: 24px; height: 24px;">✕</button>
+                </div>
+            `).join('');
+        }
+        
+        // Удаление медиа
+        function removeMedia(index) {
+            mediaFiles.splice(index, 1);
+            updateMediaPreview();
+        }
+        
+        // Экспорт данных
+        function exportJSON() {
+            const dataStr = JSON.stringify(tasks, null, 2);
+            downloadFile(dataStr, 'tasks.json', 'application/json');
+            showToast('Данные экспортированы в JSON');
+        }
+        
+        function exportCSV() {
+            const headers = ['ID', 'Название', 'Описание', 'Тип', 'Категория', 'Приоритет', 'Теги', 'Выполнено', 'Создано'];
+            const rows = tasks.map(task => [
+                task.id,
+                task.title,
+                task.description,
+                task.type,
+                task.category || '',
+                task.priority,
+                (task.tags || []).join(';'),
+                task.completed,
+                task.createdAt
+            ]);
+            
+            const csvContent = [headers, ...rows].map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
+            downloadFile(csvContent, 'tasks.csv', 'text/csv;charset=utf-8;');
+            showToast('Данные экспортированы в CSV');
+        }
+        
+        function exportBackup() {
+            const backup = {
+                version: '1.0',
+                exportDate: new Date().toISOString(),
+                tasks: tasks,
+                categories: Array.from(categories)
+            };
+            const dataStr = JSON.stringify(backup, null, 2);
+            downloadFile(dataStr, `backup_${new Date().toISOString().slice(0,19)}.json`, 'application/json');
+            showToast('Полный бэкап создан');
+        }
+        
+        function importData(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (data.tasks) {
+                        tasks = data.tasks;
+                    } else if (Array.isArray(data)) {
+                        tasks = data;
+                    }
+                    saveTasks();
+                    renderTasks();
+                    showToast('Данные успешно импортированы');
+                    closeExportModal();
+                } catch (err) {
+                    showToast('Ошибка импорта: неверный формат файла');
+                }
+            };
+            reader.readAsText(file);
+        }
+        
+        function clearAllData() {
+            if (confirm('⚠️ ВНИМАНИЕ! Это действие удалит ВСЕ задачи без возможности восстановления. Продолжить?')) {
+                tasks = [];
+                saveTasks();
+                renderTasks();
+                showToast('Все данные удалены');
+                closeExportModal();
+            }
+        }
+        
+        function downloadFile(content, filename, type) {
+            const blob = new Blob([content], { type: type });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            link.click();
+            URL.revokeObjectURL(link.href);
+        }
+        
+        // Показать уведомление
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2000);
+        }
+        
+        // Теги
+        function setupTags() {
+            const tagInput = document.getElementById('tagInputField');
+            const tagsContainer = document.getElementById('tagsInput');
+            
+            tagInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && tagInput.value.trim()) {
+                    e.preventDefault();
+                    const newTag = tagInput.value.trim();
+                    if (!tags.includes(newTag)) {
+                        tags.push(newTag);
+                        renderTags();
+                    }
+                    tagInput.value = '';
+                }
+            });
+        }
+        
+        function renderTags() {
+            const tagsContainer = document.getElementById('tagsInput');
+            const tagInput = document.getElementById('tagInputField');
+            
+            const tagElements = tags.map((tag, index) => `
+                <div class="tag-input-item">
+                    ${escapeHtml(tag)}
+                    <button onclick="removeTag(${index})">✕</button>
+                </div>
+            `).join('');
+            
+            tagsContainer.innerHTML = tagElements + '<input type="text" class="tag-input-field" id="tagInputField" placeholder="Введите тег и нажмите Enter">';
+            
+            const newInput = document.getElementById('tagInputField');
+            newInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && newInput.value.trim()) {
+                    e.preventDefault();
+                    const newTag = newInput.value.trim();
+                    if (!tags.includes(newTag)) {
+                        tags.push(newTag);
+                        renderTags();
+                    }
+                }
+            });
+        }
+        
+        function removeTag(index) {
+            tags.splice(index, 1);
+            renderTags();
+        }
+        
+        // Настройка обработчиков
+        function setupEventListeners() {
+            // Фильтры
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentFilter = btn.dataset.filter;
+                    renderTasks();
+                });
+            });
+            
+            // Статистика как фильтр
+            document.querySelectorAll('.stat-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const filter = card.dataset.filter;
+                    if (filter) {
+                        currentFilter = filter;
+                        document.querySelectorAll('.filter-btn').forEach(btn => {
+                            if (btn.dataset.filter === filter) {
+                                btn.classList.add('active');
+                            } else {
+                                btn.classList.remove('active');
+                            }
+                        });
+                        renderTasks();
+                    }
+                });
+            });
+            
+            // Поиск
+            document.getElementById('searchInput').addEventListener('input', (e) => {
+                currentSearch = e.target.value;
+                renderTasks();
+            });
+            
+            // Кнопка добавления
+            document.getElementById('fabBtn').addEventListener('click', () => {
+                openModal();
+            });
+            
+            // Приоритеты
+            document.querySelectorAll('[data-priority]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('[data-priority]').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    selectedPriority = btn.dataset.priority;
+                });
+            });
+            
+            // Чекбокс напоминания
+            document.getElementById('hasReminder').addEventListener('change', (e) => {
+                const reminderSettings = document.getElementById('reminderSettings');
+                reminderSettings.style.display = e.target.checked ? 'block' : 'none';
+                
+                if (e.target.checked && !document.getElementById('reminderTime').value) {
+                    const defaultDate = new Date();
+                    defaultDate.setHours(defaultDate.getHours() + 1);
+                    document.getElementById('reminderTime').value = defaultDate.toISOString().slice(0, 16);
+                }
+            });
+            
+            // Чекбокс повторения
+            document.getElementById('isRecurring').addEventListener('change', (e) => {
+                const recurringSettings = document.getElementById('recurringSettings');
+                recurringSettings.style.display = e.target.checked ? 'block' : 'none';
+            });
+            
+            // Кнопки модального окна
+            document.getElementById('cancelModalBtn').addEventListener('click', () => closeModal());
+            document.getElementById('saveTaskBtn').addEventListener('click', () => saveTask());
+            
+            // Экспорт
+            document.getElementById('exportJSON').addEventListener('click', exportJSON);
+            document.getElementById('exportCSV').addEventListener('click', exportCSV);
+            document.getElementById('exportBackup').addEventListener('click', exportBackup);
+            document.getElementById('importData').addEventListener('click', () => {
+                document.getElementById('importFile').click();
+            });
+            document.getElementById('importFile').addEventListener('change', (e) => {
+                if (e.target.files[0]) importData(e.target.files[0]);
+            });
+            document.getElementById('clearAllData').addEventListener('click', clearAllData);
+            document.getElementById('closeExportModal').addEventListener('click', () => closeExportModal());
+            
+            // Теги
+            setupTags();
+        }
+        
+        // Открыть модальное окно
+        function openModal(taskId = null) {
+            editingTaskId = taskId;
+            tags = [];
+            mediaFiles = [];
+            selectedPriority = 'high';
+            
+            if (taskId) {
+                const task = tasks.find(t => t.id == taskId);
+                if (task) {
+                    document.getElementById('modalTitle').textContent = 'Редактировать';
+                    document.getElementById('taskTitle').value = task.title;
+                    document.getElementById('taskDesc').value = task.description || '';
+                    document.getElementById('taskType').value = task.type;
+                    document.getElementById('taskCategory').value = task.category || '';
+                    tags = task.tags || [];
+                    selectedPriority = task.priority || 'high';
+                    mediaFiles = task.media || [];
+                    
+                    document.querySelectorAll('[data-priority]').forEach(btn => {
+                        if (btn.dataset.priority === selectedPriority) {
+                            btn.classList.add('active');
+                        } else {
+                            btn.classList.remove('active');
+                        }
+                    });
+                    
+                    renderTags();
+                    updateMediaPreview();
+                    
+                    if (task.reminderTime) {
+                        document.getElementById('hasReminder').checked = true;
+                        document.getElementById('reminderSettings').style.display = 'block';
+                        document.getElementById('reminderTime').value = new Date(task.reminderTime).toISOString().slice(0, 16);
+                        
+                        if (task.isRecurring) {
+                            document.getElementById('isRecurring').checked = true;
+                            document.getElementById('recurringSettings').style.display = 'block';
+                        }
+                    }
+                }
+            } else {
+                document.getElementById('modalTitle').textContent = 'Новая запись';
+                document.getElementById('taskTitle').value = '';
+                document.getElementById('taskDesc').value = '';
+                document.getElementById('taskType').value = 'task';
+                document.getElementById('taskCategory').value = '';
+                document.getElementById('hasReminder').checked = false;
+                document.getElementById('reminderSettings').style.display = 'none';
+                document.getElementById('isRecurring').checked = false;
+                tags = [];
+                mediaFiles = [];
+                renderTags();
+                updateMediaPreview();
+            }
+            
+            document.getElementById('taskModal').classList.add('show');
+        }
+        
+        // Закрыть модальное окно
+        function closeModal() {
+            document.getElementById('taskModal').classList.remove('show');
+            editingTaskId = null;
+        }
+        
+        function closeExportModal() {
+            document.getElementById('exportModal').classList.remove('show');
+        }
+        
+        // Открыть экспорт
+        window.openExport = function() {
+            document.getElementById('exportModal').classList.add('show');
+        };
+        
+        // Запуск
+        init();
+    </script>
+</body>
+</html>
