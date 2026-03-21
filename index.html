@@ -1098,8 +1098,7 @@
             
             const widgetTasks = document.getElementById('widgetTasks');
             if (todayTasks.length > 0) {
-                widgetTasks.textContent = `${todayTasks.length} задача${todayTasks.length > 1 ? 'и' : 'а'} на сегодня`;
-                document.getElementById('widgetPreview').classList.add('show');
+                widgetTasks.textContent = `${todayTasks.length} ${todayTasks.length === 1 ? 'задача' : (todayTasks.length >= 2 && todayTasks.length <= 4 ? 'задачи' : 'задач')} на сегодня`;
             } else {
                 widgetTasks.textContent = 'На сегодня задач нет';
                 document.getElementById('widgetPreview').classList.add('show');
