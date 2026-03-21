@@ -9,6 +9,15 @@
     <meta name="application-name" content="SmartTasks Pro">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#667eea" id="themeColor">
+
+    // ========== ЧАСОВОЙ ПОЯС РОССИИ ==========
+const RUSSIA_TIMEZONE = 'Europe/Moscow'; // UTC+3
+const RUSSIA_OFFSET = 3; // +3 часа от UT
+
+    // Функция для получения времени в московском часовом поясе
+function getMoscowTime(date = new Date()) {
+    return new Date(date.toLocaleString('en-US', { timeZone: RUSSIA_TIMEZONE }));
+}
     
     <link rel="manifest" href="/task-reminder-app/manifest.json">
     <link rel="apple-touch-icon" href="/task-reminder-app/icon.png">
