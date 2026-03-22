@@ -27,6 +27,9 @@
             padding: 20px;
             padding-bottom: 80px;
             transition: background-color 0.3s, color 0.3s;
+            /* Запрещаем pull-to-refresh и скролл за пределы страницы —
+               именно это заставляет Chrome показывать адресную строку */
+            overscroll-behavior-y: contain;
         }
         
         body.light {
@@ -3300,6 +3303,9 @@
         function setAiStatus(type, text) {
             const bar = document.getElementById('aiStatusBar');
             bar.className = `ai-status-bar ${type}`;
+            // Многострочный текст — показываем как есть
+            bar.style.whiteSpace = 'pre-wrap';
+            bar.style.wordBreak = 'break-all';
             bar.textContent = text;
         }
 
@@ -3325,10 +3331,10 @@
         }
 
         async function testAiConnection() {
-            const key = document.getElementById('aiApiKey').value.trim();
-            const provider = aiModalProvider;
+            const key       = document.getElementById('aiApiKey').value.trim();
+            const provider  = aiModalProvider;
             const customUrl = document.getElementById('aiCustomUrl').value.trim();
-            const model = document.getElementById('aiModel').value;
+            const model     = document.getElementById('aiModel').value;
 
             if (provider !== 'custom' && !key) {
                 setAiStatus('error', '❌ Введи API-ключ');
@@ -3338,11 +3344,21 @@
                 setAiStatus('error', '❌ Введи URL эндпоинта');
                 return;
             }
+            if (!model) {
+                setAiStatus('error', '❌ Выбери модель');
+                return;
+            }
 
-            setAiStatus('testing', '⏳ Проверяю подключение...');
-
-            const p = AI_PROVIDERS[provider];
+            const p   = AI_PROVIDERS[provider];
             const url = provider === 'custom' ? customUrl : p.url;
+
+            // Валидация URL
+            try { new URL(url); } catch(e) {
+                setAiStatus('error', `❌ Неверный URL: ${url}`);
+                return;
+            }
+
+            setAiStatus('testing', `⏳ Подключаюсь к ${url.replace('https://','').split('/')[0]}...`);
 
             try {
                 const headers = { 'Content-Type': 'application/json' };
@@ -3352,23 +3368,29 @@
                     method: 'POST',
                     headers,
                     body: JSON.stringify({
-                        model: model,
+                        model,
                         max_tokens: 10,
-                        messages: [{ role: 'user', content: 'Ответь одним словом: привет' }]
+                        messages: [{ role: 'user', content: 'Reply with one word: hello' }]
                     })
                 });
 
                 if (res.ok) {
-                    const data = await res.json();
+                    const data  = await res.json();
                     const reply = data.choices?.[0]?.message?.content || '?';
-                    setAiStatus('ok', `✅ Подключено! Ответ: "${reply.trim()}"`);
+                    setAiStatus('ok', `✅ Подключено! Модель: ${model.split('/').pop()} · Ответ: "${reply.trim()}"`);
                 } else {
                     const err = await res.json().catch(() => ({}));
-                    const msg = err.error?.message || `HTTP ${res.status}`;
-                    setAiStatus('error', `❌ Ошибка: ${msg}`);
+                    const msg = err.error?.message || err.message || `HTTP ${res.status}`;
+                    setAiStatus('error', `❌ ${res.status}: ${msg}`);
                 }
-            } catch (e) {
-                setAiStatus('error', `❌ Нет соединения: ${e.message}`);
+            } catch(e) {
+                // Детальная диагностика
+                let hint = '';
+                if (e.message.includes('fetch')) {
+                    hint = ' · Проверь интернет и правильность ключа';
+                }
+                setAiStatus('error', `❌ ${e.message}${hint}\nURL: ${url}\nМодель: ${model}`);
+                console.error('AI test error:', { url, model, provider, error: e });
             }
         }
 
