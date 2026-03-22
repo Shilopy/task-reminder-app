@@ -1,99 +1,97 @@
-const CACHE_NAME = 'smarttasks-pro-v2';
+const CACHE_NAME = 'smarttasks-pro-v3';
 const BASE = '/task-reminder-app';
-const urlsToCache = [
+const STATIC_FILES = [
   `${BASE}/`,
   `${BASE}/index.html`,
   `${BASE}/manifest.json`,
 ];
 
-// ── Установка: кэшируем файлы ──────────────────────────────────────────────
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(urlsToCache))
-      .then(() => self.skipWaiting()) // активируемся сразу без ожидания
+      .then(cache => cache.addAll(STATIC_FILES))
+      .then(() => self.skipWaiting())
   );
 });
 
-// ── Активация: удаляем старые кэши ────────────────────────────────────────
 self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then(cacheNames =>
-      Promise.all(
-        cacheNames
-          .filter(name => name !== CACHE_NAME)
-          .map(name => caches.delete(name))
-      )
-    ).then(() => self.clients.claim()) // берём контроль над всеми вкладками
+    caches.keys()
+      .then(names => Promise.all(
+        names.filter(n => n !== CACHE_NAME).map(n => caches.delete(n))
+      ))
+      .then(() => self.clients.claim())
   );
 });
 
-// ── Fetch: сначала кэш, потом сеть ────────────────────────────────────────
 self.addEventListener('fetch', event => {
-  // Не перехватываем chrome-extension и non-GET запросы
   if (event.request.method !== 'GET') return;
   if (!event.request.url.startsWith('http')) return;
 
-  event.respondWith(
-    caches.match(event.request).then(cached => {
-      if (cached) return cached;
-      return fetch(event.request).then(response => {
-        // Кэшируем только успешные ответы с нашего домена
-        if (response.ok && event.request.url.includes('/task-reminder-app/')) {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-        }
-        return response;
-      });
-    }).catch(() => {
-      // Офлайн-фоллбэк для навигации
-      if (event.request.mode === 'navigate') {
-        return caches.match(`${BASE}/index.html`);
-      }
-    })
-  );
-});
+  const url = event.request.url;
 
-// ── Показ уведомления от polling (вкладка в фоне) ─────────────────────────
-// Основной канал: страница сама показывает оверлей через polling.
-// SW нужен только когда вкладка ПОЛНОСТЬЮ закрыта — но тогда
-// нет polling. Поэтому SW слушает сообщения от страницы.
-self.addEventListener('message', event => {
-  if (!event.data) return;
+  // API запросы — SW не вмешивается, всегда идёт в сеть
+  const isApi = url.includes('openrouter.ai') ||
+                url.includes('api.deepseek.com') ||
+                url.includes('generativelanguage.googleapis.com') ||
+                url.includes('api.groq.com') ||
+                url.includes('/api/');
+  if (isApi) return;
 
-  if (event.data.type === 'SHOW_NOTIFICATION') {
-    const { title, body, tag } = event.data;
-    event.waitUntil(
-      self.registration.showNotification(title, {
-        body: body || '',
-        icon: `${BASE}/icon-192x192.png`,
-        badge: `${BASE}/icon-96x96.png`,
-        vibrate: [300, 100, 300, 100, 300],
-        requireInteraction: true,
-        tag: tag || 'smarttasks',
-        data: { url: `${BASE}/` }
+  // HTML — Network First: сначала сеть, кэш только при офлайне
+  if (event.request.mode === 'navigate' || url.endsWith('.html') || url.endsWith('/')) {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          if (response.ok) {
+            caches.open(CACHE_NAME).then(c => c.put(event.request, response.clone()));
+          }
+          return response;
+        })
+        .catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  // Остальная статика — Cache First
+  if (url.includes('/task-reminder-app/')) {
+    event.respondWith(
+      caches.match(event.request).then(cached => {
+        if (cached) return cached;
+        return fetch(event.request).then(res => {
+          if (res.ok) caches.open(CACHE_NAME).then(c => c.put(event.request, res.clone()));
+          return res;
+        });
       })
     );
   }
 });
 
-// ── Клик по уведомлению → открываем/фокусируем вкладку ───────────────────
+self.addEventListener('message', event => {
+  if (!event.data || event.data.type !== 'SHOW_NOTIFICATION') return;
+  const { title, body, tag } = event.data;
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body: body || '',
+      icon: `${BASE}/icon-192x192.png`,
+      badge: `${BASE}/icon-96x96.png`,
+      vibrate: [300, 100, 300],
+      requireInteraction: true,
+      tag: tag || 'smarttasks',
+      data: { url: `${BASE}/` }
+    })
+  );
+});
+
 self.addEventListener('notificationclick', event => {
   event.notification.close();
-  const targetUrl = (event.notification.data && event.notification.data.url)
-    ? event.notification.data.url
-    : `${BASE}/`;
-
+  const targetUrl = event.notification.data?.url || `${BASE}/`;
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true })
       .then(clients => {
-        // Если вкладка уже открыта — фокусируем её
-        for (const client of clients) {
-          if (client.url.includes('/task-reminder-app/') && 'focus' in client) {
-            return client.focus();
-          }
+        for (const c of clients) {
+          if (c.url.includes('/task-reminder-app/') && 'focus' in c) return c.focus();
         }
-        // Иначе открываем новую
         return self.clients.openWindow(targetUrl);
       })
   );
