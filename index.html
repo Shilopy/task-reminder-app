@@ -1400,10 +1400,11 @@
           <button id="archiveModalClose" style="background:none;border:none;font-size:24px;cursor:pointer;opacity:0.5">×</button>
         </div>
         <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
-          <button class="archive-btn" id="exportJsonBtn">📤 Экспорт JSON</button>
-          <button class="archive-btn" id="importJsonBtn">📥 Импорт JSON</button>
+          <button class="archive-btn" id="exportJsonBtn">📤 Экспорт</button>
+          <button class="archive-btn" id="importJsonBtn">📥 Импорт</button>
           <input type="file" id="importJsonFile" accept=".json" style="display:none">
-          <button class="archive-btn" id="clearArchiveBtn" style="margin-left:auto;background:#ffebee;color:#c62828">🗑 Очистить архив</button>
+          <button class="archive-btn" id="clearArchiveBtn" style="background:#ffebee;color:#c62828">🗑 Архив</button>
+          <button class="archive-btn" id="resetAllBtn" style="background:#c62828;color:#fff;margin-left:auto">⚠️ Сбросить всё</button>
         </div>
         <div style="font-size:12px;opacity:0.5;margin-bottom:12px" id="archiveStats"></div>
         <div id="archiveList"></div>
@@ -4236,6 +4237,47 @@
                     showToast('🗑️ Архив очищен');
                 }
             });
+
+            document.getElementById('resetAllBtn').addEventListener('click', () => {
+                const total = tasks.length + taskArchive.length;
+                if (!confirm(`⚠️ СБРОСИТЬ ВСЕ ДАННЫЕ?\n\nБудет удалено:\n• ${tasks.length} активных задач\n• ${taskArchive.length} архивных задач\n• История стриков и статистика\n• История ассистента\n\nНастройки AI и тема сохранятся.\n\nЭто действие необратимо!`)) return;
+                if (!confirm('Вы уверены? Все задачи будут удалены навсегда.')) return;
+
+                // Сохраняем только настройки
+                const aiSettings   = localStorage.getItem('aiSettings');
+                const theme        = localStorage.getItem('theme');
+                const briefing     = localStorage.getItem('briefingSettings');
+                const assistant    = JSON.stringify({ persona: JSON.parse(localStorage.getItem('assistantSettings') || '{}').persona });
+                const onboarding   = localStorage.getItem('onboardingDone');
+
+                // Чистим всё
+                localStorage.clear();
+
+                // Восстанавливаем настройки
+                if (aiSettings)  localStorage.setItem('aiSettings', aiSettings);
+                if (theme)       localStorage.setItem('theme', theme);
+                if (briefing)    localStorage.setItem('briefingSettings', briefing);
+                if (assistant)   localStorage.setItem('assistantSettings', assistant);
+                if (onboarding)  localStorage.setItem('onboardingDone', onboarding);
+
+                // Сбрасываем переменные
+                tasks        = [];
+                taskArchive  = [];
+                firedAlarms  = new Set();
+                shownNudges  = new Set();
+                goalPlan     = null;
+
+                saveTasks();
+                saveArchive();
+                renderTasks();
+                renderCategories();
+                updateStats();
+                updateWidget();
+                renderArchiveList();
+                renderStreakBar({ days: 0 });
+                closeArchiveModal();
+                showToast('✅ Все тестовые данные удалены. Приложение чистое!');
+            });
         }
 
         // ══════════════════════════════════════════════════
@@ -4854,16 +4896,25 @@
         // ПЛАНИРОВЩИК ЦЕЛЕЙ
         // ══════════════════════════════════════════════════
 
-        let goalPlan = null; // текущий сгенерированный план
+        let goalPlan = null;
+        let goalGenerating = false;
 
         function openGoalModal() {
             document.getElementById('goalModal').classList.add('show');
-            resetGoalForm();
-            setTimeout(() => document.getElementById('goalInput').focus(), 300);
+            if (goalPlan && !goalGenerating) {
+                renderGoalPlan(goalPlan, goalPlan._goal, goalPlan._duration);
+            } else if (goalGenerating) {
+                document.getElementById('goalGenerating').style.display = 'block';
+                document.getElementById('goalGenerateBtn').style.display = 'none';
+            } else {
+                resetGoalForm();
+            }
+            // НЕ вызываем focus() — клавиатура только по тапу пользователя
         }
 
         function closeGoalModal() {
             document.getElementById('goalModal').classList.remove('show');
+            // Генерация продолжается в фоне
         }
 
         function resetGoalForm() {
@@ -4872,106 +4923,117 @@
             document.getElementById('goalGenerating').style.display = 'none';
             document.getElementById('goalGenerateBtn').style.display = 'block';
             document.getElementById('goalGenerateBtn').disabled = false;
-            goalPlan = null;
+            if (!goalGenerating) goalPlan = null;
         }
 
         async function generateGoalPlan() {
             const goal = document.getElementById('goalInput').value.trim();
-            if (!goal) {
-                showToast('Введи цель — например «выучить английский за 6 месяцев»');
-                document.getElementById('goalInput').focus();
-                return;
-            }
-
+            if (!goal) { showToast('Введи цель — например «выучить английский за 6 месяцев»'); return; }
             const cfg = getAiConfig();
-            if (!cfg || !cfg.key) {
-                showToast('Настрой AI-провайдера (кнопка 🤖) чтобы использовать планировщик');
-                return;
-            }
+            if (!cfg || !cfg.key) { showToast('Настрой AI-провайдера (кнопка 🤖)'); return; }
 
-            const duration   = document.getElementById('goalDuration').value;
-            const intensity  = document.getElementById('goalIntensity').value;
+            const duration  = document.getElementById('goalDuration').value;
+            const intensity = document.getElementById('goalIntensity').value;
 
-            // Показываем прогресс
             document.getElementById('goalGenerateBtn').style.display = 'none';
             document.getElementById('goalGenerating').style.display = 'block';
             document.getElementById('goalResult').classList.remove('show');
 
-            // Анимация прогресс-бара
-            const fill = document.getElementById('goalProgressFill');
-            const texts = [
-                '🤖 Анализирую цель...',
-                '📋 Строю этапы...',
-                '📅 Планирую задачи...',
-                '✨ Финальная обработка...'
-            ];
-            let textIdx = 0;
+            const fill   = document.getElementById('goalProgressFill');
             const textEl = document.getElementById('goalGeneratingText');
-            fill.style.width = '15%';
+            const texts  = ['🤖 Анализирую цель...','📋 Строю этапы...','📅 Считаю сроки...','✏️ Детализирую задачи...','✨ Финальная обработка...'];
+            let textIdx  = 0;
+            fill.style.width = '10%';
             const progressInterval = setInterval(() => {
                 textIdx = (textIdx + 1) % texts.length;
                 textEl.textContent = texts[textIdx];
-                const pct = Math.min(90, parseInt(fill.style.width) + 18);
-                fill.style.width = pct + '%';
-            }, 1200);
+                fill.style.width = Math.min(88, parseInt(fill.style.width) + 14) + '%';
+            }, 1400);
+
+            goalGenerating = true;
 
             try {
-                const mskNow = getMskNow();
+                const mskNow    = getMskNow();
                 const startDate = `${mskNow.getUTCDate()}.${mskNow.getUTCMonth()+1}.${mskNow.getUTCFullYear()}`;
+                const durationWeeks = duration.includes('месяц') ? parseInt(duration) * 4 :
+                                      duration.includes('год')   ? parseInt(duration) * 52 : 4;
 
                 const raw = await callAI(
-                    `Ты эксперт по планированию целей. Составь детальный план достижения цели.
-Верни ТОЛЬКО валидный JSON без пояснений и без markdown-блоков:
-{
-  "goalTitle": "краткое название цели",
-  "summary": "1-2 предложения о плане",
-  "stages": [
-    {
-      "name": "название этапа",
-      "duration": "сколько времени",
-      "tasks": [
-        { "title": "название задачи", "week": "Неделя 1", "priority": "high|medium|low", "category": "категория" }
-      ]
-    }
-  ]
-}
+`Ты эксперт по планированию целей. Составь подробный план.
+Дата начала: ${startDate}. Срок: ${duration}. Интенсивность: ${intensity}.
+
+Верни СТРОГО валидный JSON (без markdown, без \`\`\`, без текста до и после):
+{"goalTitle":"название цели до 60 символов","summary":"2-3 предложения об общем плане и результате","totalWeeks":${durationWeeks},"stages":[{"name":"название этапа","duration":"Недели 1-3","weekStart":1,"weekEnd":3,"tasks":[{"title":"конкретное действие до 80 символов","description":"Подробный план: 3-5 шагов что именно делать, как и в каком порядке. Минимум 3 предложения.","week":"Неделя 1","weekNumber":1,"priority":"high","category":"тема цели","estimatedHours":2,"daysFromStart":0}]}]}
+
 Требования:
-- 3-5 этапов
-- В каждом этапе 3-6 конкретных задач
-- Задачи должны быть действиями (глагол + объект): "Пройти урок 1-5", "Записаться на курс", "Сделать 30 упражнений"
-- Категория задачи должна соответствовать теме цели
-- Приоритеты: первые этапы — high, последние — medium/low
-- Пиши на русском языке`,
-                    `Цель: ${goal}
-Срок: ${duration}
-Интенсивность: ${intensity}
-Дата начала: ${startDate}`,
-                    1200
+- 3-5 этапов, в каждом 3-5 задач
+- title: глагол + объект ("Пройти модули 1-5", "Написать эссе 500 слов")
+- description: подробно ЧТО делать шаг за шагом, не пересказ title
+- weekNumber: номер недели от начала (1,2,3...)
+- daysFromStart: день от startDate (0,7,14...)
+- estimatedHours: реалистичные часы (1-8)
+- priority: "high" первые этапы, "medium" средние, "low" последние
+- JSON должен быть валидным — проверь все закрывающие скобки`,
+                    `Цель: ${goal}\nСрок: ${duration}\nИнтенсивность: ${intensity}\nДата начала: ${startDate}`,
+                    2000
                 );
 
                 clearInterval(progressInterval);
                 fill.style.width = '100%';
 
-                // Парсим JSON
                 let plan;
+                const jsonMatch = raw.trim().match(/\{[\s\S]*\}/);
+                if (!jsonMatch) throw new Error('В ответе нет JSON. Попробуй другую модель.');
+
                 try {
-                    const clean = raw.replace(/```json|```/g, '').trim();
-                    plan = JSON.parse(clean);
-                } catch(e) {
-                    throw new Error('AI вернул неверный формат. Попробуй ещё раз.');
+                    plan = JSON.parse(jsonMatch[0]);
+                } catch(e1) {
+                    const fixed = jsonMatch[0]
+                        .replace(/,\s*([}\]])/g, '$1')
+                        .replace(/'/g, '"')
+                        .replace(/[\u0000-\u001F\u007F-\u009F]/g, ' ');
+                    try { plan = JSON.parse(fixed); }
+                    catch(e2) { throw new Error('Не удалось разобрать ответ AI. Попробуй другую модель или повтори запрос.'); }
                 }
 
-                if (!plan.stages || !plan.stages.length) throw new Error('Не удалось построить план');
+                if (!plan || !Array.isArray(plan.stages) || !plan.stages.length)
+                    throw new Error('AI не вернул этапы. Попробуй ещё раз.');
 
-                goalPlan = plan;
-                renderGoalPlan(plan, goal, duration);
+                // Вычисляем реальные даты
+                const startMs = Date.now();
+                plan.stages.forEach(stage => {
+                    (stage.tasks || []).forEach(task => {
+                        const days = task.daysFromStart != null ? task.daysFromStart : ((task.weekNumber || 1) - 1) * 7;
+                        task._reminderUtc = new Date(startMs + days * 86400000).toISOString();
+                    });
+                });
+
+                plan._goal     = goal;
+                plan._duration = duration;
+                goalPlan       = plan;
+                goalGenerating = false;
+
+                if (document.getElementById('goalModal').classList.contains('show')) {
+                    renderGoalPlan(plan, goal, duration);
+                } else {
+                    showToast('🎯 План готов! Нажми 🎯 чтобы подтвердить задачи');
+                    const btn = document.getElementById('goalBtn');
+                    if (btn) {
+                        btn.style.boxShadow = '0 0 0 6px rgba(17,153,142,0.4)';
+                        setTimeout(() => { if (btn) btn.style.boxShadow = ''; }, 12000);
+                    }
+                }
 
             } catch(e) {
                 clearInterval(progressInterval);
+                goalGenerating = false;
+                const isOpen = document.getElementById('goalModal').classList.contains('show');
                 showToast('❌ ' + e.message);
-                document.getElementById('goalGenerating').style.display = 'none';
-                document.getElementById('goalGenerateBtn').style.display = 'block';
-                document.getElementById('goalGenerateBtn').disabled = false;
+                if (isOpen) {
+                    document.getElementById('goalGenerating').style.display = 'none';
+                    document.getElementById('goalGenerateBtn').style.display = 'block';
+                    document.getElementById('goalGenerateBtn').disabled = false;
+                }
             }
         }
 
@@ -4990,29 +5052,32 @@
                         <div class="goal-stage-num">${si + 1}</div>
                         <div>
                             <div class="goal-stage-name">${escapeHtml(stage.name)}</div>
-                            <div class="goal-stage-meta">${escapeHtml(stage.duration)} · ${stage.tasks?.length || 0} задач</div>
+                            <div class="goal-stage-meta">${escapeHtml(stage.duration || '')} · ${stage.tasks?.length || 0} задач</div>
                         </div>
                         <div class="goal-stage-arrow">▼</div>
                     </div>
                     <div class="goal-stage-tasks">
-                        ${(stage.tasks || []).map((task, ti) => `
-                            <div class="goal-task-row">
+                        ${(stage.tasks || []).map((task, ti) => {
+                            const dateStr = task._reminderUtc ? formatDisplayDate(task._reminderUtc) : (task.week || '');
+                            const hours   = task.estimatedHours ? `~${task.estimatedHours}ч` : '';
+                            return `<div class="goal-task-row">
                                 <input type="checkbox" class="goal-task-check" checked
                                     id="gt-${si}-${ti}" data-stage="${si}" data-task="${ti}">
-                                <div>
+                                <div style="flex:1">
                                     <div class="goal-task-title">${escapeHtml(task.title)}</div>
-                                    <div class="goal-task-week">${escapeHtml(task.week || '')} · ${escapeHtml(task.category || '')} · ${escapeHtml(task.priority || 'medium')}</div>
+                                    <div class="goal-task-week">📅 ${escapeHtml(dateStr)} · ${escapeHtml(task.category||'')} · ${hours}</div>
+                                    ${task.description ? `<div style="font-size:11px;opacity:.55;margin-top:3px;line-height:1.4">${escapeHtml(task.description.slice(0,140))}${task.description.length>140?'…':''}</div>` : ''}
                                 </div>
-                            </div>`).join('')}
+                            </div>`;
+                        }).join('')}
                     </div>
                 </div>`).join('');
 
-            // Счётчик выбранных
             updateGoalCounter();
-            stagesEl.querySelectorAll('.goal-task-check').forEach(cb => {
-                cb.addEventListener('change', updateGoalCounter);
-            });
+            stagesEl.querySelectorAll('.goal-task-check').forEach(cb =>
+                cb.addEventListener('change', updateGoalCounter));
         }
+
 
         function toggleGoalStage(idx) {
             document.getElementById(`goalStage${idx}`).classList.toggle('open');
@@ -5027,29 +5092,37 @@
 
         function addGoalTasksToList() {
             if (!goalPlan) return;
-
             const checked = [...document.querySelectorAll('.goal-task-check:checked')];
             if (!checked.length) { showToast('Выбери хотя бы одну задачу'); return; }
 
             let added = 0;
             checked.forEach(cb => {
-                const si = parseInt(cb.dataset.stage);
-                const ti = parseInt(cb.dataset.task);
+                const si    = parseInt(cb.dataset.stage);
+                const ti    = parseInt(cb.dataset.task);
                 const stage = goalPlan.stages[si];
                 const task  = stage?.tasks[ti];
                 if (!task) return;
 
+                // Подробное описание: цель + этап + план выполнения
+                const descParts = [
+                    `Цель: ${goalPlan.goalTitle}`,
+                    `Этап ${si+1}: ${stage.name} (${stage.duration || ''})`,
+                ];
+                if (task.description) descParts.push(`\nПлан выполнения:\n${task.description}`);
+                if (task.estimatedHours) descParts.push(`\nОценка времени: ~${task.estimatedHours} ч`);
+                const description = descParts.join('\n').slice(0, 2000);
+
                 tasks.unshift({
                     id: Date.now() + added,
                     title: task.title,
-                    description: `Цель: ${goalPlan.goalTitle} · Этап: ${stage.name}`,
+                    description,
                     type: 'task',
                     category: task.category || goalPlan.goalTitle || 'Цель',
                     priority: task.priority || 'medium',
-                    tags: ['цель', (goalPlan.goalTitle||'').toLowerCase().slice(0,20)].filter(Boolean),
+                    tags: ['цель', (goalPlan.goalTitle || '').toLowerCase().replace(/[^а-яёa-z0-9]/gi, '').slice(0, 20)].filter(Boolean),
                     completed: false,
                     createdAt: new Date().toISOString(),
-                    reminderTime: null,
+                    reminderTime: task._reminderUtc || null,
                     isRecurring: false,
                     recurringInterval: 'weekly'
                 });
@@ -5060,7 +5133,9 @@
             renderTasks();
             renderCategories();
             closeGoalModal();
-            showToast(`✅ Добавлено ${added} задач из плана!`);
+            // Сбрасываем план после добавления
+            goalPlan = null;
+            showToast(`✅ Добавлено ${added} задач с датами из плана!`);
         }
 
         function setupGoalPlanner() {
