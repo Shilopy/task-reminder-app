@@ -4,21 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <!-- CSP: разрешаем fetch только к известным AI-провайдерам и своим URL -->
-    <meta http-equiv="Content-Security-Policy" content="
-        default-src 'self';
-        script-src 'self' 'unsafe-inline';
-        style-src 'self' 'unsafe-inline';
-        connect-src 'self'
-            https://openrouter.ai
-            https://api.deepseek.com
-            https://generativelanguage.googleapis.com
-            https://api.groq.com
-            http://localhost:*
-            https://localhost:*;
-        img-src 'self' data:;
-        font-src 'self';
-        worker-src 'self';
-    ">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="SmartTasks">
@@ -3132,9 +3117,8 @@
                 // OpenRouter требует X-Title для идентификации приложения.
                 const res = await fetch('https://openrouter.ai/api/v1/models', {
                     method: 'GET',
-                    headers: {
-                        'X-Title': 'SmartTasks Pro'
-                    }
+                    cache: 'no-store',
+                    headers: { 'X-Title': 'SmartTasks Pro' }
                 });
                 if (!res.ok) throw new Error('HTTP ' + res.status);
                 const data = await res.json();
