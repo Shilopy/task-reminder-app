@@ -3,6 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <!-- CSP: разрешаем fetch только к известным AI-провайдерам и своим URL -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' 'unsafe-inline';
+        style-src 'self' 'unsafe-inline';
+        connect-src 'self'
+            https://openrouter.ai
+            https://api.deepseek.com
+            https://generativelanguage.googleapis.com
+            https://api.groq.com
+            http://localhost:*
+            https://localhost:*;
+        img-src 'self' data:;
+        font-src 'self';
+        worker-src 'self';
+    ">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="SmartTasks">
@@ -109,30 +125,30 @@
         }
         
         .header {
-            padding: 16px 20px;
+            padding: 14px 16px;
             border-radius: 20px;
             margin-bottom: 16px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 10px;
-            overflow: hidden;
+            gap: 8px;
+            /* НЕТ overflow:hidden — иначе dropdown обрезается */
         }
 
         .header-title { flex: 1; min-width: 0; }
 
         .header h1 {
-            font-size: 20px;
-            margin-bottom: 2px;
+            font-size: 18px;
+            margin-bottom: 1px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
         .header p {
-            font-size: 12px;
-            opacity: 0.85;
+            font-size: 11px;
+            opacity: 0.8;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -143,6 +159,7 @@
             gap: 6px;
             align-items: center;
             flex-shrink: 0;
+            position: relative; /* чтобы dropdown позиционировался относительно controls */
         }
 
         .theme-btn, .stats-btn {
@@ -500,7 +517,7 @@
         
         .fab {
             position: fixed;
-            bottom: 24px;
+            bottom: calc(24px + env(safe-area-inset-bottom, 0px));
             right: 20px;
             width: 58px;
             height: 58px;
@@ -520,7 +537,16 @@
 
         .fab:active { transform: scale(0.93); }
 
-        /* Speed dial CSS removed - using two separate FAB buttons */
+        /* Зелёная кнопка 🎯 — всегда над фиолетовой + отступ от системной навигации */
+        #goalBtn {
+            bottom: calc(94px + env(safe-area-inset-bottom, 0px));
+            width: 46px;
+            height: 46px;
+            border-radius: 23px;
+            font-size: 22px;
+            background: linear-gradient(135deg, #11998e, #38ef7d);
+            box-shadow: 0 4px 12px rgba(17,153,142,0.4);
+        }
         
         .modal {
             display: none;
@@ -1399,11 +1425,8 @@
       </div>
     </div>
     
-    <!-- FAB overlay (закрывает speed dial если открыт - убираем) -->
-
-    <!-- Кнопка планировщика целей - чуть меньше, над основным FAB -->
-    <button class="fab" id="goalBtn" aria-label="Планировщик целей"
-        style="bottom:90px;right:20px;width:46px;height:46px;border-radius:23px;font-size:22px;background:linear-gradient(135deg,#11998e,#38ef7d);box-shadow:0 4px 12px rgba(17,153,142,0.4)">🎯</button>
+    <!-- Кнопка планировщика целей — позиционируется через #goalBtn CSS -->
+    <button class="fab" id="goalBtn" aria-label="Планировщик целей">🎯</button>
 
     <!-- Главный FAB — добавить задачу -->
     <button class="fab" id="fabBtn" aria-label="Добавить задачу">＋</button>
@@ -3778,6 +3801,29 @@
             showToast('📤 Файл сохранён');
         }
 
+        function sanitizeTask(t) {
+            if (!t || typeof t !== 'object') return null;
+            const id = typeof t.id === 'number' ? t.id : Date.now() + Math.random();
+            const title = String(t.title || '').slice(0, 200).trim();
+            if (!title) return null; // задача без названия — пропускаем
+            return {
+                id,
+                title,
+                description: String(t.description || '').slice(0, 2000),
+                type: ['task','idea','urgent'].includes(t.type) ? t.type : 'task',
+                category: String(t.category || '').slice(0, 50),
+                priority: ['high','medium','low'].includes(t.priority) ? t.priority : 'medium',
+                tags: Array.isArray(t.tags) ? t.tags.map(tg => String(tg).slice(0,30)).slice(0,10) : [],
+                completed: Boolean(t.completed),
+                createdAt: t.createdAt || new Date().toISOString(),
+                reminderTime: t.reminderTime || null,
+                isRecurring: Boolean(t.isRecurring),
+                recurringInterval: ['daily','weekly','monthly'].includes(t.recurringInterval) ? t.recurringInterval : 'daily',
+                deletedAt: t.deletedAt || undefined,
+                isArchived: Boolean(t.isArchived),
+            };
+        }
+
         function importJSON(file) {
             if (!file) return;
             const reader = new FileReader();
@@ -3794,11 +3840,15 @@
 
                     // Объединяем: новые задачи добавляем если их нет по id
                     const existingIds = new Set(tasks.map(t => t.id));
-                    const newTasks = importedTasks.filter(t => !existingIds.has(t.id));
+                    const newTasks = importedTasks
+                        .map(sanitizeTask)
+                        .filter(t => t && !existingIds.has(t.id));
                     tasks = [...newTasks, ...tasks];
 
                     const archiveIds = new Set(taskArchive.map(t => t.id));
-                    const newArchive = importedArchive.filter(t => !archiveIds.has(t.id));
+                    const newArchive = importedArchive
+                        .map(sanitizeTask)
+                        .filter(t => t && !archiveIds.has(t.id));
                     taskArchive = [...newArchive, ...taskArchive];
 
                     saveTasks();
@@ -3950,10 +4000,22 @@
                 <div class="ai-nudge-title">🔍 Кажется, ты что-то забыл...</div>
                 <div class="ai-nudge-text">${escapeHtml(message)}</div>
                 <div class="ai-nudge-actions">
-                    <button class="nudge-restore" onclick="restoreFromNudge(${JSON.stringify(pattern.originalTask).replace(/"/g, '&quot;')}, '${pattern.nudgeId}', '${nudgeId}')">➕ Добавить снова</button>
-                    <button class="nudge-delete" onclick="deleteFromNudge('${pattern.nudgeId}', '${nudgeId}')">🗑 Удалить навсегда</button>
-                    <button class="nudge-dismiss" onclick="dismissNudge('${pattern.nudgeId}', '${nudgeId}')">✕ Всё ок</button>
+                    <button class="nudge-restore" data-nudge-id="${escapeHtml(pattern.nudgeId)}" data-card-id="${escapeHtml(nudgeId)}">➕ Добавить снова</button>
+                    <button class="nudge-delete" data-nudge-id="${escapeHtml(pattern.nudgeId)}" data-card-id="${escapeHtml(nudgeId)}">🗑 Удалить навсегда</button>
+                    <button class="nudge-dismiss" data-nudge-id="${escapeHtml(pattern.nudgeId)}" data-card-id="${escapeHtml(nudgeId)}">✕ Всё ок</button>
                 </div>`;
+
+            // Сохраняем объект задачи в dataset безопасно
+            card.dataset.originalTask = JSON.stringify(pattern.originalTask);
+
+            card.querySelector('.nudge-restore').addEventListener('click', () => {
+                const task = JSON.parse(card.dataset.originalTask);
+                restoreFromNudge(task, pattern.nudgeId, nudgeId);
+            });
+            card.querySelector('.nudge-delete').addEventListener('click', () =>
+                deleteFromNudge(pattern.nudgeId, nudgeId));
+            card.querySelector('.nudge-dismiss').addEventListener('click', () =>
+                dismissNudge(pattern.nudgeId, nudgeId));
         }
 
         function dismissNudge(nudgeId, cardId) {
