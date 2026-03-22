@@ -1616,7 +1616,12 @@
         <!-- Model -->
         <div class="ai-model-section">
           <div class="ai-key-label">Модель</div>
-          <select class="ai-model-select" id="aiModel"></select>
+          <input type="text" id="aiModelSearch" placeholder="🔍 Поиск модели..."
+            style="width:100%;padding:9px 14px;border:1.5px solid #ddd;border-radius:10px;font-size:14px;margin-bottom:6px;outline:none;box-sizing:border-box"
+            oninput="filterAiModels(this.value)">
+          <select class="ai-model-select" id="aiModel" size="5"
+            style="height:auto;min-height:120px;border-radius:10px;padding:4px"></select>
+          <div id="aiModelCount" style="font-size:11px;opacity:.5;margin-top:4px;text-align:right"></div>
         </div>
 
         <!-- Status -->
@@ -3045,13 +3050,8 @@
                 url: 'https://openrouter.ai/api/v1/chat/completions',
                 keyLink: 'https://openrouter.ai/keys',
                 keyPlaceholder: 'sk-or-v1-...',
-                models: [
-                    { id: 'deepseek/deepseek-chat-v3-5:free', label: 'DeepSeek V3 (бесплатно)' },
-                    { id: 'meta-llama/llama-3.3-70b-instruct:free', label: 'Llama 3.3 70B (бесплатно)' },
-                    { id: 'google/gemini-flash-1.5:free', label: 'Gemini Flash (бесплатно)' },
-                    { id: 'mistralai/mistral-7b-instruct:free', label: 'Mistral 7B (бесплатно)' },
-                    { id: 'deepseek/deepseek-r1:free', label: 'DeepSeek R1 (бесплатно)' },
-                ]
+                dynamicModels: true, // подгружаем с API
+                models: [] // заполняется динамически
             },
             deepseek: {
                 name: 'DeepSeek',
@@ -3059,8 +3059,8 @@
                 keyLink: 'https://platform.deepseek.com/api_keys',
                 keyPlaceholder: 'sk-...',
                 models: [
-                    { id: 'deepseek-chat', label: 'DeepSeek V3 (рекомендуем)' },
-                    { id: 'deepseek-reasoner', label: 'DeepSeek R1 (рассуждения)' },
+                    { id: 'deepseek-chat',     label: 'DeepSeek V3',         price: '$0.27/1M' },
+                    { id: 'deepseek-reasoner', label: 'DeepSeek R1 (думает)', price: '$0.55/1M' },
                 ]
             },
             gemini: {
@@ -3069,9 +3069,10 @@
                 keyLink: 'https://aistudio.google.com/app/apikey',
                 keyPlaceholder: 'AIza...',
                 models: [
-                    { id: 'gemini-2.0-flash-lite', label: 'Gemini 2.0 Flash Lite (быстрый)' },
-                    { id: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash' },
-                    { id: 'gemini-1.5-flash', label: 'Gemini 1.5 Flash' },
+                    { id: 'gemini-2.0-flash-lite', label: 'Gemini 2.0 Flash Lite', price: 'Бесплатно' },
+                    { id: 'gemini-2.0-flash',      label: 'Gemini 2.0 Flash',      price: '$0.10/1M' },
+                    { id: 'gemini-1.5-flash',      label: 'Gemini 1.5 Flash',      price: '$0.075/1M' },
+                    { id: 'gemini-1.5-pro',        label: 'Gemini 1.5 Pro',        price: '$1.25/1M' },
                 ]
             },
             groq: {
@@ -3080,9 +3081,10 @@
                 keyLink: 'https://console.groq.com/keys',
                 keyPlaceholder: 'gsk_...',
                 models: [
-                    { id: 'llama-3.3-70b-versatile', label: 'Llama 3.3 70B (рекомендуем)' },
-                    { id: 'llama-3.1-8b-instant', label: 'Llama 3.1 8B (быстрый)' },
-                    { id: 'mixtral-8x7b-32768', label: 'Mixtral 8x7B' },
+                    { id: 'llama-3.3-70b-versatile', label: 'Llama 3.3 70B',    price: 'Бесплатно' },
+                    { id: 'llama-3.1-8b-instant',    label: 'Llama 3.1 8B',     price: 'Бесплатно' },
+                    { id: 'mixtral-8x7b-32768',      label: 'Mixtral 8x7B',     price: 'Бесплатно' },
+                    { id: 'gemma2-9b-it',            label: 'Gemma 2 9B',       price: 'Бесплатно' },
                 ]
             },
             custom: {
@@ -3091,10 +3093,122 @@
                 keyLink: '',
                 keyPlaceholder: 'sk-...',
                 models: [
-                    { id: 'custom-model', label: 'Укажи модель вручную' },
+                    { id: 'custom-model', label: 'Укажи модель вручную', price: '' },
                 ]
             }
         };
+
+        // Кэш моделей OpenRouter
+        let orModelsCache = null;
+
+        // Известные бесплатные модели OpenRouter (fallback если API недоступен)
+        const OR_FALLBACK_MODELS = [
+            { id: 'deepseek/deepseek-chat-v3-5:free',          label: 'DeepSeek V3',           price: 'Бесплатно', tier: 'free' },
+            { id: 'deepseek/deepseek-r1:free',                  label: 'DeepSeek R1',           price: 'Бесплатно', tier: 'free' },
+            { id: 'meta-llama/llama-3.3-70b-instruct:free',    label: 'Llama 3.3 70B',         price: 'Бесплатно', tier: 'free' },
+            { id: 'google/gemini-2.0-flash-exp:free',           label: 'Gemini 2.0 Flash',      price: 'Бесплатно', tier: 'free' },
+            { id: 'microsoft/phi-4:free',                       label: 'Microsoft Phi-4',       price: 'Бесплатно', tier: 'free' },
+            { id: 'qwen/qwen-2.5-72b-instruct:free',            label: 'Qwen 2.5 72B',          price: 'Бесплатно', tier: 'free' },
+            { id: 'deepseek/deepseek-chat',                     label: 'DeepSeek V3',           price: '$0.14/1M',  tier: 'cheap' },
+            { id: 'deepseek/deepseek-r1',                       label: 'DeepSeek R1',           price: '$0.55/1M',  tier: 'cheap' },
+            { id: 'google/gemini-flash-1.5',                    label: 'Gemini 1.5 Flash',      price: '$0.075/1M', tier: 'cheap' },
+            { id: 'anthropic/claude-3-haiku',                   label: 'Claude 3 Haiku',        price: '$0.25/1M',  tier: 'mid' },
+            { id: 'openai/gpt-4o-mini',                        label: 'GPT-4o Mini',           price: '$0.15/1M',  tier: 'mid' },
+            { id: 'anthropic/claude-3.5-sonnet',               label: 'Claude 3.5 Sonnet',     price: '$3.00/1M',  tier: 'smart' },
+            { id: 'openai/gpt-4o',                             label: 'GPT-4o',                price: '$2.50/1M',  tier: 'smart' },
+            { id: 'google/gemini-pro-1.5',                     label: 'Gemini 1.5 Pro',        price: '$1.25/1M',  tier: 'smart' },
+        ];
+
+        async function fetchOpenRouterModels() {
+            if (orModelsCache) return orModelsCache;
+            try {
+                const res = await fetch('https://openrouter.ai/api/v1/models', {
+                    headers: { 'HTTP-Referer': window.location.href }
+                });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const data = await res.json();
+
+                // Фильтруем и сортируем: берём только chat-модели
+                const models = (data.data || [])
+                    .filter(m => m.id && m.context_length >= 4000)
+                    .map(m => {
+                        const priceIn  = parseFloat(m.pricing?.prompt  || 0) * 1_000_000;
+                        const priceOut = parseFloat(m.pricing?.completion || 0) * 1_000_000;
+                        const avgPrice = (priceIn + priceOut) / 2;
+                        const isFree   = avgPrice === 0;
+                        let tier = 'smart';
+                        if (isFree)        tier = 'free';
+                        else if (avgPrice < 0.3) tier = 'cheap';
+                        else if (avgPrice < 1.5) tier = 'mid';
+
+                        const priceStr = isFree
+                            ? 'Бесплатно'
+                            : `$${avgPrice.toFixed(2)}/1M`;
+
+                        // Человекочитаемое имя
+                        const nameParts = m.name || m.id;
+                        return { id: m.id, label: nameParts, price: priceStr, tier, ctx: m.context_length };
+                    })
+                    .sort((a, b) => {
+                        const tierOrder = { free: 0, cheap: 1, mid: 2, smart: 3 };
+                        return (tierOrder[a.tier] - tierOrder[b.tier]) || a.label.localeCompare(b.label);
+                    });
+
+                orModelsCache = models.length > 0 ? models : OR_FALLBACK_MODELS;
+                return orModelsCache;
+            } catch(e) {
+                console.warn('OpenRouter models fetch failed, using fallback:', e.message);
+                orModelsCache = OR_FALLBACK_MODELS;
+                return orModelsCache;
+            }
+        }
+
+        function filterAiModels(query) {
+            const q = query.toLowerCase().trim();
+            const select = document.getElementById('aiModel');
+            let visible = 0;
+            Array.from(select.options).forEach(opt => {
+                const text = opt.text.toLowerCase();
+                const show = !q || text.includes(q);
+                opt.style.display = show ? '' : 'none';
+                if (show && !opt.disabled) visible++;
+            });
+            // Скрываем пустые optgroups
+            Array.from(select.querySelectorAll('optgroup')).forEach(g => {
+                const hasVisible = Array.from(g.options).some(o => o.style.display !== 'none');
+                g.style.display = hasVisible ? '' : 'none';
+            });
+            const countEl = document.getElementById('aiModelCount');
+            if (countEl) countEl.textContent = q ? `Найдено: ${visible}` : '';
+        }
+
+        function renderOpenRouterModelSelect(models, savedModel) {
+            const groups = [
+                { tier: 'free',  label: '🆓 Бесплатные' },
+                { tier: 'cheap', label: '💰 Дёшево  < $0.30/1M' },
+                { tier: 'mid',   label: '⚡ Средние  $0.30–$1.5/1M' },
+                { tier: 'smart', label: '🧠 Умные  > $1.5/1M' },
+            ];
+            const modelSelect = document.getElementById('aiModel');
+            let html = '';
+            groups.forEach(g => {
+                const gm = models.filter(m => m.tier === g.tier);
+                if (!gm.length) return;
+                html += `<optgroup label="${g.label}">`;
+                gm.forEach(m => {
+                    const sel = m.id === savedModel ? 'selected' : '';
+                    const ctx = m.ctx ? ` · ${Math.round(m.ctx/1000)}K` : '';
+                    html += `<option value="${m.id}" ${sel}>${m.label} — ${m.price}${ctx}</option>`;
+                });
+                html += `</optgroup>`;
+            });
+            modelSelect.innerHTML = html || '<option>Нет моделей</option>';
+            // Сбрасываем поиск
+            const searchEl = document.getElementById('aiModelSearch');
+            if (searchEl) searchEl.value = '';
+            const countEl = document.getElementById('aiModelCount');
+            if (countEl) countEl.textContent = `${models.length} моделей`;
+        }
 
         // Текущий выбранный провайдер в модалке (до сохранения)
         let aiModalProvider = 'openrouter';
@@ -3119,22 +3233,19 @@
             };
         }
 
-        function updateAiModalProvider(provider) {
+        async function updateAiModalProvider(provider) {
             aiModalProvider = provider;
             const p = AI_PROVIDERS[provider];
 
-            // Выделяем карточку
             document.querySelectorAll('.ai-provider-card').forEach(c => {
                 c.classList.toggle('selected', c.dataset.provider === provider);
             });
 
-            // Показываем/скрываем поле custom URL
             const customSection = document.getElementById('aiCustomUrlSection');
-            const keySection = document.getElementById('aiKeySection');
+            const keySection    = document.getElementById('aiKeySection');
             customSection.style.display = provider === 'custom' ? 'block' : 'none';
-            keySection.style.display = provider === 'custom' ? 'none' : 'block'; // для custom ключ не нужен
+            keySection.style.display    = provider === 'custom' ? 'none'  : 'block';
 
-            // Ссылка на получение ключа
             const keyLink = document.getElementById('aiGetKeyLink');
             if (p.keyLink) {
                 keyLink.href = p.keyLink;
@@ -3144,19 +3255,32 @@
                 keyLink.style.display = 'none';
             }
 
-            // Placeholder поля ключа
-            const keyInput = document.getElementById('aiApiKey');
-            keyInput.placeholder = p.keyPlaceholder || 'sk-...';
+            document.getElementById('aiApiKey').placeholder = p.keyPlaceholder || 'sk-...';
 
-            // Список моделей
-            const modelSelect = document.getElementById('aiModel');
+            const modelSelect   = document.getElementById('aiModel');
             const savedSettings = loadAiSettings();
-            modelSelect.innerHTML = p.models.map(m =>
-                `<option value="${m.id}" ${m.id === savedSettings.model ? 'selected' : ''}>${m.label}</option>`
-            ).join('');
 
-            // Сбрасываем статус
-            setAiStatus('idle', '💡 Вставь ключ и нажми «Проверить»');
+            if (provider === 'openrouter') {
+                // Показываем лоадер пока грузим
+                modelSelect.innerHTML = '<option disabled selected>⏳ Загружаю модели...</option>';
+                setAiStatus('testing', '⏳ Получаю список моделей OpenRouter...');
+                try {
+                    const models = await fetchOpenRouterModels();
+                    renderOpenRouterModelSelect(models, savedSettings.model);
+                    setAiStatus('idle', `✅ Загружено ${models.length} моделей · Вставь ключ и проверь`);
+                } catch(e) {
+                    renderOpenRouterModelSelect(OR_FALLBACK_MODELS, savedSettings.model);
+                    setAiStatus('idle', '⚠️ Используется кэшированный список моделей');
+                }
+            } else {
+                // Статичный список с ценами
+                modelSelect.innerHTML = p.models.map(m => {
+                    const sel   = m.id === savedSettings.model ? 'selected' : '';
+                    const price = m.price ? ` — ${m.price}` : '';
+                    return `<option value="${m.id}" ${sel}>${m.label}${price}</option>`;
+                }).join('');
+                setAiStatus('idle', '💡 Вставь ключ и нажми «Проверить»');
+            }
         }
 
         function setAiStatus(type, text) {
@@ -3168,10 +3292,10 @@
         function openAiModal() {
             const settings = loadAiSettings();
             aiModalProvider = settings.provider || 'openrouter';
-
-            // Восстанавливаем сохранённые значения
             document.getElementById('aiApiKey').value = settings.apiKey || '';
             document.getElementById('aiCustomUrl').value = settings.customUrl || '';
+            const searchEl = document.getElementById('aiModelSearch');
+            if (searchEl) searchEl.value = '';
             updateAiModalProvider(aiModalProvider);
 
             // Если ключ уже есть — показываем статус
