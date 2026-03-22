@@ -1615,7 +1615,13 @@
 
         <!-- Model -->
         <div class="ai-model-section">
-          <div class="ai-key-label">Модель</div>
+          <div class="ai-key-label" style="display:flex;justify-content:space-between;align-items:center">
+            <span>Модель</span>
+            <button id="aiModelRefresh" onclick="refreshOrModels()"
+              style="font-size:11px;background:none;border:none;color:#667eea;cursor:pointer;padding:0;display:none">
+              🔄 Обновить список
+            </button>
+          </div>
           <input type="text" id="aiModelSearch" placeholder="🔍 Поиск модели..."
             style="width:100%;padding:9px 14px;border:1.5px solid #ddd;border-radius:10px;font-size:14px;margin-bottom:6px;outline:none;box-sizing:border-box"
             oninput="filterAiModels(this.value)">
@@ -3122,45 +3128,64 @@
         async function fetchOpenRouterModels() {
             if (orModelsCache) return orModelsCache;
             try {
+                // HTTP-Referer — запрещённый заголовок в браузере, браузер его блокирует.
+                // OpenRouter требует X-Title для идентификации приложения.
                 const res = await fetch('https://openrouter.ai/api/v1/models', {
-                    headers: { 'HTTP-Referer': window.location.href }
+                    method: 'GET',
+                    headers: {
+                        'X-Title': 'SmartTasks Pro'
+                    }
                 });
                 if (!res.ok) throw new Error('HTTP ' + res.status);
                 const data = await res.json();
 
-                // Фильтруем и сортируем: берём только chat-модели
                 const models = (data.data || [])
-                    .filter(m => m.id && m.context_length >= 4000)
+                    .filter(m => m.id && (m.context_length || 0) >= 4000)
                     .map(m => {
-                        const priceIn  = parseFloat(m.pricing?.prompt  || 0) * 1_000_000;
-                        const priceOut = parseFloat(m.pricing?.completion || 0) * 1_000_000;
+                        // pricing.prompt и pricing.completion — цена за 1 токен в долларах
+                        const priceIn  = parseFloat(m.pricing?.prompt      || 0) * 1_000_000;
+                        const priceOut = parseFloat(m.pricing?.completion  || 0) * 1_000_000;
                         const avgPrice = (priceIn + priceOut) / 2;
-                        const isFree   = avgPrice === 0;
+                        const isFree   = avgPrice < 0.001; // < $0.001 считаем бесплатным
+
                         let tier = 'smart';
-                        if (isFree)        tier = 'free';
+                        if (isFree)             tier = 'free';
                         else if (avgPrice < 0.3) tier = 'cheap';
                         else if (avgPrice < 1.5) tier = 'mid';
 
                         const priceStr = isFree
                             ? 'Бесплатно'
-                            : `$${avgPrice.toFixed(2)}/1M`;
+                            : `$${avgPrice.toFixed(3)}/1M`;
 
-                        // Человекочитаемое имя
-                        const nameParts = m.name || m.id;
-                        return { id: m.id, label: nameParts, price: priceStr, tier, ctx: m.context_length };
+                        return {
+                            id:    m.id,
+                            label: m.name || m.id,
+                            price: priceStr,
+                            tier,
+                            ctx:   m.context_length
+                        };
                     })
                     .sort((a, b) => {
-                        const tierOrder = { free: 0, cheap: 1, mid: 2, smart: 3 };
-                        return (tierOrder[a.tier] - tierOrder[b.tier]) || a.label.localeCompare(b.label);
+                        const order = { free: 0, cheap: 1, mid: 2, smart: 3 };
+                        return (order[a.tier] - order[b.tier]) || a.label.localeCompare(b.label);
                     });
 
                 orModelsCache = models.length > 0 ? models : OR_FALLBACK_MODELS;
                 return orModelsCache;
             } catch(e) {
-                console.warn('OpenRouter models fetch failed, using fallback:', e.message);
+                console.warn('OpenRouter fetch failed:', e.message);
                 orModelsCache = OR_FALLBACK_MODELS;
                 return orModelsCache;
             }
+        }
+
+        async function refreshOrModels() {
+            orModelsCache = null; // сбрасываем кэш
+            const btn = document.getElementById('aiModelRefresh');
+            if (btn) { btn.textContent = '⏳ Загружаю...'; btn.disabled = true; }
+            const settings = loadAiSettings();
+            await updateAiModalProvider('openrouter');
+            if (btn) { btn.textContent = '🔄 Обновить список'; btn.disabled = false; }
         }
 
         function filterAiModels(query) {
@@ -3256,6 +3281,10 @@
             }
 
             document.getElementById('aiApiKey').placeholder = p.keyPlaceholder || 'sk-...';
+
+            // Кнопка обновить список — только для OpenRouter
+            const refreshBtn = document.getElementById('aiModelRefresh');
+            if (refreshBtn) refreshBtn.style.display = provider === 'openrouter' ? 'block' : 'none';
 
             const modelSelect   = document.getElementById('aiModel');
             const savedSettings = loadAiSettings();
