@@ -624,6 +624,542 @@
         .notif-status.granted { background: #e8f5e9; color: #4caf50; }
         .notif-status.denied { background: #ffebee; color: #c62828; }
         .notif-status.default { background: #fff3e0; color: #ff9800; cursor: pointer; }
+
+        /* ══ СТРИКИ ══ */
+        .streak-bar {
+            display:flex; align-items:center; gap:12px;
+            padding:12px 16px; border-radius:16px; margin-bottom:14px;
+            cursor:pointer; transition:transform .15s;
+        }
+        .streak-bar:active { transform:scale(.98); }
+        body.light .streak-bar { background:linear-gradient(135deg,#ff9800,#ff5722); color:#fff; }
+        body.dark  .streak-bar { background:linear-gradient(135deg,#7a3800,#5c1f00); color:#ffb74d; }
+        .streak-fire { font-size:28px; }
+        .streak-info { flex:1; }
+        .streak-count { font-size:22px; font-weight:700; line-height:1; }
+        .streak-label { font-size:12px; opacity:.85; margin-top:2px; }
+        .streak-level { font-size:12px; padding:3px 10px; border-radius:20px; background:rgba(255,255,255,.2); white-space:nowrap; }
+
+        /* ══ ОНБОРДИНГ ══ */
+        .onboard-modal { display:none; position:fixed; inset:0; z-index:3000; background:rgba(0,0,0,.7); align-items:center; justify-content:center; padding:20px; }
+        .onboard-modal.show { display:flex; }
+        .onboard-panel { width:100%; max-width:420px; border-radius:24px; overflow:hidden; }
+        body.light .onboard-panel { background:#fff; }
+        body.dark  .onboard-panel { background:#16213e; color:#eee; }
+        .onboard-slide { padding:32px 28px 24px; display:none; }
+        .onboard-slide.active { display:block; animation:fadeIn .3s; }
+        .onboard-emoji { font-size:52px; margin-bottom:16px; }
+        .onboard-title { font-size:22px; font-weight:700; margin-bottom:10px; line-height:1.3; }
+        .onboard-text  { font-size:15px; opacity:.7; line-height:1.6; margin-bottom:24px; }
+        .onboard-dots  { display:flex; gap:6px; justify-content:center; margin-bottom:20px; }
+        .onboard-dot   { width:8px; height:8px; border-radius:50%; background:rgba(128,128,128,.3); transition:all .2s; }
+        .onboard-dot.active { background:#667eea; width:20px; border-radius:4px; }
+        .onboard-btn   { width:100%; padding:14px; border:none; border-radius:14px; font-size:16px; font-weight:600; cursor:pointer; background:linear-gradient(135deg,#667eea,#764ba2); color:#fff; }
+        .onboard-skip  { display:block; text-align:center; margin-top:12px; font-size:13px; opacity:.4; cursor:pointer; }
+        .onboard-skip:hover { opacity:.7; }
+
+        /* ══ WRAPPED ══ */
+        .wrapped-modal { display:none; position:fixed; inset:0; z-index:2500; align-items:center; justify-content:center; }
+        .wrapped-modal.show { display:flex; }
+        .wrapped-bg { position:absolute; inset:0; background:#0a0a1a; }
+        .wrapped-panel { position:relative; width:100%; max-width:400px; max-height:95vh; overflow:hidden; }
+        .wrapped-slide { display:none; flex-direction:column; align-items:center; justify-content:center; min-height:520px; padding:40px 32px; text-align:center; color:#fff; border-radius:24px; position:relative; overflow:hidden; animation:fadeIn .5s; }
+        .wrapped-slide.active { display:flex; }
+        .wrapped-num   { font-size:72px; font-weight:800; line-height:1; margin:12px 0; background:linear-gradient(135deg,#fff,rgba(255,255,255,.6)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+        .wrapped-label { font-size:16px; opacity:.7; margin-bottom:8px; }
+        .wrapped-title { font-size:26px; font-weight:700; margin:12px 0 8px; }
+        .wrapped-sub   { font-size:15px; opacity:.7; line-height:1.5; }
+        .wrapped-emoji { font-size:64px; margin-bottom:8px; }
+        .wrapped-nav   { position:absolute; bottom:20px; left:0; right:0; display:flex; align-items:center; justify-content:space-between; padding:0 24px; }
+        .wrapped-close { position:absolute; top:16px; right:16px; background:rgba(255,255,255,.15); border:none; color:#fff; width:32px; height:32px; border-radius:50%; font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+        .wrapped-arrow { background:rgba(255,255,255,.15); border:none; color:#fff; width:44px; height:44px; border-radius:50%; font-size:20px; cursor:pointer; transition:background .15s; }
+        .wrapped-arrow:hover { background:rgba(255,255,255,.25); }
+        .wrapped-progress { display:flex; gap:4px; }
+        .wrapped-prog-dot { height:3px; width:20px; border-radius:2px; background:rgba(255,255,255,.25); transition:background .3s; }
+        .wrapped-prog-dot.done { background:#fff; }
+        @keyframes floatUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+        .wrapped-slide.active .wrapped-num,
+        .wrapped-slide.active .wrapped-emoji { animation:floatUp .6s .1s both; }
+        .task-btn-split {
+            padding: 6px 10px; border: none; border-radius: 8px;
+            font-size: 12px; cursor: pointer; transition: all .2s;
+            background: #f0eeff; color: #534AB7;
+        }
+        body.dark .task-btn-split { background: #1a1060; color: #9a8dea; }
+        .task-btn-split:hover { background: #667eea; color: white; }
+        .task-btn-split.loading { opacity: .6; cursor: default; }
+
+        /* Модалка подзадач */
+        .subtask-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:2400; align-items:flex-end; }
+        .subtask-modal.show { display:flex; }
+        .subtask-panel { width:100%; max-height:85vh; overflow-y:auto; border-radius:24px 24px 0 0; padding:22px 20px 28px; }
+        body.light .subtask-panel { background:#fff; }
+        body.dark  .subtask-panel { background:#16213e; color:#eee; }
+        .subtask-item { display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:.5px solid rgba(128,128,128,.12); }
+        .subtask-item:last-child { border:none; }
+        .subtask-check { width:18px; height:18px; border-radius:4px; border:1.5px solid #667eea; appearance:none; cursor:pointer; flex-shrink:0; }
+        .subtask-check:checked { background:#667eea; }
+        .subtask-text { font-size:14px; flex:1; }
+        .subtask-priority { font-size:11px; opacity:.5; }
+
+        /* Автодополнение тегов */
+        .tag-autocomplete {
+            position:absolute; left:0; right:0; top:100%; margin-top:2px;
+            border-radius:10px; overflow:hidden; z-index:500;
+            box-shadow:0 4px 16px rgba(0,0,0,.12); display:none;
+        }
+        body.light .tag-autocomplete { background:#fff; border:1px solid #eee; }
+        body.dark  .tag-autocomplete { background:#16213e; border:1px solid #1a4d8c; }
+        .tag-autocomplete.show { display:block; }
+        .tag-ac-item { padding:9px 14px; font-size:13px; cursor:pointer; transition:background .1s; }
+        body.light .tag-ac-item:hover { background:#f0eeff; }
+        body.dark  .tag-ac-item:hover { background:#1a1060; }
+        .tag-ac-item span { color:#667eea; font-size:11px; margin-left:4px; opacity:.7; }
+        .goal-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:2300; align-items:flex-end; }
+        .goal-modal.show { display:flex; }
+        .goal-panel { width:100%; max-height:92vh; border-radius:24px 24px 0 0; overflow-y:auto; padding:24px 20px 32px; }
+        body.light .goal-panel { background:#fff; }
+        body.dark  .goal-panel { background:#16213e; color:#eee; }
+
+        .goal-hero { background:linear-gradient(135deg,#11998e,#38ef7d); border-radius:16px; padding:18px 20px; margin-bottom:20px; color:#fff; }
+        .goal-hero-title { font-size:20px; font-weight:700; margin-bottom:4px; }
+        .goal-hero-sub   { font-size:13px; opacity:.85; }
+
+        .goal-input-area { margin-bottom:16px; }
+        .goal-input-area textarea {
+            width:100%; padding:14px 16px; border-radius:14px; border:1.5px solid;
+            font-size:15px; resize:none; min-height:80px; line-height:1.5; outline:none;
+            transition:border-color .2s;
+        }
+        body.light .goal-input-area textarea { border-color:#ddd; background:#f9f9f9; }
+        body.dark  .goal-input-area textarea { border-color:#1a4d8c; background:#0f3460; color:#eee; }
+        .goal-input-area textarea:focus { border-color:#11998e; }
+
+        .goal-examples { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px; }
+        .goal-example {
+            padding:6px 12px; border-radius:20px; font-size:12px; cursor:pointer;
+            border:1px solid; transition:all .15s;
+        }
+        body.light .goal-examples select { border-color:#11998e; background-color:#f0fdf9; color:#333; }
+        body.dark  .goal-examples select { border-color:#38ef7d; background-color:#0a2010; color:#eee; }
+
+        .goal-params { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px; }
+        .goal-param label { font-size:12px; opacity:.6; display:block; margin-bottom:4px; }
+        .goal-param select, .goal-param input {
+            width:100%; padding:9px 12px; border-radius:10px; border:1.5px solid;
+            font-size:14px; outline:none; transition:border-color .2s;
+        }
+        body.light .goal-param select, body.light .goal-param input { border-color:#ddd; background:#f9f9f9; }
+        body.dark  .goal-param select, body.dark  .goal-param input  { border-color:#1a4d8c; background:#0f3460; color:#eee; }
+
+        .goal-generate-btn {
+            width:100%; padding:14px; border:none; border-radius:14px; font-size:16px;
+            font-weight:600; cursor:pointer; margin-bottom:20px;
+            background:linear-gradient(135deg,#11998e,#38ef7d); color:#fff;
+            transition:opacity .2s;
+        }
+        .goal-generate-btn:disabled { opacity:.6; cursor:default; }
+
+        .goal-result { display:none; }
+        .goal-result.show { display:block; animation:fadeIn .3s; }
+
+        .goal-plan-header { font-size:16px; font-weight:600; margin-bottom:14px; }
+
+        .goal-stage { border-radius:14px; margin-bottom:12px; overflow:hidden; }
+        body.light .goal-stage { background:#f8f8f8; border:1px solid #eee; }
+        body.dark  .goal-stage { background:#0f3460; border:1px solid #1a4d8c; }
+
+        .goal-stage-header {
+            display:flex; align-items:center; gap:10px; padding:12px 16px;
+            cursor:pointer; user-select:none;
+        }
+        .goal-stage-num {
+            width:28px; height:28px; border-radius:50%; background:#11998e;
+            color:#fff; font-size:13px; font-weight:600; display:flex;
+            align-items:center; justify-content:center; flex-shrink:0;
+        }
+        .goal-stage-name { font-size:14px; font-weight:500; flex:1; }
+        .goal-stage-meta { font-size:11px; opacity:.5; }
+        .goal-stage-arrow { font-size:12px; opacity:.4; transition:transform .2s; }
+        .goal-stage.open .goal-stage-arrow { transform:rotate(180deg); }
+
+        .goal-stage-tasks { padding:0 16px 12px; display:none; }
+        .goal-stage.open .goal-stage-tasks { display:block; }
+
+        .goal-task-row {
+            display:flex; align-items:flex-start; gap:10px;
+            padding:8px 0; border-bottom:.5px solid rgba(128,128,128,.1);
+        }
+        .goal-task-row:last-child { border-bottom:none; }
+        .goal-task-check { width:18px; height:18px; border-radius:4px; border:1.5px solid #11998e; cursor:pointer; flex-shrink:0; margin-top:2px; appearance:none; }
+        .goal-task-check:checked { background:#11998e; }
+        .goal-task-title { font-size:13px; flex:1; line-height:1.4; }
+        .goal-task-week  { font-size:11px; opacity:.45; margin-top:2px; }
+
+        .goal-actions { display:flex; gap:10px; margin-top:20px; position:sticky; bottom:0; padding:10px 0 0; }
+        body.light .goal-actions { background:#fff; }
+        body.dark  .goal-actions { background:#16213e; }
+        .goal-add-btn    { flex:2; padding:14px; border:none; border-radius:14px; font-size:15px; font-weight:600; cursor:pointer; background:linear-gradient(135deg,#11998e,#38ef7d); color:#fff; }
+        .goal-cancel-btn { flex:1; padding:14px; border:none; border-radius:14px; font-size:15px; cursor:pointer; }
+        body.light .goal-cancel-btn { background:#f0f0f0; color:#333; }
+        body.dark  .goal-cancel-btn { background:#0f3460; color:#eee; }
+
+        .goal-progress-bar { height:4px; border-radius:2px; background:#e0e0e0; margin:10px 0; overflow:hidden; }
+        .goal-progress-fill { height:100%; background:linear-gradient(90deg,#11998e,#38ef7d); width:0; transition:width .4s; }
+        .assistant-modal {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.5); z-index: 2200;
+            align-items: flex-end;
+        }
+        .assistant-modal.show { display: flex; }
+        .assistant-panel {
+            width: 100%; max-height: 88vh; display: flex;
+            flex-direction: column; border-radius: 24px 24px 0 0;
+            overflow: hidden;
+        }
+        body.light .assistant-panel { background: #fff; }
+        body.dark  .assistant-panel { background: #16213e; }
+
+        .assistant-header {
+            padding: 16px 20px 12px; flex-shrink: 0;
+            border-bottom: 0.5px solid rgba(128,128,128,.12);
+        }
+        .assistant-header-top {
+            display: flex; align-items: center;
+            justify-content: space-between; margin-bottom: 10px;
+        }
+        .assistant-persona-info { display: flex; align-items: center; gap: 10px; }
+        .assistant-avatar {
+            width: 40px; height: 40px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px; flex-shrink: 0;
+        }
+        .assistant-name { font-size: 16px; font-weight: 600; }
+        .assistant-status { font-size: 11px; opacity: .5; }
+        .assistant-close {
+            background: none; border: none; font-size: 22px;
+            cursor: pointer; opacity: .4; line-height: 1;
+        }
+
+        /* Карусель персонажей */
+        .persona-strip {
+            display: flex; gap: 8px; overflow-x: auto;
+            padding-bottom: 2px; scrollbar-width: none;
+        }
+        .persona-strip::-webkit-scrollbar { display: none; }
+        .persona-chip {
+            display: flex; align-items: center; gap: 6px;
+            padding: 6px 12px; border-radius: 20px; border: 1.5px solid transparent;
+            cursor: pointer; white-space: nowrap; font-size: 13px;
+            transition: all .2s; flex-shrink: 0;
+        }
+        body.light .persona-chip { background: #f5f5f5; border-color: #e8e8e8; }
+        body.dark  .persona-chip { background: #0f3460; border-color: #1a4d8c; }
+        .persona-chip.active { border-color: #667eea; }
+        body.light .persona-chip.active { background: #f0eeff; }
+        body.dark  .persona-chip.active { background: #1a1060; }
+        .persona-chip-emoji { font-size: 16px; }
+
+        /* Сообщения */
+        .assistant-messages {
+            flex: 1; overflow-y: auto; padding: 16px 20px;
+            display: flex; flex-direction: column; gap: 12px;
+            min-height: 200px;
+        }
+        .msg { display: flex; gap: 10px; align-items: flex-end; }
+        .msg.user { flex-direction: row-reverse; }
+        .msg-avatar {
+            width: 30px; height: 30px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px; flex-shrink: 0;
+        }
+        .msg-bubble {
+            max-width: 75%; padding: 10px 14px;
+            border-radius: 18px; font-size: 14px; line-height: 1.5;
+        }
+        body.light .msg-bubble { background: #f0f0f0; color: #333; }
+        body.dark  .msg-bubble { background: #0f3460; color: #eee; }
+        .msg.user .msg-bubble {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        .msg-time { font-size: 10px; opacity: .4; margin-top: 3px; text-align: right; }
+        .msg.assistant .msg-time { text-align: left; }
+
+        .msg-typing .msg-bubble {
+            display: flex; gap: 4px; align-items: center; padding: 12px 16px;
+        }
+        .typing-dot {
+            width: 7px; height: 7px; border-radius: 50%;
+            background: #667eea; animation: typingPulse 1.2s infinite;
+        }
+        .typing-dot:nth-child(2) { animation-delay: .2s; }
+        .typing-dot:nth-child(3) { animation-delay: .4s; }
+        @keyframes typingPulse {
+            0%,60%,100% { opacity: .3; transform: scale(1); }
+            30% { opacity: 1; transform: scale(1.2); }
+        }
+
+        /* Быстрые фразы */
+        .assistant-quick {
+            padding: 8px 20px; display: flex; gap: 6px;
+            overflow-x: auto; flex-shrink: 0; scrollbar-width: none;
+        }
+        .assistant-quick::-webkit-scrollbar { display: none; }
+        .quick-btn {
+            padding: 6px 12px; border-radius: 16px; border: 1px solid;
+            font-size: 12px; cursor: pointer; white-space: nowrap;
+            flex-shrink: 0; background: none; transition: all .15s;
+        }
+        body.light .quick-btn { border-color: #667eea; color: #667eea; }
+        body.dark  .quick-btn { border-color: #9a8dea; color: #9a8dea; }
+        .quick-btn:hover { background: #667eea; color: white; border-color: #667eea; }
+
+        /* Инпут */
+        .assistant-input-row {
+            display: flex; gap: 10px; padding: 12px 20px 20px;
+            flex-shrink: 0; border-top: 0.5px solid rgba(128,128,128,.12);
+        }
+        .assistant-input {
+            flex: 1; padding: 11px 16px; border-radius: 22px;
+            border: 1.5px solid; font-size: 15px; outline: none;
+            transition: border-color .2s;
+        }
+        body.light .assistant-input { border-color: #ddd; background: #f8f8f8; }
+        body.dark  .assistant-input { border-color: #1a4d8c; background: #0f3460; color: #eee; }
+        .assistant-input:focus { border-color: #667eea; }
+        .assistant-send {
+            width: 44px; height: 44px; border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none; color: white; font-size: 18px;
+            cursor: pointer; flex-shrink: 0; display: flex;
+            align-items: center; justify-content: center;
+            transition: transform .15s;
+        }
+        .assistant-send:active { transform: scale(.94); }
+        .briefing-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:2100; align-items:flex-end; }
+        .briefing-modal.show { display:flex; }
+        .briefing-content {
+            border-radius:24px 24px 0 0; width:100%; max-height:92vh;
+            overflow-y:auto; padding:24px 20px 32px;
+        }
+        body.light .briefing-content { background:#fff; }
+        body.dark  .briefing-content { background:#16213e; color:#eee; }
+
+        .briefing-hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius:16px; padding:20px; margin-bottom:20px; color:white;
+        }
+        .briefing-hero-time { font-size:13px; opacity:0.8; margin-bottom:4px; }
+        .briefing-hero-greeting { font-size:22px; font-weight:700; margin-bottom:6px; }
+        .briefing-hero-sub { font-size:14px; opacity:0.85; }
+
+        .briefing-section { margin-bottom:20px; }
+        .briefing-section-title {
+            font-size:11px; font-weight:600; text-transform:uppercase;
+            letter-spacing:.06em; opacity:.5; margin-bottom:10px;
+        }
+
+        .briefing-task-item {
+            display:flex; align-items:flex-start; gap:10px;
+            padding:10px 12px; border-radius:10px; margin-bottom:6px;
+        }
+        body.light .briefing-task-item { background:#f8f8f8; }
+        body.dark  .briefing-task-item { background:#0f3460; }
+        .briefing-task-dot {
+            width:8px; height:8px; border-radius:50%;
+            flex-shrink:0; margin-top:5px;
+        }
+        .briefing-task-title { font-size:14px; font-weight:500; }
+        .briefing-task-meta  { font-size:11px; opacity:.5; margin-top:2px; }
+
+        .briefing-ai-block {
+            padding:14px 16px; border-radius:12px; line-height:1.65;
+            font-size:14px; border-left:4px solid #667eea;
+        }
+        body.light .briefing-ai-block { background:#f0eeff; }
+        body.dark  .briefing-ai-block { background:#1a1060; }
+
+        .briefing-news-item {
+            padding:10px 0; border-bottom:.5px solid rgba(128,128,128,.15);
+        }
+        .briefing-news-item:last-child { border-bottom:none; }
+        .briefing-news-title { font-size:14px; font-weight:500; margin-bottom:3px; }
+        .briefing-news-meta  { font-size:11px; opacity:.5; }
+
+        .topic-chips { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
+        .topic-chip {
+            padding:6px 14px; border-radius:20px; font-size:13px;
+            cursor:pointer; border:1.5px solid transparent; transition:all .2s;
+        }
+        body.light .topic-chip { background:#f0f0f0; color:#333; border-color:#e0e0e0; }
+        body.dark  .topic-chip { background:#0f3460; color:#eee; border-color:#1a4d8c; }
+        .topic-chip.selected { background:#667eea; color:#fff; border-color:#667eea; }
+
+        .briefing-footer { display:flex; gap:10px; margin-top:20px; }
+        .briefing-footer button {
+            flex:1; padding:13px; border:none; border-radius:12px;
+            font-size:15px; cursor:pointer; font-weight:500;
+        }
+        .briefing-close-btn { background:#f0f0f0; color:#333; }
+        body.dark .briefing-close-btn { background:#0f3460; color:#eee; }
+        .briefing-refresh-btn { background:linear-gradient(135deg,#667eea,#764ba2); color:#fff; }
+
+        .briefing-loader { text-align:center; padding:20px; opacity:.6; font-size:14px; }
+        .briefing-settings-toggle {
+            font-size:12px; color:#667eea; cursor:pointer;
+            text-decoration:underline; margin-bottom:12px; display:inline-block;
+        }
+        .briefing-settings-panel { display:none; margin-bottom:16px; }
+        .briefing-settings-panel.open { display:block; }
+        .mood-bar {
+            border-radius: 16px; padding: 14px 16px;
+            margin-bottom: 14px; display: none;
+        }
+        .mood-bar.show { display: block; animation: fadeIn 0.3s; }
+        body.light .mood-bar { background: white; }
+        body.dark  .mood-bar { background: #16213e; }
+
+        .mood-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .mood-title { font-size: 14px; font-weight: 600; }
+        .mood-close { background: none; border: none; font-size: 18px; cursor: pointer; opacity: 0.4; line-height: 1; }
+
+        .mood-emojis { display: flex; gap: 8px; justify-content: space-between; margin-bottom: 10px; }
+        .mood-emoji-btn {
+            flex: 1; display: flex; flex-direction: column; align-items: center;
+            gap: 4px; padding: 10px 4px; border: 2px solid transparent;
+            border-radius: 12px; background: none; cursor: pointer;
+            transition: all 0.2s; font-size: 24px;
+        }
+        body.light .mood-emoji-btn { background: #f5f5f5; }
+        body.dark  .mood-emoji-btn { background: #0f3460; }
+        .mood-emoji-btn:hover  { transform: scale(1.08); }
+        .mood-emoji-btn.active { border-color: #667eea; }
+        body.light .mood-emoji-btn.active { background: #f0eeff; }
+        body.dark  .mood-emoji-btn.active { background: #1a1060; }
+        .mood-emoji-label { font-size: 10px; opacity: 0.6; }
+
+        .mood-ai-comment {
+            font-size: 13px; line-height: 1.5; padding: 10px 12px;
+            border-radius: 10px; margin-top: 8px;
+            border-left: 3px solid #667eea;
+        }
+        body.light .mood-ai-comment { background: #f0eeff; }
+        body.dark  .mood-ai-comment { background: #1a1060; }
+
+        .mood-toggle-btn {
+            padding: 6px 12px; border: none; border-radius: 20px;
+            font-size: 13px; cursor: pointer; transition: all 0.2s;
+        }
+        body.light .mood-toggle-btn { background: white; color: #667eea; border: 1px solid #667eea; }
+        body.dark  .mood-toggle-btn { background: #16213e; color: #9a8dea; border: 1px solid #534AB7; }
+
+        .mood-badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 2px 8px; border-radius: 20px; font-size: 11px;
+            background: #f0eeff; color: #534AB7; margin-left: 6px;
+        }
+        body.dark .mood-badge { background: #1a1060; color: #9a8dea; }
+        .archive-btn {
+            padding: 6px 12px; border: none; border-radius: 8px;
+            font-size: 12px; cursor: pointer; transition: all 0.2s;
+            background: #f0f0f0; color: #333;
+        }
+        body.dark .archive-btn { background: #0f3460; color: #eee; }
+
+        /* ── AI-подсказка (детектор паттернов) ── */
+        .ai-nudge {
+            border-radius: 16px; padding: 16px;
+            margin-bottom: 16px; position: relative;
+            border-left: 4px solid #667eea;
+            animation: fadeIn 0.4s;
+        }
+        body.light .ai-nudge { background: #f0eeff; }
+        body.dark .ai-nudge  { background: #1a1060; }
+        .ai-nudge-title { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+        .ai-nudge-text  { font-size: 13px; opacity: 0.8; line-height: 1.5; margin-bottom: 12px; }
+        .ai-nudge-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        .ai-nudge-actions button {
+            padding: 7px 14px; border: none; border-radius: 20px;
+            font-size: 13px; cursor: pointer; font-weight: 500;
+            transition: opacity 0.2s;
+        }
+        .nudge-restore { background: #667eea; color: white; }
+        .nudge-delete  { background: #ffebee; color: #c62828; }
+        .nudge-dismiss { background: #f0f0f0; color: #666; }
+        body.dark .nudge-dismiss { background: #0f3460; color: #aaa; }
+        .ai-nudge-loader { font-size: 13px; opacity: 0.6; }
+
+        /* ── Модалка архива ── */
+        .archive-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2000; align-items: flex-end; }
+        .archive-modal.show { display: flex; }
+        .archive-modal-content { border-radius: 20px 20px 0 0; padding: 20px; width: 100%; max-height: 85vh; overflow-y: auto; }
+        body.light .archive-modal-content { background: white; }
+        body.dark  .archive-modal-content { background: #16213e; color: #eee; }
+        .archive-task { padding: 10px 0; border-bottom: 1px solid rgba(128,128,128,0.15); display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+        .archive-task-title { font-size: 14px; flex: 1; }
+        .archive-task-date  { font-size: 11px; opacity: 0.5; white-space: nowrap; }
+
+        /* ── AI Settings Modal ───────────────────────────── */
+        .ai-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2000; align-items: flex-end; }
+        .ai-modal.show { display: flex; }
+        .ai-modal-content { border-radius: 20px 20px 0 0; padding: 24px 20px; width: 100%; max-height: 92vh; overflow-y: auto; }
+        body.light .ai-modal-content { background: white; }
+        body.dark .ai-modal-content { background: #16213e; color: #eee; }
+
+        .ai-provider-list { display: flex; flex-direction: column; gap: 10px; margin: 16px 0; }
+        .ai-provider-card { display: flex; align-items: center; gap: 14px; padding: 14px; border-radius: 14px; border: 2px solid transparent; cursor: pointer; transition: all 0.2s; }
+        body.light .ai-provider-card { background: #f8f8f8; border-color: #f0f0f0; }
+        body.dark .ai-provider-card { background: #0f3460; border-color: #1a4d8c; }
+        .ai-provider-card.selected { border-color: #667eea; }
+        body.light .ai-provider-card.selected { background: #f0eeff; }
+        body.dark .ai-provider-card.selected { background: #1a1060; }
+        .ai-provider-icon { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+        .ai-provider-info { flex: 1; min-width: 0; }
+        .ai-provider-name { font-size: 15px; font-weight: 600; margin-bottom: 2px; }
+        .ai-provider-desc { font-size: 12px; opacity: 0.6; }
+        .ai-provider-badge { font-size: 10px; padding: 3px 8px; border-radius: 20px; white-space: nowrap; flex-shrink: 0; }
+        .badge-free { background: #e8f5e9; color: #2e7d32; }
+        .badge-cheap { background: #fff3e0; color: #e65100; }
+        .badge-custom { background: #e3f2fd; color: #1565c0; }
+        .ai-selected-dot { width: 20px; height: 20px; border-radius: 50%; border: 2px solid #667eea; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .ai-selected-dot::after { content: ''; display: none; width: 10px; height: 10px; border-radius: 50%; background: #667eea; }
+        .ai-provider-card.selected .ai-selected-dot::after { display: block; }
+
+        .ai-key-section { margin-top: 16px; }
+        .ai-key-label { font-size: 13px; font-weight: 500; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+        .ai-key-input-wrap { position: relative; }
+        .ai-key-input-wrap input { width: 100%; padding: 12px 44px 12px 14px; border: 1.5px solid #ddd; border-radius: 12px; font-size: 14px; font-family: monospace; }
+        body.dark .ai-key-input-wrap input { background: #0f3460; color: #eee; border-color: #1a4d8c; }
+        .ai-key-input-wrap input:focus { outline: none; border-color: #667eea; }
+        .ai-key-toggle { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 18px; opacity: 0.5; }
+        .ai-key-toggle:hover { opacity: 1; }
+
+        .ai-model-section { margin-top: 14px; }
+        .ai-model-select { width: 100%; padding: 12px 14px; border: 1.5px solid #ddd; border-radius: 12px; font-size: 14px; }
+        body.dark .ai-model-select { background: #0f3460; color: #eee; border-color: #1a4d8c; }
+        .ai-model-select:focus { outline: none; border-color: #667eea; }
+
+        .ai-custom-url { margin-top: 14px; }
+        .ai-custom-url input { width: 100%; padding: 12px 14px; border: 1.5px solid #ddd; border-radius: 12px; font-size: 14px; }
+        body.dark .ai-custom-url input { background: #0f3460; color: #eee; border-color: #1a4d8c; }
+
+        .ai-status-bar { margin-top: 14px; padding: 10px 14px; border-radius: 10px; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+        .ai-status-bar.ok { background: #e8f5e9; color: #2e7d32; }
+        .ai-status-bar.error { background: #ffebee; color: #c62828; }
+        .ai-status-bar.testing { background: #e3f2fd; color: #1565c0; }
+        .ai-status-bar.idle { background: #f5f5f5; color: #666; }
+        body.dark .ai-status-bar.idle { background: #1a2a4a; color: #aaa; }
+
+        .ai-actions { display: flex; gap: 10px; margin-top: 20px; }
+        .ai-actions button { flex: 1; padding: 13px; border: none; border-radius: 12px; font-size: 15px; cursor: pointer; font-weight: 500; transition: opacity 0.2s; }
+        .ai-test-btn { background: #e3f2fd; color: #1565c0; }
+        .ai-save-btn { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
+        .ai-cancel-btn { background: #f0f0f0; color: #333; }
+        body.dark .ai-cancel-btn { background: #0f3460; color: #eee; }
+
+        .ai-info-link { font-size: 12px; color: #667eea; text-decoration: none; margin-top: 6px; display: inline-block; }
+        .ai-section-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; opacity: 0.5; margin: 20px 0 10px; }
         
         @media (max-width: 480px) {
             body {
@@ -646,12 +1182,27 @@
         <div class="header-controls">
             <button class="theme-btn" id="themeToggle" aria-label="Переключить тему">🌙</button>
             <button class="stats-btn" id="statsToggle" aria-label="Показать статистику">📊</button>
+            <button class="theme-btn" id="archiveBtn" aria-label="Архив">🗄️</button>
+            <button class="theme-btn" id="briefingBtn" aria-label="Утренний брифинг">☀️</button>
+            <button class="theme-btn" id="wrappedBtn" aria-label="Итоги года">🎁</button>
+            <button class="theme-btn" id="assistantBtn" aria-label="Ассистент">💬</button>
+            <button class="theme-btn" id="aiSettingsBtn" aria-label="Настройки AI">🤖</button>
         </div>
     </div>
     
     <div class="widget-preview" id="widgetPreview">
         <div class="widget-title">📋 Сегодня нужно сделать</div>
         <div class="widget-tasks" id="widgetTasks">0 задач</div>
+    </div>
+
+    <!-- Стрик -->
+    <div class="streak-bar" id="streakBar" style="display:none" onclick="openWrapped()">
+        <div class="streak-fire">🔥</div>
+        <div class="streak-info">
+            <div class="streak-count" id="streakCount">0</div>
+            <div class="streak-label" id="streakLabel">дней подряд</div>
+        </div>
+        <div class="streak-level" id="streakLevel">Новичок</div>
     </div>
     
     <div class="charts-container" id="chartsContainer">
@@ -703,13 +1254,60 @@
         <button class="filter-btn" data-filter="task">📋 Задачи</button>
         <button class="filter-btn" data-filter="idea">💡 Идеи</button>
         <button class="filter-btn" data-filter="urgent">🚨 Срочно</button>
+        <button class="mood-toggle-btn" id="moodToggleBtn">😊 Настроение</button>
+    </div>
+
+    <!-- ── Режим по настроению ── -->
+    <div class="mood-bar" id="moodBar">
+        <div class="mood-header">
+            <div class="mood-title">Как ты сегодня?</div>
+            <button class="mood-close" id="moodClose" title="Закрыть">×</button>
+        </div>
+        <div class="mood-emojis">
+            <button class="mood-emoji-btn" data-mood="fire">
+                🔥<span class="mood-emoji-label">В потоке</span>
+            </button>
+            <button class="mood-emoji-btn" data-mood="happy">
+                😊<span class="mood-emoji-label">Хорошо</span>
+            </button>
+            <button class="mood-emoji-btn" data-mood="calm">
+                😌<span class="mood-emoji-label">Спокойно</span>
+            </button>
+            <button class="mood-emoji-btn" data-mood="tired">
+                😴<span class="mood-emoji-label">Устал</span>
+            </button>
+            <button class="mood-emoji-btn" data-mood="stressed">
+                😤<span class="mood-emoji-label">Стресс</span>
+            </button>
+        </div>
+        <div class="mood-ai-comment" id="moodAiComment" style="display:none"></div>
     </div>
     
     <div class="category-bar" id="categoryBar"></div>
     
+    <div id="aiNudgeContainer"></div>
     <div id="taskList" class="task-list"></div>
     
+    <!-- ── Архив (модалка) ── -->
+    <div class="archive-modal" id="archiveModal">
+      <div class="archive-modal-content">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <div style="font-size:18px;font-weight:700">🗄️ Архив задач</div>
+          <button id="archiveModalClose" style="background:none;border:none;font-size:24px;cursor:pointer;opacity:0.5">×</button>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+          <button class="archive-btn" id="exportJsonBtn">📤 Экспорт JSON</button>
+          <button class="archive-btn" id="importJsonBtn">📥 Импорт JSON</button>
+          <input type="file" id="importJsonFile" accept=".json" style="display:none">
+          <button class="archive-btn" id="clearArchiveBtn" style="margin-left:auto;background:#ffebee;color:#c62828">🗑 Очистить архив</button>
+        </div>
+        <div style="font-size:12px;opacity:0.5;margin-bottom:12px" id="archiveStats"></div>
+        <div id="archiveList"></div>
+      </div>
+    </div>
+    
     <button class="fab" id="fabBtn" aria-label="Добавить задачу">+</button>
+    <button class="fab" id="goalBtn" aria-label="Планировщик целей" style="right:84px;background:linear-gradient(135deg,#11998e,#38ef7d)">🎯</button>
     
     <div class="modal" id="taskModal">
         <div class="modal-content">
@@ -756,19 +1354,36 @@
             
             <div class="input-group">
                 <label>Теги (через запятую)</label>
-                <input type="text" id="taskTags" placeholder="работа, важное, идея">
+                <div style="position:relative">
+                    <input type="text" id="taskTags" placeholder="работа, важное, идея" autocomplete="off">
+                    <div class="tag-autocomplete" id="tagAutocomplete"></div>
+                </div>
             </div>
             
             <div class="input-group">
-                <label><input type="checkbox" id="hasReminder"> Напомнить</label>
-            </div>
-            
-            <div id="reminderSettings" style="display: none;">
-                <div class="input-group">
-                    <label>Дата и время (МСК, UTC+3)</label>
-                    <input type="datetime-local" id="reminderTime">
+                <label>⏰ Напоминание</label>
+                <div style="position:relative">
+                    <input type="text" id="naturalDateInput" 
+                        placeholder="«завтра в 9», «в пятницу вечером», «через 2 часа»..."
+                        autocomplete="off" style="padding-right:44px">
+                    <button id="naturalDateClear" title="Очистить" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:18px;cursor:pointer;opacity:0.4;display:none">×</button>
                 </div>
-                
+                <div id="naturalDatePreview" style="font-size:12px;margin-top:5px;min-height:18px;color:#667eea;display:flex;align-items:center;gap:6px"></div>
+            </div>
+
+            <div class="input-group" style="display:none" id="manualDateGroup">
+                <label>или выбери точное время (МСК, UTC+3)</label>
+                <input type="datetime-local" id="reminderTime">
+            </div>
+
+            <div style="margin-bottom:12px">
+                <label style="font-size:13px;opacity:0.7;cursor:pointer">
+                    <input type="checkbox" id="hasReminder" style="display:none">
+                    <span id="manualDateToggle" style="color:#667eea;font-size:12px;text-decoration:underline;cursor:pointer">⚙ Выбрать вручную</span>
+                </label>
+            </div>
+
+            <div id="reminderSettings" style="display: none;">
                 <div class="input-group">
                     <label><input type="checkbox" id="isRecurring"> Повторять</label>
                 </div>
@@ -791,7 +1406,358 @@
         </div>
     </div>
     
+    <!-- ── AI Settings Modal ───────────────────────────── -->
+    <div class="ai-modal" id="aiModal">
+      <div class="ai-modal-content">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+          <div style="font-size:20px;font-weight:700">🤖 AI-провайдер</div>
+          <button id="aiModalClose" style="background:none;border:none;font-size:24px;cursor:pointer;opacity:0.5;line-height:1">×</button>
+        </div>
+        <div style="font-size:13px;opacity:0.55;margin-bottom:4px">Вставь свой API-ключ — он хранится только на устройстве</div>
+
+        <div class="ai-section-title">Выбери провайдера</div>
+
+        <div class="ai-provider-list" id="aiProviderList">
+
+          <div class="ai-provider-card selected" data-provider="openrouter">
+            <div class="ai-provider-icon" style="background:#E1F5EE">🌐</div>
+            <div class="ai-provider-info">
+              <div class="ai-provider-name">OpenRouter</div>
+              <div class="ai-provider-desc">50+ моделей по одному ключу</div>
+            </div>
+            <span class="ai-provider-badge badge-free">50 req/day free</span>
+            <div class="ai-selected-dot"></div>
+          </div>
+
+          <div class="ai-provider-card" data-provider="deepseek">
+            <div class="ai-provider-icon" style="background:#E8EAF6">🔵</div>
+            <div class="ai-provider-info">
+              <div class="ai-provider-name">DeepSeek</div>
+              <div class="ai-provider-desc">Дёшево, OpenAI-совместимый</div>
+            </div>
+            <span class="ai-provider-badge badge-cheap">5М токенов бонус</span>
+            <div class="ai-selected-dot"></div>
+          </div>
+
+          <div class="ai-provider-card" data-provider="gemini">
+            <div class="ai-provider-icon" style="background:#E3F2FD">✨</div>
+            <div class="ai-provider-info">
+              <div class="ai-provider-name">Google Gemini</div>
+              <div class="ai-provider-desc">1000 req/day, серверы не в Китае</div>
+            </div>
+            <span class="ai-provider-badge badge-free">без карты</span>
+            <div class="ai-selected-dot"></div>
+          </div>
+
+          <div class="ai-provider-card" data-provider="groq">
+            <div class="ai-provider-icon" style="background:#F3E5F5">⚡</div>
+            <div class="ai-provider-info">
+              <div class="ai-provider-name">Groq</div>
+              <div class="ai-provider-desc">Самый быстрый, Llama 3.3 70B</div>
+            </div>
+            <span class="ai-provider-badge badge-free">14400 req/day</span>
+            <div class="ai-selected-dot"></div>
+          </div>
+
+          <div class="ai-provider-card" data-provider="custom">
+            <div class="ai-provider-icon" style="background:#F1EFE8">⚙️</div>
+            <div class="ai-provider-info">
+              <div class="ai-provider-name">Свой URL</div>
+              <div class="ai-provider-desc">Ollama, LM Studio, любой OpenAI-совместимый</div>
+            </div>
+            <span class="ai-provider-badge badge-custom">приватно</span>
+            <div class="ai-selected-dot"></div>
+          </div>
+
+        </div>
+
+        <!-- Custom URL (показывается только для custom) -->
+        <div class="ai-custom-url" id="aiCustomUrlSection" style="display:none">
+          <div class="ai-key-label">URL эндпоинта</div>
+          <input type="url" id="aiCustomUrl" placeholder="http://localhost:11434/v1">
+          <div style="font-size:11px;opacity:0.5;margin-top:4px">Например: http://localhost:11434/v1 для Ollama</div>
+        </div>
+
+        <!-- API Key -->
+        <div class="ai-key-section" id="aiKeySection">
+          <div class="ai-key-label">
+            API-ключ
+            <span style="font-size:11px;opacity:0.5;font-weight:400">• хранится только на устройстве</span>
+          </div>
+          <div class="ai-key-input-wrap">
+            <input type="password" id="aiApiKey" placeholder="sk-...">
+            <button class="ai-key-toggle" id="aiKeyToggle" title="Показать/скрыть">👁</button>
+          </div>
+          <a class="ai-info-link" id="aiGetKeyLink" href="#" target="_blank">Где получить ключ →</a>
+        </div>
+
+        <!-- Model -->
+        <div class="ai-model-section">
+          <div class="ai-key-label">Модель</div>
+          <select class="ai-model-select" id="aiModel"></select>
+        </div>
+
+        <!-- Status -->
+        <div class="ai-status-bar idle" id="aiStatusBar">
+          💡 Вставь ключ и нажми «Проверить»
+        </div>
+
+        <div class="ai-actions">
+          <button class="ai-cancel-btn" id="aiCancelBtn">Отмена</button>
+          <button class="ai-test-btn" id="aiTestBtn">🔍 Проверить</button>
+          <button class="ai-save-btn" id="aiSaveBtn">Сохранить</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Утренний брифинг ── -->
+    <div class="briefing-modal" id="briefingModal">
+      <div class="briefing-content">
+
+        <!-- Hero-блок -->
+        <div class="briefing-hero">
+          <div class="briefing-hero-time" id="briefingTime"></div>
+          <div class="briefing-hero-greeting" id="briefingGreeting">Доброе утро!</div>
+          <div class="briefing-hero-sub" id="briefingHeroSub">Готовлю твой день...</div>
+        </div>
+
+        <!-- Настройки тем (скрыто по умолчанию) -->
+        <span class="briefing-settings-toggle" id="briefingSettingsToggle">⚙ Настройки брифинга</span>
+        <div class="briefing-settings-panel" id="briefingSettingsPanel">
+          <div class="briefing-section-title">Темы для новостного дайджеста</div>
+          <div class="topic-chips" id="topicChips">
+            <div class="topic-chip selected" data-topic="tech">💻 IT и технологии</div>
+            <div class="topic-chip" data-topic="ai">🤖 Искусственный интеллект</div>
+            <div class="topic-chip" data-topic="business">💼 Бизнес</div>
+            <div class="topic-chip" data-topic="science">🔬 Наука</div>
+            <div class="topic-chip" data-topic="world">🌍 Мировые новости</div>
+            <div class="topic-chip" data-topic="finance">📈 Финансы и крипто</div>
+            <div class="topic-chip" data-topic="health">💪 Здоровье</div>
+            <div class="topic-chip" data-topic="sport">⚽ Спорт</div>
+          </div>
+          <div class="briefing-section-title" style="margin-top:12px">Своя тема</div>
+          <input type="text" id="briefingCustomTopic" placeholder="Например: стартапы, Python, маркетинг..."
+            style="width:100%;padding:10px 14px;border:1.5px solid #ddd;border-radius:10px;font-size:14px;margin-bottom:4px">
+        </div>
+
+        <!-- Задачи на сегодня -->
+        <div class="briefing-section">
+          <div class="briefing-section-title">Задачи на сегодня</div>
+          <div id="briefingTasks"><div class="briefing-loader">⏳ Загружаю...</div></div>
+        </div>
+
+        <!-- AI-план дня -->
+        <div class="briefing-section" id="briefingPlanSection" style="display:none">
+          <div class="briefing-section-title">План дня от AI</div>
+          <div class="briefing-ai-block" id="briefingPlan"></div>
+        </div>
+
+        <!-- Новостной дайджест -->
+        <div class="briefing-section" id="briefingNewsSection" style="display:none">
+          <div class="briefing-section-title" id="briefingNewsTitle">Дайджест</div>
+          <div id="briefingNews"><div class="briefing-loader">⏳ AI готовит дайджест...</div></div>
+        </div>
+
+        <div class="briefing-footer">
+          <button class="briefing-close-btn" id="briefingCloseBtn">Закрыть</button>
+          <button class="briefing-refresh-btn" id="briefingRefreshBtn">🔄 Обновить</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Ассистент с характером ── -->
+    <div class="assistant-modal" id="assistantModal">
+      <div class="assistant-panel">
+
+        <div class="assistant-header">
+          <div class="assistant-header-top">
+            <div class="assistant-persona-info">
+              <div class="assistant-avatar" id="assistantAvatar">🤖</div>
+              <div>
+                <div class="assistant-name" id="assistantName">Ассистент</div>
+                <div class="assistant-status" id="assistantStatus">Выбери персонажа ниже</div>
+              </div>
+            </div>
+            <button class="assistant-close" id="assistantClose">×</button>
+          </div>
+          <div class="persona-strip" id="personaStrip"></div>
+        </div>
+
+        <div class="assistant-messages" id="assistantMessages"></div>
+
+        <div class="assistant-quick" id="assistantQuick"></div>
+
+        <div class="assistant-input-row">
+          <input class="assistant-input" id="assistantInput"
+            placeholder="Напиши что угодно..." maxlength="500">
+          <button class="assistant-send" id="assistantSend">➤</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Планировщик целей ── -->
+    <div class="goal-modal" id="goalModal">
+      <div class="goal-panel">
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;opacity:.5">AI-планировщик целей</div>
+          <button id="goalClose" style="background:none;border:none;font-size:24px;cursor:pointer;opacity:.4;line-height:1">×</button>
+        </div>
+
+        <div class="goal-hero">
+          <div class="goal-hero-title">🎯 Какая у тебя цель?</div>
+          <div class="goal-hero-sub">AI разобьёт её на этапы и задачи — добавишь одной кнопкой</div>
+        </div>
+
+        <!-- Ввод цели -->
+        <div class="goal-input-area">
+          <textarea id="goalInput" placeholder="Например: выучить английский до уровня B2 за 6 месяцев..." rows="3"></textarea>
+        </div>
+
+        <!-- Примеры целей -->
+        <div class="goal-examples" id="goalExamples">
+          <select id="goalPresetSelect" style="width:100%;padding:11px 14px;border-radius:12px;border:1.5px solid;font-size:14px;outline:none;cursor:pointer;appearance:none;background-image:url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 12 12%22><path fill=%22%23667eea%22 d=%22M6 8L1 3h10z%22/></svg>');background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;">
+            <option value="">💡 Выбери готовую цель или напиши свою...</option>
+            <optgroup label="🧠 Развитие и обучение">
+              <option value="Выучить английский язык до уровня B2 за 6 месяцев">📚 Выучить английский до B2 за 6 месяцев</option>
+              <option value="Освоить программирование на Python с нуля за 3 месяца">💻 Освоить Python с нуля за 3 месяца</option>
+              <option value="Прочитать 24 книги за год — по 2 в месяц">📖 Читать 24 книги за год</option>
+              <option value="Пройти онлайн-курс и получить новую профессию за 6 месяцев">🎓 Получить новую профессию за 6 месяцев</option>
+              <option value="Выучить 1000 новых иностранных слов за 3 месяца">🗣 Выучить 1000 иностранных слов за 3 месяца</option>
+            </optgroup>
+            <optgroup label="💪 Здоровье и тело">
+              <option value="Похудеть на 10 кг за 3 месяца — правильное питание и спорт">⚖️ Похудеть на 10 кг за 3 месяца</option>
+              <option value="Начать бегать и пробежать 5 км без остановки за 2 месяца">🏃 Пробежать 5 км без остановки за 2 месяца</option>
+              <option value="Выработать привычку ежедневных тренировок за 2 месяца">🏋️ Тренироваться каждый день — выработать привычку</option>
+              <option value="Бросить курить навсегда за 1 месяц — пошаговый план">🚭 Бросить курить навсегда за 1 месяц</option>
+              <option value="Нормализовать режим сна — вставать в 6:00 каждый день за 3 недели">😴 Вставать в 6:00 каждый день — выработать режим</option>
+            </optgroup>
+            <optgroup label="💰 Деньги и карьера">
+              <option value="Накопить 500 000 рублей за 1 год — финансовый план">💰 Накопить 500 000 ₽ за год</option>
+              <option value="Запустить свой онлайн-проект или стартап за 6 месяцев">🚀 Запустить свой проект за 6 месяцев</option>
+              <option value="Увеличить доход в 2 раза за 6 месяцев — карьерный рост или фриланс">📈 Увеличить доход в 2 раза за 6 месяцев</option>
+              <option value="Найти работу мечты за 2 месяца — резюме, нетворкинг, собеседования">💼 Найти работу мечты за 2 месяца</option>
+            </optgroup>
+            <optgroup label="🌱 Жизнь и привычки">
+              <option value="Навести порядок в жизни за 1 месяц — дом, задачи, финансы, отношения">🌱 Навести порядок в жизни за 1 месяц</option>
+            </optgroup>
+          </select>
+        </div>
+
+        <!-- Параметры -->
+        <div class="goal-params">
+          <div class="goal-param">
+            <label>Срок достижения</label>
+            <select id="goalDuration">
+              <option value="1 месяц">1 месяц</option>
+              <option value="3 месяца" selected>3 месяца</option>
+              <option value="6 месяцев">6 месяцев</option>
+              <option value="1 год">1 год</option>
+              <option value="2 года">2 года</option>
+            </select>
+          </div>
+          <div class="goal-param">
+            <label>Интенсивность</label>
+            <select id="goalIntensity">
+              <option value="лёгкую (1-2 задачи в неделю)">🌱 Лёгкая</option>
+              <option value="умеренную (3-5 задач в неделю)" selected>⚡ Умеренная</option>
+              <option value="интенсивную (ежедневные задачи)">🔥 Интенсивная</option>
+            </select>
+          </div>
+        </div>
+
+        <button class="goal-generate-btn" id="goalGenerateBtn">✨ Сгенерировать план</button>
+
+        <!-- Прогресс генерации -->
+        <div id="goalGenerating" style="display:none;text-align:center;padding:20px;opacity:.7;font-size:14px">
+          <div class="goal-progress-bar"><div class="goal-progress-fill" id="goalProgressFill"></div></div>
+          <span id="goalGeneratingText">🤖 AI строит план...</span>
+        </div>
+
+        <!-- Результат -->
+        <div class="goal-result" id="goalResult">
+          <div class="goal-plan-header" id="goalPlanTitle"></div>
+          <div id="goalStages"></div>
+          <div class="goal-actions">
+            <button class="goal-cancel-btn" id="goalResetBtn">↩ Начать заново</button>
+            <button class="goal-add-btn" id="goalAddAllBtn">➕ Добавить все задачи</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── Модалка подзадач ── -->
+    <div class="subtask-modal" id="subtaskModal">
+      <div class="subtask-panel">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <div>
+            <div style="font-size:18px;font-weight:700" id="subtaskTitle">Подзадачи</div>
+            <div style="font-size:12px;opacity:.5;margin-top:2px" id="subtaskMeta"></div>
+          </div>
+          <button id="subtaskClose" style="background:none;border:none;font-size:24px;cursor:pointer;opacity:.4">×</button>
+        </div>
+        <div id="subtaskList" style="margin:14px 0"></div>
+        <div style="display:flex;gap:10px;margin-top:16px">
+          <button id="subtaskCancel" style="flex:1;padding:13px;border:none;border-radius:12px;font-size:15px;cursor:pointer;background:#f0f0f0;color:#333">Отмена</button>
+          <button id="subtaskAdd" style="flex:2;padding:13px;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff">➕ Добавить выбранные</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ ОНБОРДИНГ ══ -->
+    <div class="onboard-modal" id="onboardModal">
+      <div class="onboard-panel">
+        <div class="onboard-slide active" data-slide="0">
+          <div class="onboard-emoji">🧠</div>
+          <div class="onboard-title">SmartTasks Pro — умный список задач</div>
+          <div class="onboard-text">Не просто заметки. AI-ассистент, детектор привычек, планировщик целей и утренний брифинг — всё в одном приложении.</div>
+          <div class="onboard-dots"><div class="onboard-dot active"></div><div class="onboard-dot"></div><div class="onboard-dot"></div><div class="onboard-dot"></div></div>
+          <button class="onboard-btn" onclick="onboardNext()">Начнём →</button>
+          <span class="onboard-skip" onclick="onboardSkip()">Пропустить</span>
+        </div>
+        <div class="onboard-slide" data-slide="1">
+          <div class="onboard-emoji">🤖</div>
+          <div class="onboard-title">Подключи свой AI — бесплатно</div>
+          <div class="onboard-text">Работает с DeepSeek, Gemini, Groq и другими. Нажми кнопку 🤖 в шапке и вставь API-ключ. Первые тысячи запросов — бесплатно.</div>
+          <div class="onboard-dots"><div class="onboard-dot"></div><div class="onboard-dot active"></div><div class="onboard-dot"></div><div class="onboard-dot"></div></div>
+          <button class="onboard-btn" onclick="onboardNext()">Понял →</button>
+          <span class="onboard-skip" onclick="onboardSkip()">Пропустить</span>
+        </div>
+        <div class="onboard-slide" data-slide="2">
+          <div class="onboard-emoji">🎯</div>
+          <div class="onboard-title">Поставь первую цель</div>
+          <div class="onboard-text">Нажми кнопку 🎯 на главном экране. Напиши цель или выбери готовую — AI построит план за 10 секунд и добавит все задачи.</div>
+          <div class="onboard-dots"><div class="onboard-dot"></div><div class="onboard-dot"></div><div class="onboard-dot active"></div><div class="onboard-dot"></div></div>
+          <button class="onboard-btn" onclick="onboardNext()">Круто →</button>
+          <span class="onboard-skip" onclick="onboardSkip()">Пропустить</span>
+        </div>
+        <div class="onboard-slide" data-slide="3">
+          <div class="onboard-emoji">🔥</div>
+          <div class="onboard-title">Выполняй задачи каждый день</div>
+          <div class="onboard-text">За каждый день с выполненными задачами ты получаешь очко стрика. Не теряй серию — это главный секрет продуктивности!</div>
+          <div class="onboard-dots"><div class="onboard-dot"></div><div class="onboard-dot"></div><div class="onboard-dot"></div><div class="onboard-dot active"></div></div>
+          <button class="onboard-btn" onclick="onboardSkip()">Поехали! 🚀</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ WRAPPED ══ -->
+    <div class="wrapped-modal" id="wrappedModal">
+      <div class="wrapped-bg"></div>
+      <div class="wrapped-panel" id="wrappedPanel">
+        <button class="wrapped-close" onclick="closeWrapped()">×</button>
+        <div id="wrappedSlides"></div>
+        <div class="wrapped-nav">
+          <button class="wrapped-arrow" id="wrappedPrev" onclick="wrappedGo(-1)">←</button>
+          <div class="wrapped-progress" id="wrappedProgress"></div>
+          <button class="wrapped-arrow" id="wrappedNext" onclick="wrappedGo(1)">→</button>
+        </div>
+      </div>
+    </div>
+
     <script>
+
         // ========== КОНСТАНТЫ ==========
         const MAX_TITLE_LENGTH = 200;
         const MAX_DESCRIPTION_LENGTH = 2000;
@@ -951,8 +1917,20 @@
         }
         
         // ========== УПРАВЛЕНИЕ ДАННЫМИ ==========
+        // ── Архив: отдельное хранилище для удалённых задач ──
+        let taskArchive = []; // никогда не чистится без явного действия
+
+        function saveArchive() {
+            try { localStorage.setItem('smartTasksArchive', JSON.stringify(taskArchive)); } catch(e) {}
+        }
+
+        function loadArchive() {
+            try { taskArchive = JSON.parse(localStorage.getItem('smartTasksArchive') || '[]'); } catch(e) { taskArchive = []; }
+        }
+
         function saveTasks() {
             try {
+                // Активные задачи — без архивных
                 localStorage.setItem('smartTasksPro', JSON.stringify(tasks));
                 updateStats();
                 updateCharts();
@@ -966,6 +1944,7 @@
         
         function loadTasks() {
             try {
+                loadArchive(); // всегда загружаем архив
                 const saved = localStorage.getItem('smartTasksPro');
                 if (saved) {
                     tasks = JSON.parse(saved);
@@ -1442,6 +2421,14 @@
             if (currentCategory !== 'all') {
                 filtered = filtered.filter(t => t.category === currentCategory);
             }
+
+            // Режим по настроению — поверх всех фильтров
+            if (currentMood && MOOD_CONFIG[currentMood]) {
+                const cfg = MOOD_CONFIG[currentMood];
+                const moodFiltered = filtered.filter(cfg.filter);
+                // Если после фильтра ничего нет — показываем все активные (чтобы не было пустого экрана)
+                filtered = moodFiltered.length > 0 ? [...moodFiltered].sort(cfg.sort) : filtered.filter(t => !t.completed);
+            }
             
             const taskList = document.getElementById('taskList');
             if (filtered.length === 0) {
@@ -1471,6 +2458,7 @@
                         <button class="task-btn" data-action="complete" data-id="${task.id}">
                             ${task.completed ? '✅ Выполнено' : '⬜ Выполнить'}
                         </button>
+                        ${!task.completed ? `<button class="task-btn-split" data-action="split" data-id="${task.id}" title="Разбить на подзадачи">🪓</button>` : ''}
                         <button class="task-btn" data-action="delete" data-id="${task.id}">
                             🗑️ Удалить
                         </button>
@@ -1501,25 +2489,67 @@
                     deleteTask(taskId);
                 });
             });
+
+            document.querySelectorAll('[data-action="split"]').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const taskId = parseInt(btn.dataset.id);
+                    splitTask(taskId, btn);
+                });
+            });
         }
         
         function toggleComplete(taskId) {
             const task = tasks.find(t => t.id === taskId);
             if (task) {
                 task.completed = !task.completed;
+                if (task.completed) updateStreak(); // считаем стрик при выполнении
                 saveTasks();
                 renderTasks();
                 showToast(task.completed ? '✅ Задача выполнена!' : '🔄 Задача возвращена');
             }
         }
         
-        function deleteTask(taskId) {
-            if (confirm('Удалить задачу? Это действие нельзя отменить')) {
+        function deleteTask(taskId, permanent = false) {
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+
+            if (permanent) {
+                // Удалить навсегда из архива
+                taskArchive = taskArchive.filter(t => t.id !== taskId);
+                saveArchive();
+                renderArchiveList();
+                showToast('🗑️ Удалено навсегда');
+                return;
+            }
+
+            if (confirm('Удалить задачу?')) {
+                // Мягкое удаление — переносим в архив
+                const archived = { ...task, deletedAt: new Date().toISOString(), isArchived: true };
+                taskArchive.unshift(archived);
+                saveArchive();
+
                 tasks = tasks.filter(t => t.id !== taskId);
                 saveTasks();
                 renderTasks();
-                showToast('🗑️ Задача удалена');
+                showToast('🗑️ Задача в архиве');
             }
+        }
+
+        function restoreTask(taskId) {
+            const task = taskArchive.find(t => t.id === taskId);
+            if (!task) return;
+            const restored = { ...task };
+            delete restored.deletedAt;
+            delete restored.isArchived;
+            restored.completed = false;
+            tasks.unshift(restored);
+            taskArchive = taskArchive.filter(t => t.id !== taskId);
+            saveTasks();
+            saveArchive();
+            renderTasks();
+            renderArchiveList();
+            showToast('✅ Задача восстановлена');
         }
         
         // ========== КАТЕГОРИИ ==========
@@ -1582,12 +2612,18 @@
             };
             
             if (document.getElementById('hasReminder').checked) {
-                const reminderTimeInput = document.getElementById('reminderTime').value;
-                if (reminderTimeInput) {
-                    // ИСПРАВЛЕНО: корректная конвертация МСК → UTC
-                    taskData.reminderTime = mskInputToUtc(reminderTimeInput);
+                // Приоритет: результат натурального парсера → ручной datetime-local
+                if (parsedReminderUtc) {
+                    taskData.reminderTime = parsedReminderUtc;
                     taskData.isRecurring = document.getElementById('isRecurring').checked;
                     taskData.recurringInterval = selectedRecurringInterval;
+                } else {
+                    const reminderTimeInput = document.getElementById('reminderTime').value;
+                    if (reminderTimeInput) {
+                        taskData.reminderTime = mskInputToUtc(reminderTimeInput);
+                        taskData.isRecurring = document.getElementById('isRecurring').checked;
+                        taskData.recurringInterval = selectedRecurringInterval;
+                    }
                 }
             }
             
@@ -1618,6 +2654,13 @@
             document.getElementById('taskType').value = 'task';
             document.getElementById('taskCategory').value = '';
             document.getElementById('taskTags').value = '';
+            // Натуральный ввод даты
+            document.getElementById('naturalDateInput').value = '';
+            document.getElementById('naturalDatePreview').innerHTML = '';
+            document.getElementById('naturalDateClear').style.display = 'none';
+            document.getElementById('manualDateGroup').style.display = 'none';
+            parsedReminderUtc = null;
+            // Стандартные поля
             document.getElementById('hasReminder').checked = false;
             document.getElementById('reminderSettings').style.display = 'none';
             document.getElementById('reminderTime').value = '';
@@ -1730,10 +2773,16 @@
                     if (task.reminderTime) {
                         document.getElementById('hasReminder').checked = true;
                         document.getElementById('reminderSettings').style.display = 'block';
-                        // ИСПРАВЛЕНО: конвертируем UTC → МСК для отображения
                         const mskInput = utcToMskInput(task.reminderTime);
                         if (mskInput) {
                             document.getElementById('reminderTime').value = mskInput;
+                            document.getElementById('manualDateGroup').style.display = 'block';
+                        }
+                        // Показываем превью в поле натурального ввода
+                        parsedReminderUtc = task.reminderTime;
+                        const preview = document.getElementById('naturalDatePreview');
+                        if (preview) {
+                            preview.innerHTML = `<span style="color:#667eea">${formatNudgeDate(new Date(task.reminderTime))}</span>`;
                         }
                         if (task.isRecurring) {
                             document.getElementById('isRecurring').checked = true;
@@ -1860,15 +2909,2364 @@
                 });
         }
         
+        // ═══════════════════════════════════════════════
+        // AI SETTINGS
+        // ═══════════════════════════════════════════════
+
+        const AI_PROVIDERS = {
+            openrouter: {
+                name: 'OpenRouter',
+                url: 'https://openrouter.ai/api/v1/chat/completions',
+                keyLink: 'https://openrouter.ai/keys',
+                keyPlaceholder: 'sk-or-v1-...',
+                models: [
+                    { id: 'deepseek/deepseek-chat-v3-5:free', label: 'DeepSeek V3 (бесплатно)' },
+                    { id: 'meta-llama/llama-3.3-70b-instruct:free', label: 'Llama 3.3 70B (бесплатно)' },
+                    { id: 'google/gemini-flash-1.5:free', label: 'Gemini Flash (бесплатно)' },
+                    { id: 'mistralai/mistral-7b-instruct:free', label: 'Mistral 7B (бесплатно)' },
+                    { id: 'deepseek/deepseek-r1:free', label: 'DeepSeek R1 (бесплатно)' },
+                ]
+            },
+            deepseek: {
+                name: 'DeepSeek',
+                url: 'https://api.deepseek.com/v1/chat/completions',
+                keyLink: 'https://platform.deepseek.com/api_keys',
+                keyPlaceholder: 'sk-...',
+                models: [
+                    { id: 'deepseek-chat', label: 'DeepSeek V3 (рекомендуем)' },
+                    { id: 'deepseek-reasoner', label: 'DeepSeek R1 (рассуждения)' },
+                ]
+            },
+            gemini: {
+                name: 'Google Gemini',
+                url: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
+                keyLink: 'https://aistudio.google.com/app/apikey',
+                keyPlaceholder: 'AIza...',
+                models: [
+                    { id: 'gemini-2.0-flash-lite', label: 'Gemini 2.0 Flash Lite (быстрый)' },
+                    { id: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash' },
+                    { id: 'gemini-1.5-flash', label: 'Gemini 1.5 Flash' },
+                ]
+            },
+            groq: {
+                name: 'Groq',
+                url: 'https://api.groq.com/openai/v1/chat/completions',
+                keyLink: 'https://console.groq.com/keys',
+                keyPlaceholder: 'gsk_...',
+                models: [
+                    { id: 'llama-3.3-70b-versatile', label: 'Llama 3.3 70B (рекомендуем)' },
+                    { id: 'llama-3.1-8b-instant', label: 'Llama 3.1 8B (быстрый)' },
+                    { id: 'mixtral-8x7b-32768', label: 'Mixtral 8x7B' },
+                ]
+            },
+            custom: {
+                name: 'Свой URL',
+                url: '',
+                keyLink: '',
+                keyPlaceholder: 'sk-...',
+                models: [
+                    { id: 'custom-model', label: 'Укажи модель вручную' },
+                ]
+            }
+        };
+
+        // Текущий выбранный провайдер в модалке (до сохранения)
+        let aiModalProvider = 'openrouter';
+
+        function loadAiSettings() {
+            return JSON.parse(localStorage.getItem('aiSettings') || '{}');
+        }
+
+        function saveAiSettings(settings) {
+            localStorage.setItem('aiSettings', JSON.stringify(settings));
+        }
+
+        function getAiConfig() {
+            const s = loadAiSettings();
+            if (!s.provider || !AI_PROVIDERS[s.provider]) return null;
+            const p = AI_PROVIDERS[s.provider];
+            return {
+                url: s.provider === 'custom' ? (s.customUrl || '') : p.url,
+                key: s.apiKey || '',
+                model: s.model || p.models[0].id,
+                provider: s.provider
+            };
+        }
+
+        function updateAiModalProvider(provider) {
+            aiModalProvider = provider;
+            const p = AI_PROVIDERS[provider];
+
+            // Выделяем карточку
+            document.querySelectorAll('.ai-provider-card').forEach(c => {
+                c.classList.toggle('selected', c.dataset.provider === provider);
+            });
+
+            // Показываем/скрываем поле custom URL
+            const customSection = document.getElementById('aiCustomUrlSection');
+            const keySection = document.getElementById('aiKeySection');
+            customSection.style.display = provider === 'custom' ? 'block' : 'none';
+            keySection.style.display = provider === 'custom' ? 'none' : 'block'; // для custom ключ не нужен
+
+            // Ссылка на получение ключа
+            const keyLink = document.getElementById('aiGetKeyLink');
+            if (p.keyLink) {
+                keyLink.href = p.keyLink;
+                keyLink.textContent = `Где получить ключ для ${p.name} →`;
+                keyLink.style.display = 'inline-block';
+            } else {
+                keyLink.style.display = 'none';
+            }
+
+            // Placeholder поля ключа
+            const keyInput = document.getElementById('aiApiKey');
+            keyInput.placeholder = p.keyPlaceholder || 'sk-...';
+
+            // Список моделей
+            const modelSelect = document.getElementById('aiModel');
+            const savedSettings = loadAiSettings();
+            modelSelect.innerHTML = p.models.map(m =>
+                `<option value="${m.id}" ${m.id === savedSettings.model ? 'selected' : ''}>${m.label}</option>`
+            ).join('');
+
+            // Сбрасываем статус
+            setAiStatus('idle', '💡 Вставь ключ и нажми «Проверить»');
+        }
+
+        function setAiStatus(type, text) {
+            const bar = document.getElementById('aiStatusBar');
+            bar.className = `ai-status-bar ${type}`;
+            bar.textContent = text;
+        }
+
+        function openAiModal() {
+            const settings = loadAiSettings();
+            aiModalProvider = settings.provider || 'openrouter';
+
+            // Восстанавливаем сохранённые значения
+            document.getElementById('aiApiKey').value = settings.apiKey || '';
+            document.getElementById('aiCustomUrl').value = settings.customUrl || '';
+            updateAiModalProvider(aiModalProvider);
+
+            // Если ключ уже есть — показываем статус
+            if (settings.apiKey || settings.provider === 'custom') {
+                setAiStatus('ok', '✅ Настройки сохранены');
+            }
+
+            document.getElementById('aiModal').classList.add('show');
+        }
+
+        function closeAiModal() {
+            document.getElementById('aiModal').classList.remove('show');
+        }
+
+        async function testAiConnection() {
+            const key = document.getElementById('aiApiKey').value.trim();
+            const provider = aiModalProvider;
+            const customUrl = document.getElementById('aiCustomUrl').value.trim();
+            const model = document.getElementById('aiModel').value;
+
+            if (provider !== 'custom' && !key) {
+                setAiStatus('error', '❌ Введи API-ключ');
+                return;
+            }
+            if (provider === 'custom' && !customUrl) {
+                setAiStatus('error', '❌ Введи URL эндпоинта');
+                return;
+            }
+
+            setAiStatus('testing', '⏳ Проверяю подключение...');
+
+            const p = AI_PROVIDERS[provider];
+            const url = provider === 'custom' ? customUrl : p.url;
+
+            try {
+                const headers = { 'Content-Type': 'application/json' };
+                if (key) headers['Authorization'] = `Bearer ${key}`;
+
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify({
+                        model: model,
+                        max_tokens: 10,
+                        messages: [{ role: 'user', content: 'Ответь одним словом: привет' }]
+                    })
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    const reply = data.choices?.[0]?.message?.content || '?';
+                    setAiStatus('ok', `✅ Подключено! Ответ: "${reply.trim()}"`);
+                } else {
+                    const err = await res.json().catch(() => ({}));
+                    const msg = err.error?.message || `HTTP ${res.status}`;
+                    setAiStatus('error', `❌ Ошибка: ${msg}`);
+                }
+            } catch (e) {
+                setAiStatus('error', `❌ Нет соединения: ${e.message}`);
+            }
+        }
+
+        function saveAiAndClose() {
+            const key = document.getElementById('aiApiKey').value.trim();
+            const model = document.getElementById('aiModel').value;
+            const customUrl = document.getElementById('aiCustomUrl').value.trim();
+
+            if (aiModalProvider !== 'custom' && !key) {
+                setAiStatus('error', '❌ Введи API-ключ');
+                return;
+            }
+            if (aiModalProvider === 'custom' && !customUrl) {
+                setAiStatus('error', '❌ Введи URL эндпоинта');
+                return;
+            }
+
+            saveAiSettings({ provider: aiModalProvider, apiKey: key, model, customUrl });
+
+            // Обновляем кнопку в хедере — показываем что AI подключён
+            const btn = document.getElementById('aiSettingsBtn');
+            if (btn) btn.textContent = '🤖✓';
+
+            showToast('✅ AI-провайдер сохранён');
+            closeAiModal();
+        }
+
+        function setupAiModal() {
+            document.getElementById('aiSettingsBtn').addEventListener('click', openAiModal);
+            document.getElementById('aiModalClose').addEventListener('click', closeAiModal);
+            document.getElementById('aiCancelBtn').addEventListener('click', closeAiModal);
+            document.getElementById('aiTestBtn').addEventListener('click', testAiConnection);
+            document.getElementById('aiSaveBtn').addEventListener('click', saveAiAndClose);
+
+            // Закрытие по фону
+            document.getElementById('aiModal').addEventListener('click', e => {
+                if (e.target === document.getElementById('aiModal')) closeAiModal();
+            });
+
+            // Переключение провайдеров
+            document.querySelectorAll('.ai-provider-card').forEach(card => {
+                card.addEventListener('click', () => updateAiModalProvider(card.dataset.provider));
+            });
+
+            // Показать/скрыть ключ
+            document.getElementById('aiKeyToggle').addEventListener('click', () => {
+                const inp = document.getElementById('aiApiKey');
+                inp.type = inp.type === 'password' ? 'text' : 'password';
+            });
+
+            // Если AI уже настроен — обновляем кнопку в хедере
+            const settings = loadAiSettings();
+            if (settings.apiKey || settings.provider === 'custom') {
+                const btn = document.getElementById('aiSettingsBtn');
+                if (btn) btn.textContent = '🤖✓';
+            }
+        }
+
+        // Универсальная функция вызова AI — используй в других фичах
+        async function callAI(systemPrompt, userMessage, maxTokens = 500) {
+            const cfg = getAiConfig();
+            if (!cfg) throw new Error('AI не настроен. Нажми 🤖 в шапке приложения.');
+            if (!cfg.key && cfg.provider !== 'custom') throw new Error('API-ключ не задан.');
+
+            const headers = { 'Content-Type': 'application/json' };
+            if (cfg.key) headers['Authorization'] = `Bearer ${cfg.key}`;
+
+            const res = await fetch(cfg.url, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({
+                    model: cfg.model,
+                    max_tokens: maxTokens,
+                    messages: [
+                        { role: 'system', content: systemPrompt },
+                        { role: 'user', content: userMessage }
+                    ]
+                })
+            });
+
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                throw new Error(err.error?.message || `HTTP ${res.status}`);
+            }
+
+            const data = await res.json();
+            return data.choices?.[0]?.message?.content?.trim() || '';
+        }
+
+        // ══════════════════════════════════════════════════
+        // НАТУРАЛЬНЫЙ ВВОД ДАТЫ
+        // ══════════════════════════════════════════════════
+
+        // Результат парсинга — UTC ISO строка или null
+        let parsedReminderUtc = null;
+
+        /**
+         * JS-парсер без AI. Покрывает ~90% реальных запросов.
+         * Всё считается в МСК (UTC+3).
+         */
+        function parseNaturalDate(input) {
+            if (!input || !input.trim()) return null;
+            const text = input.trim().toLowerCase();
+
+            // Текущий момент в МСК
+            const nowUtcMs = Date.now();
+            const MSK = 3 * 60 * 60 * 1000; // +3h в мс
+            const nowMsk = new Date(nowUtcMs + MSK); // «МСК-дата» в UTC-полях
+
+            // Вспомогательные
+            const y = nowMsk.getUTCFullYear();
+            const mo = nowMsk.getUTCMonth();
+            const d = nowMsk.getUTCDate();
+            const h = nowMsk.getUTCHours();
+            const min = nowMsk.getUTCMinutes();
+
+            // Создаём дату из МСК-компонентов → UTC
+            function mskToUtc(year, month, day, hours, minutes) {
+                return new Date(Date.UTC(year, month, day, hours - 3, minutes));
+            }
+
+            // Угадываем время по слову
+            function guessHour(timeWord) {
+                const tw = (timeWord || '').toLowerCase();
+                if (tw.includes('утр'))    return [9, 0];
+                if (tw.includes('обед'))   return [13, 0];
+                if (tw.includes('полдн'))  return [12, 0];
+                if (tw.includes('вечер'))  return [19, 0];
+                if (tw.includes('ночь') || tw.includes('ноч')) return [22, 0];
+                if (tw.includes('полноч')) return [0, 0];
+                return null;
+            }
+
+            // Парсим «в 9», «в 9:30», «в 21:00»
+            function extractTime(str) {
+                const m = str.match(/\bв\s+(\d{1,2})(?::(\d{2}))?\s*(утра|дня|вечера|ночи)?/);
+                if (!m) return null;
+                let hr = parseInt(m[1]);
+                const mn = parseInt(m[2] || '0');
+                const period = m[3] || '';
+                if (period === 'вечера' && hr < 12) hr += 12;
+                if (period === 'ночи' && hr < 6) hr += (hr === 0 ? 0 : 12);
+                if (period === 'дня' && hr < 12) hr += 12;
+                return [hr, mn];
+            }
+
+            const daysRu = ['воскресенье','понедельник','вторник','среда','четверг','пятница','суббота'];
+            const daysShort = ['вс','пн','вт','ср','чт','пт','сб'];
+            const monthsRu = ['январ','феврал','март','апрел','май','мая','июн','июл','август','сентябр','октябр','ноябр','декабр'];
+            const monthNums = [1,2,3,4,5,5,6,7,8,9,10,11,12];
+
+            let result = null;
+
+            // «сейчас», «прямо сейчас»
+            if (/сейчас|прямо сейчас/.test(text)) {
+                result = mskToUtc(y, mo, d, h, min + 1);
+            }
+
+            // «через N минут/часов/дней»
+            if (!result) {
+                const m = text.match(/через\s+(\d+)\s+(минут|мин|час|ч\b|дн|день|дней|недел)/);
+                if (m) {
+                    const n = parseInt(m[1]);
+                    const unit = m[2];
+                    const offsetMs =
+                        unit.startsWith('мин') ? n * 60000 :
+                        (unit.startsWith('час') || unit === 'ч') ? n * 3600000 :
+                        (unit.startsWith('дн') || unit.startsWith('день') || unit.startsWith('дней')) ? n * 86400000 :
+                        unit.startsWith('недел') ? n * 7 * 86400000 : 0;
+                    if (offsetMs) result = new Date(nowUtcMs + offsetMs);
+                }
+            }
+
+            // «завтра», «послезавтра»
+            if (!result) {
+                const t = extractTime(text);
+                const [th, tm] = t || [9, 0];
+                if (/послезавтра/.test(text)) {
+                    result = mskToUtc(y, mo, d + 2, th, tm);
+                } else if (/завтра/.test(text)) {
+                    result = mskToUtc(y, mo, d + 1, th, tm);
+                } else if (/сегодня/.test(text)) {
+                    result = mskToUtc(y, mo, d, th, tm);
+                }
+            }
+
+            // «в понедельник», «в следующую пятницу»
+            if (!result) {
+                const nextMod = /следующ/.test(text);
+                for (let i = 0; i < daysRu.length; i++) {
+                    if (text.includes(daysRu[i]) || text.includes(daysShort[i])) {
+                        const todayDow = nowMsk.getUTCDay(); // 0=вс
+                        let diff = i - todayDow;
+                        if (diff <= 0 || nextMod) diff += 7;
+                        const t = extractTime(text);
+                        const [th, tm] = t || guessHour(text) || [9, 0];
+                        result = mskToUtc(y, mo, d + diff, th, tm);
+                        break;
+                    }
+                }
+            }
+
+            // «15 января», «1 марта в 10»
+            if (!result) {
+                for (let i = 0; i < monthsRu.length; i++) {
+                    const rx = new RegExp(`(\\d{1,2})\\s+${monthsRu[i]}`, 'i');
+                    const m = text.match(rx);
+                    if (m) {
+                        const day = parseInt(m[1]);
+                        const month = monthNums[i] - 1;
+                        const t = extractTime(text);
+                        const [th, tm] = t || [9, 0];
+                        let year = y;
+                        if (month < mo || (month === mo && day < d)) year++;
+                        result = mskToUtc(year, month, day, th, tm);
+                        break;
+                    }
+                }
+            }
+
+            // «в 9», «в 18:30» — без даты → сегодня или завтра
+            if (!result) {
+                const t = extractTime(text);
+                if (t) {
+                    const [th, tm] = t;
+                    let candidate = mskToUtc(y, mo, d, th, tm);
+                    // Если время уже прошло — ставим на завтра
+                    if (candidate.getTime() <= nowUtcMs) {
+                        candidate = mskToUtc(y, mo, d + 1, th, tm);
+                    }
+                    result = candidate;
+                }
+            }
+
+            // «утром», «вечером» — без даты
+            if (!result) {
+                const guess = guessHour(text);
+                if (guess) {
+                    const [th, tm] = guess;
+                    let candidate = mskToUtc(y, mo, d, th, tm);
+                    if (candidate.getTime() <= nowUtcMs) {
+                        candidate = mskToUtc(y, mo, d + 1, th, tm);
+                    }
+                    result = candidate;
+                }
+            }
+
+            return result && !isNaN(result.getTime()) ? result : null;
+        }
+
+        /**
+         * Если JS не справился — спрашиваем AI (только если настроен).
+         * AI возвращает ISO строку.
+         */
+        async function parseNaturalDateWithAI(input) {
+            const mskNow = getMskNow();
+            const nowStr = `${mskNow.getUTCFullYear()}-${String(mskNow.getUTCMonth()+1).padStart(2,'0')}-${String(mskNow.getUTCDate()).padStart(2,'0')} ${String(mskNow.getUTCHours()).padStart(2,'0')}:${String(mskNow.getUTCMinutes()).padStart(2,'0')} МСК`;
+
+            const result = await callAI(
+                `Ты парсер дат. Текущее время: ${nowStr}. 
+Пользователь написал описание когда ему нужно напоминание.
+Верни ТОЛЬКО дату и время в формате ISO 8601 UTC (например 2025-03-22T09:00:00.000Z).
+Если не можешь определить — верни слово null.
+Никакого другого текста.`,
+                input,
+                30
+            );
+
+            if (!result || result.trim() === 'null') return null;
+            const date = new Date(result.trim());
+            return isNaN(date.getTime()) ? null : date;
+        }
+
+        // Форматируем дату для превью под полем
+        function formatNudgeDate(date) {
+            if (!date) return '';
+            const mskMs = date.getTime() + 3 * 60 * 60 * 1000;
+            const d = new Date(mskMs);
+            const now = new Date(Date.now() + 3 * 60 * 60 * 1000);
+            const diffMs = d.getTime() - now.getTime();
+            const diffMin = Math.round(diffMs / 60000);
+            const diffH = Math.round(diffMs / 3600000);
+            const diffD = Math.round(diffMs / 86400000);
+
+            const time = `${String(d.getUTCHours()).padStart(2,'0')}:${String(d.getUTCMinutes()).padStart(2,'0')}`;
+            const dateStr = `${String(d.getUTCDate()).padStart(2,'0')}.${String(d.getUTCMonth()+1).padStart(2,'0')}`;
+            const daysRu = ['вс','пн','вт','ср','чт','пт','сб'];
+            const dow = daysRu[d.getUTCDay()];
+
+            if (diffMin < 0) return '⚠️ Это время уже прошло';
+            if (diffMin < 60) return `⏰ через ${diffMin} мин (${time} МСК)`;
+            if (diffH < 24)  return `⏰ сегодня в ${time} МСК`;
+            if (diffD === 1) return `⏰ завтра в ${time} МСК`;
+            if (diffD < 7)  return `⏰ ${dow} в ${time} МСК (${dateStr})`;
+            return `⏰ ${dateStr} в ${time} МСК`;
+        }
+
+        let naturalDateDebounce = null;
+
+        function setupNaturalDateInput() {
+            const input = document.getElementById('naturalDateInput');
+            const preview = document.getElementById('naturalDatePreview');
+            const clearBtn = document.getElementById('naturalDateClear');
+            const manualToggle = document.getElementById('manualDateToggle');
+            const manualGroup = document.getElementById('manualDateGroup');
+            const reminderSettings = document.getElementById('reminderSettings');
+
+            // Дебаунс — парсим через 400мс после остановки ввода
+            input.addEventListener('input', () => {
+                const val = input.value.trim();
+                clearBtn.style.display = val ? 'block' : 'none';
+                parsedReminderUtc = null;
+                preview.innerHTML = '';
+
+                if (!val) return;
+
+                // Показываем «думаю...»
+                preview.innerHTML = '<span style="opacity:0.5">⏳ Разбираю...</span>';
+
+                clearTimeout(naturalDateDebounce);
+                naturalDateDebounce = setTimeout(async () => {
+                    // Сначала пробуем JS-парсер
+                    let date = parseNaturalDate(val);
+
+                    // Если JS не понял и AI настроен — спрашиваем AI
+                    if (!date) {
+                        try {
+                            const cfg = getAiConfig();
+                            if (cfg && cfg.key) {
+                                date = await parseNaturalDateWithAI(val);
+                            }
+                        } catch(e) {}
+                    }
+
+                    if (date) {
+                        parsedReminderUtc = date.toISOString();
+                        // Синхронизируем с datetime-local (для ручного редактирования)
+                        document.getElementById('reminderTime').value = utcToMskInput(parsedReminderUtc);
+                        document.getElementById('hasReminder').checked = true;
+                        reminderSettings.style.display = 'block';
+                        const txt = formatNudgeDate(date);
+                        const isPast = date.getTime() < Date.now();
+                        preview.innerHTML = `<span style="color:${isPast ? '#c62828' : '#667eea'}">${txt}</span>`;
+                    } else {
+                        parsedReminderUtc = null;
+                        preview.innerHTML = '<span style="color:#ff9800">🤔 Не понял — попробуй «завтра в 10» или выбери вручную</span>';
+                    }
+                }, 400);
+            });
+
+            // Кнопка очистки
+            clearBtn.addEventListener('click', () => {
+                input.value = '';
+                clearBtn.style.display = 'none';
+                preview.innerHTML = '';
+                parsedReminderUtc = null;
+                document.getElementById('reminderTime').value = '';
+                document.getElementById('hasReminder').checked = false;
+                reminderSettings.style.display = 'none';
+                manualGroup.style.display = 'none';
+            });
+
+            // Ссылка «Выбрать вручную»
+            manualToggle.addEventListener('click', () => {
+                const isVisible = manualGroup.style.display !== 'none';
+                manualGroup.style.display = isVisible ? 'none' : 'block';
+                if (!isVisible && !document.getElementById('reminderTime').value) {
+                    const mskPlus1h = getMskNow();
+                    mskPlus1h.setUTCHours(mskPlus1h.getUTCHours() + 1);
+                    document.getElementById('reminderTime').value = formatForDatetimeLocal(mskPlus1h);
+                    document.getElementById('hasReminder').checked = true;
+                    reminderSettings.style.display = 'block';
+                }
+            });
+
+            // Ручной datetime-local синхронизирует parsedReminderUtc
+            document.getElementById('reminderTime').addEventListener('change', (e) => {
+                if (e.target.value) {
+                    parsedReminderUtc = mskInputToUtc(e.target.value);
+                    document.getElementById('hasReminder').checked = true;
+                    reminderSettings.style.display = 'block';
+                    // Обновляем превью
+                    const date = new Date(parsedReminderUtc);
+                    preview.innerHTML = `<span style="color:#667eea">${formatNudgeDate(date)}</span>`;
+                } else {
+                    parsedReminderUtc = null;
+                }
+            });
+        }
+
+        // ══════════════════════════════════════════════════
+        // РЕЖИМ ПО НАСТРОЕНИЮ
+        // ══════════════════════════════════════════════════
+
+        let currentMood = null;
+
+        const MOOD_CONFIG = {
+            fire: {
+                emoji: '🔥', label: 'В потоке',
+                filter: t => !t.completed && (t.type === 'urgent' || t.priority === 'high' || t.priority === 'medium'),
+                sort: (a, b) => {
+                    const score = t => (t.type === 'urgent' ? 3 : 0) + (t.priority === 'high' ? 2 : t.priority === 'medium' ? 1 : 0);
+                    return score(b) - score(a);
+                },
+                fallback: '🔥 Отличный момент — закрывай сложные задачи пока есть энергия!',
+                prompt: 'Пользователь в потоке и полон энергии. Подбодри коротко (1-2 предложения), скажи что сейчас лучший момент закрыть сложные задачи. Тон: заряжающий, дружеский.',
+            },
+            happy: {
+                emoji: '😊', label: 'Хорошо',
+                filter: t => !t.completed && t.priority !== 'low',
+                sort: (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
+                fallback: '😊 Хорошее настроение — лучшее время для продуктивной работы.',
+                prompt: 'Пользователь в хорошем настроении. Поддержи тепло (1-2 предложения), предложи воспользоваться моментом.',
+            },
+            calm: {
+                emoji: '😌', label: 'Спокойно',
+                filter: t => !t.completed && t.type !== 'urgent',
+                sort: (a, b) => (a.category || '').localeCompare(b.category || ''),
+                fallback: '😌 Спокойный фокус — идеально для вдумчивых задач без спешки.',
+                prompt: 'Пользователь спокоен. Посоветуй (1-2 предложения) поработать методично — это идеальное состояние.',
+            },
+            tired: {
+                emoji: '😴', label: 'Устал',
+                filter: t => !t.completed && t.priority === 'low' && t.type !== 'urgent',
+                sort: (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+                fallback: '😴 Ничего страшного. Сделай одну маленькую задачу — и можно отдохнуть.',
+                prompt: 'Пользователь устал. Посочувствуй (1-2 предложения), предложи сделать одну маленькую задачу или отдохнуть без вины. Тон: мягкий.',
+            },
+            stressed: {
+                emoji: '😤', label: 'Стресс',
+                filter: t => !t.completed && (t.type === 'urgent' || t.priority === 'high'),
+                sort: (a, b) => (b.type === 'urgent' ? 1 : 0) - (a.type === 'urgent' ? 1 : 0),
+                fallback: '😤 Дыши. Вот только самое важное — остальное подождёт.',
+                prompt: 'Пользователь в стрессе. Успокой (1-2 предложения), предложи сфокусироваться только на самом важном. Тон: спокойный.',
+            },
+        };
+
+        async function activateMood(mood) {
+            currentMood = mood;
+            const cfg = MOOD_CONFIG[mood];
+
+            document.querySelectorAll('.mood-emoji-btn').forEach(btn =>
+                btn.classList.toggle('active', btn.dataset.mood === mood)
+            );
+            document.getElementById('moodToggleBtn').innerHTML =
+                `${cfg.emoji} Настроение <span class="mood-badge">${cfg.label}</span>`;
+
+            renderTasks();
+
+            const commentEl = document.getElementById('moodAiComment');
+            commentEl.style.display = 'block';
+            commentEl.textContent = '⏳ AI думает...';
+
+            try {
+                const aiCfg = getAiConfig();
+                if (aiCfg && aiCfg.key) {
+                    const active = tasks.filter(t => !t.completed);
+                    const summary = active.slice(0, 8)
+                        .map(t => `- ${t.title} [${t.priority}, ${t.type}]`).join('\n');
+                    const reply = await callAI(
+                        `${cfg.prompt} Пиши по-русски, коротко. Без маркированных списков.`,
+                        `У пользователя ${active.length} активных задач:\n${summary}`,
+                        100
+                    );
+                    commentEl.textContent = reply;
+                } else {
+                    commentEl.textContent = cfg.fallback;
+                }
+            } catch(e) {
+                commentEl.textContent = cfg.fallback;
+            }
+        }
+
+        function deactivateMood() {
+            currentMood = null;
+            document.querySelectorAll('.mood-emoji-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('moodToggleBtn').innerHTML = '😊 Настроение';
+            document.getElementById('moodAiComment').style.display = 'none';
+            document.getElementById('moodBar').classList.remove('show');
+            renderTasks();
+        }
+
+        function setupMoodMode() {
+            document.getElementById('moodToggleBtn').addEventListener('click', () => {
+                const bar = document.getElementById('moodBar');
+                const isOpen = bar.classList.contains('show');
+                if (isOpen && currentMood) { deactivateMood(); return; }
+                bar.classList.toggle('show', !isOpen);
+            });
+
+            document.getElementById('moodClose').addEventListener('click', () => {
+                if (currentMood) deactivateMood();
+                else document.getElementById('moodBar').classList.remove('show');
+            });
+
+            document.querySelectorAll('.mood-emoji-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const mood = btn.dataset.mood;
+                    if (currentMood === mood) deactivateMood();
+                    else activateMood(mood);
+                });
+            });
+        }
+
+        function openArchiveModal() {
+            renderArchiveList();
+            document.getElementById('archiveModal').classList.add('show');
+        }
+
+        function closeArchiveModal() {
+            document.getElementById('archiveModal').classList.remove('show');
+        }
+
+        function renderArchiveList() {
+            const list = document.getElementById('archiveList');
+            const stats = document.getElementById('archiveStats');
+            stats.textContent = `${taskArchive.length} задач в архиве · все данные хранятся на устройстве`;
+
+            if (!taskArchive.length) {
+                list.innerHTML = '<div style="text-align:center;padding:30px;opacity:0.5">Архив пуст</div>';
+                return;
+            }
+
+            list.innerHTML = taskArchive.map(task => {
+                const deletedDate = task.deletedAt
+                    ? new Date(task.deletedAt).toLocaleDateString('ru')
+                    : '—';
+                return `
+                <div class="archive-task">
+                    <div style="flex:1;min-width:0">
+                        <div class="archive-task-title">${escapeHtml(task.title)}</div>
+                        <div class="archive-task-date">удалена ${deletedDate} · ${task.category || 'без категории'}</div>
+                    </div>
+                    <div style="display:flex;gap:6px;flex-shrink:0">
+                        <button class="archive-btn" style="background:#e8f5e9;color:#2e7d32"
+                            onclick="restoreTask(${task.id})">↩ Вернуть</button>
+                        <button class="archive-btn" style="background:#ffebee;color:#c62828"
+                            onclick="deleteTask(${task.id}, true)">✕</button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        // ══════════════════════════════════════════════════
+        // ЭКСПОРТ / ИМПОРТ JSON
+        // ══════════════════════════════════════════════════
+
+        function exportJSON() {
+            const data = {
+                version: 2,
+                exportedAt: new Date().toISOString(),
+                tasks,
+                archive: taskArchive,
+                aiSettings: loadAiSettings()
+            };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const date = new Date().toISOString().slice(0, 10);
+            a.href = url;
+            a.download = `smarttasks-backup-${date}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('📤 Файл сохранён');
+        }
+
+        function importJSON(file) {
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    // Поддерживаем оба формата: v1 (просто массив) и v2 (объект с meta)
+                    const importedTasks   = Array.isArray(data) ? data : (data.tasks || []);
+                    const importedArchive = Array.isArray(data) ? [] : (data.archive || []);
+
+                    if (!Array.isArray(importedTasks)) throw new Error('Неверный формат');
+
+                    if (!confirm(`Импортировать ${importedTasks.length} задач и ${importedArchive.length} архивных?\n\nТекущие данные будут объединены (не перезаписаны).`)) return;
+
+                    // Объединяем: новые задачи добавляем если их нет по id
+                    const existingIds = new Set(tasks.map(t => t.id));
+                    const newTasks = importedTasks.filter(t => !existingIds.has(t.id));
+                    tasks = [...newTasks, ...tasks];
+
+                    const archiveIds = new Set(taskArchive.map(t => t.id));
+                    const newArchive = importedArchive.filter(t => !archiveIds.has(t.id));
+                    taskArchive = [...newArchive, ...taskArchive];
+
+                    saveTasks();
+                    saveArchive();
+                    renderTasks();
+                    renderArchiveList();
+                    updateAll();
+                    showToast(`✅ Импортировано: +${newTasks.length} задач`);
+                } catch(err) {
+                    showToast('❌ Ошибка импорта: ' + err.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // ══════════════════════════════════════════════════
+        // ДЕТЕКТОР ПАТТЕРНОВ
+        // ══════════════════════════════════════════════════
+
+        // Ключи уже показанных подсказок — чтобы не спамить
+        let shownNudges = new Set(
+            JSON.parse(localStorage.getItem('shownNudges') || '[]')
+        );
+
+        function saveShownNudges() {
+            localStorage.setItem('shownNudges', JSON.stringify([...shownNudges]));
+        }
+
+        /**
+         * Анализ паттернов — только JS, без AI.
+         * Возвращает массив найденных «забытых» паттернов.
+         */
+        function detectForgottenPatterns() {
+            const allTasks = [...tasks, ...taskArchive];
+            const now = Date.now();
+            const patterns = [];
+
+            // Группируем по нормализованному названию
+            const groups = {};
+            allTasks.forEach(task => {
+                // Нормализация: нижний регистр, убираем знаки
+                const key = task.title.toLowerCase().replace(/[^\wа-яё\s]/gi, '').trim();
+                if (!key) return;
+                if (!groups[key]) groups[key] = [];
+                groups[key].push(task);
+            });
+
+            Object.entries(groups).forEach(([key, group]) => {
+                // Нужно минимум 2 вхождения чтобы говорить о паттерне
+                if (group.length < 2) return;
+
+                // Берём только завершённые/удалённые — они показывают регулярность
+                const closed = group.filter(t => t.completed || t.isArchived);
+                if (closed.length < 2) return;
+
+                // Сортируем по дате создания
+                const sorted = [...closed].sort((a, b) =>
+                    new Date(a.createdAt) - new Date(b.createdAt)
+                );
+
+                // Считаем средний интервал между вхождениями
+                const intervals = [];
+                for (let i = 1; i < sorted.length; i++) {
+                    const diff = new Date(sorted[i].createdAt) - new Date(sorted[i-1].createdAt);
+                    intervals.push(diff);
+                }
+                const avgInterval = intervals.reduce((s, v) => s + v, 0) / intervals.length;
+                const avgDays = avgInterval / (1000 * 60 * 60 * 24);
+
+                // Смотрим на последнюю активность по этому паттерну
+                const lastTask = sorted[sorted.length - 1];
+                const lastDate = new Date(lastTask.deletedAt || lastTask.createdAt);
+                const daysSinceLast = (now - lastDate.getTime()) / (1000 * 60 * 60 * 24);
+
+                // Паттерн «забыт» если прошло в 2+ раза больше среднего интервала
+                // и задача не активна прямо сейчас
+                const isActiveNow = tasks.some(t =>
+                    t.title.toLowerCase().replace(/[^\wа-яё\s]/gi, '').trim() === key && !t.completed
+                );
+                if (isActiveNow) return;
+
+                // Игнорируем слишком редкие (раз в год) и слишком частые паттерны (каждый день — норм)
+                if (avgDays < 3 || avgDays > 180) return;
+                if (daysSinceLast < avgInterval / (1000 * 60 * 60 * 24) * 2) return;
+
+                // Уникальный ключ подсказки — чтобы не повторять
+                const nudgeId = `${key}-${Math.floor(lastDate.getTime() / 86400000)}`;
+                if (shownNudges.has(nudgeId)) return;
+
+                patterns.push({
+                    nudgeId,
+                    title: lastTask.title,
+                    category: lastTask.category,
+                    tags: lastTask.tags,
+                    type: lastTask.type,
+                    priority: lastTask.priority,
+                    avgDays: Math.round(avgDays),
+                    daysSinceLast: Math.round(daysSinceLast),
+                    count: closed.length,
+                    originalTask: lastTask
+                });
+            });
+
+            return patterns;
+        }
+
+        /**
+         * Показываем AI-подсказку для найденного паттерна.
+         * AI вызывается только здесь — один раз на паттерн.
+         */
+        async function showPatternNudge(pattern) {
+            const container = document.getElementById('aiNudgeContainer');
+
+            // Показываем карточку с лоадером пока AI думает
+            const nudgeId = `nudge-${pattern.nudgeId}`;
+            const card = document.createElement('div');
+            card.className = 'ai-nudge';
+            card.id = nudgeId;
+            card.innerHTML = `
+                <div class="ai-nudge-title">🔍 Кажется, ты что-то забыл...</div>
+                <div class="ai-nudge-text ai-nudge-loader">⏳ AI анализирует паттерн...</div>
+                <div class="ai-nudge-actions">
+                    <button class="nudge-dismiss" onclick="dismissNudge('${pattern.nudgeId}', '${nudgeId}')">Не напоминай</button>
+                </div>`;
+            container.prepend(card);
+
+            // Пробуем получить живой текст от AI
+            let message = '';
+            try {
+                const cfg = getAiConfig();
+                if (cfg && cfg.key) {
+                    message = await callAI(
+                        `Ты дружелюбный ассистент в приложении задач. Пиши по-русски, коротко (2-3 предложения), живо и с теплотой. Без маркированных списков.`,
+                        `Пользователь регулярно создавал задачу "${pattern.title}" примерно раз в ${pattern.avgDays} дней (${pattern.count} раз). Последний раз — ${pattern.daysSinceLast} дней назад. Напомни об этом мягко и спроси: может это уже стало привычкой и задача не нужна, или просто выпало из виду?`,
+                        150
+                    );
+                }
+            } catch(e) {
+                // AI недоступен — используем шаблон
+            }
+
+            // Фоллбэк если AI не настроен или ошибка
+            if (!message) {
+                message = `Ты обычно делал «${pattern.title}» раз в ${pattern.avgDays} дней — уже ${pattern.daysSinceLast} дней прошло. Может, выпало из виду? Или это уже стало привычкой и задача больше не нужна?`;
+            }
+
+            // Обновляем карточку с живым текстом
+            card.innerHTML = `
+                <div class="ai-nudge-title">🔍 Кажется, ты что-то забыл...</div>
+                <div class="ai-nudge-text">${escapeHtml(message)}</div>
+                <div class="ai-nudge-actions">
+                    <button class="nudge-restore" onclick="restoreFromNudge(${JSON.stringify(pattern.originalTask).replace(/"/g, '&quot;')}, '${pattern.nudgeId}', '${nudgeId}')">➕ Добавить снова</button>
+                    <button class="nudge-delete" onclick="deleteFromNudge('${pattern.nudgeId}', '${nudgeId}')">🗑 Удалить навсегда</button>
+                    <button class="nudge-dismiss" onclick="dismissNudge('${pattern.nudgeId}', '${nudgeId}')">✕ Всё ок</button>
+                </div>`;
+        }
+
+        function dismissNudge(nudgeId, cardId) {
+            shownNudges.add(nudgeId);
+            saveShownNudges();
+            document.getElementById(cardId)?.remove();
+        }
+
+        function restoreFromNudge(originalTask, nudgeId, cardId) {
+            const restored = {
+                ...originalTask,
+                id: Date.now(),
+                completed: false,
+                createdAt: new Date().toISOString(),
+                reminderTime: null
+            };
+            delete restored.deletedAt;
+            delete restored.isArchived;
+            tasks.unshift(restored);
+            saveTasks();
+            renderTasks();
+            dismissNudge(nudgeId, cardId);
+            showToast('✅ Задача добавлена снова');
+        }
+
+        function deleteFromNudge(nudgeId, cardId) {
+            // Удаляем навсегда из архива все задачи с таким паттерном
+            const key = nudgeId.split('-').slice(0, -1).join('-');
+            taskArchive = taskArchive.filter(t =>
+                t.title.toLowerCase().replace(/[^\wа-яё\s]/gi, '').trim() !== key
+            );
+            saveArchive();
+            dismissNudge(nudgeId, cardId);
+            showToast('🗑️ Паттерн удалён навсегда');
+        }
+
+        async function runPatternDetector() {
+            const patterns = detectForgottenPatterns();
+            // Показываем не больше 2 подсказок за раз, чтобы не перегружать
+            for (const p of patterns.slice(0, 2)) {
+                await showPatternNudge(p);
+            }
+        }
+
+        function setupArchive() {
+            document.getElementById('archiveBtn').addEventListener('click', openArchiveModal);
+            document.getElementById('archiveModalClose').addEventListener('click', closeArchiveModal);
+            document.getElementById('archiveModal').addEventListener('click', e => {
+                if (e.target === document.getElementById('archiveModal')) closeArchiveModal();
+            });
+            document.getElementById('exportJsonBtn').addEventListener('click', exportJSON);
+            document.getElementById('importJsonBtn').addEventListener('click', () => {
+                document.getElementById('importJsonFile').click();
+            });
+            document.getElementById('importJsonFile').addEventListener('change', e => {
+                importJSON(e.target.files[0]);
+                e.target.value = ''; // сброс чтобы можно было снова выбрать тот же файл
+            });
+            document.getElementById('clearArchiveBtn').addEventListener('click', () => {
+                if (confirm(`Удалить навсегда все ${taskArchive.length} задач из архива?\nЭто действие необратимо.`)) {
+                    taskArchive = [];
+                    saveArchive();
+                    renderArchiveList();
+                    showToast('🗑️ Архив очищен');
+                }
+            });
+        }
+
+        // ══════════════════════════════════════════════════
+        // УТРЕННИЙ БРИФИНГ
+        // ══════════════════════════════════════════════════
+
+        const TOPIC_LABELS = {
+            tech:     '💻 IT и технологии',
+            ai:       '🤖 Искусственный интеллект',
+            business: '💼 Бизнес',
+            science:  '🔬 Наука',
+            world:    '🌍 Мировые новости',
+            finance:  '📈 Финансы и крипто',
+            health:   '💪 Здоровье',
+            sport:    '⚽ Спорт',
+        };
+
+        function loadBriefingSettings() {
+            return JSON.parse(localStorage.getItem('briefingSettings') || '{"topics":["tech"],"customTopic":""}');
+        }
+
+        function saveBriefingSettings(s) {
+            localStorage.setItem('briefingSettings', JSON.stringify(s));
+        }
+
+        function getBriefingGreeting() {
+            const h = getMskNow().getUTCHours();
+            if (h < 6)  return ['🌙 Ночной режим', 'Не спится?'];
+            if (h < 12) return ['☀️ Доброе утро!', 'Начнём день продуктивно'];
+            if (h < 17) return ['🌤 Добрый день!', 'Как идут дела?'];
+            if (h < 21) return ['🌆 Добрый вечер!', 'Подведём итоги дня'];
+            return ['🌙 Поздний вечер', 'Планируем завтра?'];
+        }
+
+        function renderBriefingTasks() {
+            const container = document.getElementById('briefingTasks');
+            const mskNow = getMskNow();
+            const todayY = mskNow.getUTCFullYear();
+            const todayM = mskNow.getUTCMonth();
+            const todayD = mskNow.getUTCDate();
+
+            // Задачи с напоминанием на сегодня
+            const todayReminder = tasks.filter(t => {
+                if (t.completed || !t.reminderTime) return false;
+                const msk = new Date(new Date(t.reminderTime).getTime() + 3*60*60*1000);
+                return msk.getUTCFullYear()===todayY && msk.getUTCMonth()===todayM && msk.getUTCDate()===todayD;
+            });
+
+            // Срочные и высокоприоритетные активные
+            const important = tasks.filter(t =>
+                !t.completed && !todayReminder.find(r => r.id===t.id) &&
+                (t.type==='urgent' || t.priority==='high')
+            ).slice(0, 4);
+
+            const all = [...todayReminder, ...important];
+
+            if (!all.length) {
+                container.innerHTML = `<div style="padding:12px;opacity:.6;font-size:14px">
+                    🎉 На сегодня нет запланированных задач — отличный повод добавить что-то важное!
+                </div>`;
+                return;
+            }
+
+            const colors = { urgent:'#f44336', high:'#ff9800', medium:'#2196f3', low:'#4caf50' };
+            container.innerHTML = all.map(t => {
+                const color = t.type==='urgent' ? '#f44336' : colors[t.priority||'medium'];
+                const time  = t.reminderTime ? ` · ${formatDisplayDate(t.reminderTime)}` : '';
+                const tag   = t.type==='urgent' ? '🚨 Срочно' : t.category || '';
+                return `<div class="briefing-task-item">
+                    <div class="briefing-task-dot" style="background:${color}"></div>
+                    <div>
+                        <div class="briefing-task-title">${escapeHtml(t.title)}</div>
+                        <div class="briefing-task-meta">${escapeHtml(tag)}${time}</div>
+                    </div>
+                </div>`;
+            }).join('');
+
+            return all; // возвращаем для AI-плана
+        }
+
+        async function generateBriefingPlan(todayTasks) {
+            const planSection = document.getElementById('briefingPlanSection');
+            const planEl = document.getElementById('briefingPlan');
+
+            try {
+                const cfg = getAiConfig();
+                if (!cfg || !cfg.key) return;
+
+                planSection.style.display = 'block';
+                planEl.textContent = '⏳ AI составляет план дня...';
+
+                const mskNow = getMskNow();
+                const h = mskNow.getUTCHours();
+                const allActive = tasks.filter(t => !t.completed);
+                const taskList = allActive.slice(0, 12)
+                    .map(t => `- ${t.title} [${t.priority}, ${t.type}${t.reminderTime ? ', есть напоминание' : ''}]`)
+                    .join('\n');
+
+                const plan = await callAI(
+                    `Ты дружелюбный личный ассистент. Составь короткий план дня (3-5 предложений) на основе задач пользователя. 
+Сейчас ${h}:00 МСК. Пиши по-русски, живо и конкретно. Упомяни 2-3 конкретные задачи по имени. 
+Без маркированных списков — только обычный текст.`,
+                    `Активных задач всего: ${allActive.length}\n${taskList}`,
+                    200
+                );
+                planEl.textContent = plan;
+            } catch(e) {
+                planSection.style.display = 'none';
+            }
+        }
+
+        async function generateNewsDigest() {
+            const newsSection = document.getElementById('briefingNewsSection');
+            const newsEl = document.getElementById('briefingNews');
+            const newsTitleEl = document.getElementById('briefingNewsTitle');
+
+            try {
+                const cfg = getAiConfig();
+                if (!cfg || !cfg.key) return;
+
+                const settings = loadBriefingSettings();
+                const topics = settings.topics || ['tech'];
+                const customTopic = settings.customTopic || '';
+
+                const topicLabels = topics.map(t => TOPIC_LABELS[t]||t).join(', ');
+                const allTopics = customTopic
+                    ? `${topicLabels}, ${customTopic}`
+                    : topicLabels;
+
+                newsSection.style.display = 'block';
+                newsTitleEl.textContent = `Дайджест: ${allTopics}`;
+                newsEl.innerHTML = '<div class="briefing-loader">⏳ AI готовит дайджест...</div>';
+
+                const mskNow = getMskNow();
+                const dateStr = `${mskNow.getUTCDate()}.${mskNow.getUTCMonth()+1}.${mskNow.getUTCFullYear()}`;
+
+                // AI генерирует структурированный JSON с новостями
+                const raw = await callAI(
+                    `Ты новостной редактор. Составь дайджест из 4-5 актуальных новостей/трендов по темам: ${allTopics}.
+Сегодня ${dateStr}. Верни ТОЛЬКО JSON-массив без пояснений:
+[{"title":"заголовок","summary":"1-2 предложения","tag":"тег"}]
+Пиши по-русски. Новости должны быть реальными и актуальными.`,
+                    `Темы: ${allTopics}. Дата: ${dateStr}`,
+                    600
+                );
+
+                // Парсим JSON
+                let items = [];
+                try {
+                    const clean = raw.replace(/```json|```/g, '').trim();
+                    items = JSON.parse(clean);
+                } catch(e) {
+                    // Если AI не вернул JSON — показываем как текст
+                    newsEl.innerHTML = `<div class="briefing-ai-block">${escapeHtml(raw)}</div>`;
+                    return;
+                }
+
+                if (!Array.isArray(items) || !items.length) {
+                    newsEl.innerHTML = '<div style="opacity:.6;font-size:13px">Не удалось загрузить дайджест</div>';
+                    return;
+                }
+
+                newsEl.innerHTML = items.map(item => `
+                    <div class="briefing-news-item">
+                        <div class="briefing-news-title">${escapeHtml(item.title||'')}</div>
+                        <div style="font-size:13px;line-height:1.5;margin:4px 0 4px">${escapeHtml(item.summary||'')}</div>
+                        <div class="briefing-news-meta">${escapeHtml(item.tag||'')}</div>
+                    </div>`).join('');
+
+            } catch(e) {
+                newsSection.style.display = 'none';
+            }
+        }
+
+        async function openBriefing() {
+            const modal = document.getElementById('briefingModal');
+            modal.classList.add('show');
+
+            // Hero
+            const [greeting, sub] = getBriefingGreeting();
+            document.getElementById('briefingGreeting').textContent = greeting;
+            document.getElementById('briefingHeroSub').textContent = sub;
+            const mskNow = getMskNow();
+            document.getElementById('briefingTime').textContent =
+                `${String(mskNow.getUTCHours()).padStart(2,'0')}:${String(mskNow.getUTCMinutes()).padStart(2,'0')} МСК · ${mskNow.getUTCDate()}.${mskNow.getUTCMonth()+1}.${mskNow.getUTCFullYear()}`;
+
+            // Восстанавливаем настройки тем
+            const settings = loadBriefingSettings();
+            document.querySelectorAll('.topic-chip').forEach(chip => {
+                chip.classList.toggle('selected', (settings.topics||[]).includes(chip.dataset.topic));
+            });
+            document.getElementById('briefingCustomTopic').value = settings.customTopic || '';
+
+            // Скрываем AI-блоки до загрузки
+            document.getElementById('briefingPlanSection').style.display = 'none';
+            document.getElementById('briefingNewsSection').style.display = 'none';
+
+            // Задачи — синхронно
+            const todayTasks = renderBriefingTasks();
+
+            // AI — параллельно
+            await Promise.all([
+                generateBriefingPlan(todayTasks),
+                generateNewsDigest()
+            ]);
+        }
+
+        function closeBriefing() {
+            document.getElementById('briefingModal').classList.remove('show');
+        }
+
+        // Автопоказ брифинга утром (6:00–10:00) при первом открытии за день
+        function checkAutoBriefing() {
+            const h = getMskNow().getUTCHours();
+            if (h < 6 || h >= 10) return;
+            const key = `briefingShown-${getMskNow().getUTCFullYear()}-${getMskNow().getUTCMonth()}-${getMskNow().getUTCDate()}`;
+            if (localStorage.getItem(key)) return;
+            localStorage.setItem(key, '1');
+            // Показываем через 1.5 сек чтобы приложение успело загрузиться
+            setTimeout(openBriefing, 1500);
+        }
+
+        function setupBriefing() {
+            document.getElementById('briefingBtn').addEventListener('click', openBriefing);
+            document.getElementById('briefingCloseBtn').addEventListener('click', closeBriefing);
+            document.getElementById('briefingModal').addEventListener('click', e => {
+                if (e.target === document.getElementById('briefingModal')) closeBriefing();
+            });
+            document.getElementById('briefingRefreshBtn').addEventListener('click', () => {
+                document.getElementById('briefingPlanSection').style.display = 'none';
+                document.getElementById('briefingNewsSection').style.display = 'none';
+                renderBriefingTasks();
+                const todayTasks = renderBriefingTasks();
+                Promise.all([generateBriefingPlan(todayTasks), generateNewsDigest()]);
+            });
+
+            // Настройки — тоггл панели
+            document.getElementById('briefingSettingsToggle').addEventListener('click', () => {
+                document.getElementById('briefingSettingsPanel').classList.toggle('open');
+            });
+
+            // Выбор тем
+            document.querySelectorAll('.topic-chip').forEach(chip => {
+                chip.addEventListener('click', () => {
+                    chip.classList.toggle('selected');
+                    const selected = [...document.querySelectorAll('.topic-chip.selected')]
+                        .map(c => c.dataset.topic);
+                    const customTopic = document.getElementById('briefingCustomTopic').value.trim();
+                    saveBriefingSettings({ topics: selected, customTopic });
+                });
+            });
+
+            document.getElementById('briefingCustomTopic').addEventListener('change', e => {
+                const selected = [...document.querySelectorAll('.topic-chip.selected')]
+                    .map(c => c.dataset.topic);
+                saveBriefingSettings({ topics: selected, customTopic: e.target.value.trim() });
+            });
+        }
+
+        // ══════════════════════════════════════════════════
+        // АССИСТЕНТ С ХАРАКТЕРОМ
+        // ══════════════════════════════════════════════════
+
+        const PERSONAS = {
+            coach: {
+                name: 'Макс — Коуч',
+                emoji: '💪',
+                color: '#e8f5e9',
+                darkColor: '#0d3320',
+                status: 'Требовательный, результат-ориентированный',
+                systemPrompt: `Ты строгий, но справедливый персональный коуч по имени Макс. 
+Говоришь прямо, без лишних слов. Не терпишь отговорок и прокрастинацию. 
+Всегда ориентирован на конкретный результат. Используешь короткие, чёткие фразы. 
+Иногда добавляешь 💪 или 🎯. Никогда не жалеешь — подталкиваешь к действию.
+Отвечай по-русски, коротко (2-4 предложения).`,
+                greeting: 'Итак, у тебя {count} задач. Что мешает начать прямо сейчас? Назови одну которую закроешь сегодня. 💪',
+                quickReplies: ['Что мне сделать первым?', 'Я тяну задачу...', 'Хвали меня!', 'Помоги расставить приоритеты'],
+            },
+            friend: {
+                name: 'Саша — Подруга',
+                emoji: '😊',
+                color: '#fce4ec',
+                darkColor: '#3d0a1a',
+                status: 'Тёплая, поддерживающая, понимающая',
+                systemPrompt: `Ты тёплая и дружелюбная подруга по имени Саша.
+Всегда поддерживаешь, понимаешь когда тяжело, радуешься успехам.
+Говоришь как живой человек — с эмпатией, юмором и теплотой.
+Иногда добавляешь ❤️ или 🌸. Никогда не осуждаешь.
+Отвечай по-русски, как в переписке с близким другом (2-4 предложения).`,
+                greeting: 'Привет! У тебя {count} задач — не переживай, разберёмся вместе 🌸 Как ты вообще? Как настроение?',
+                quickReplies: ['Помоги мне не забыть', 'Я устала...', 'Что можно отложить?', 'Просто поговорим'],
+            },
+            sarcastic: {
+                name: 'Игорь — Скептик',
+                emoji: '😏',
+                color: '#fffde7',
+                darkColor: '#2d2a00',
+                status: 'Саркастичный, умный, честный',
+                systemPrompt: `Ты саркастичный и остроумный ассистент по имени Игорь.
+Говоришь с тонким юмором и иронией, но по делу. Замечаешь когда человек оправдывается.
+Никогда не грубишь, но и не льстишь. Ценишь честность и результат.
+Иногда добавляешь 😏 или 🙄. Остроумные комментарии — твоя фишка.
+Отвечай по-русски коротко (2-3 предложения), остроумно.`,
+                greeting: 'О, снова ты. У тебя {count} задач которые ждут не дождутся. Интересно, сколько из них переживут этот день? 😏',
+                quickReplies: ['Я опять прокрастинирую', 'Оцени мой прогресс', 'Что бы ты сделал на моём месте?', 'Ругай меня'],
+            },
+            motivator: {
+                name: 'Алекс — Мотиватор',
+                emoji: '🚀',
+                color: '#e3f2fd',
+                darkColor: '#0a1a30',
+                status: 'Заряжающий, оптимистичный, энергичный',
+                systemPrompt: `Ты энергичный мотиватор по имени Алекс.
+Всегда заряжаешь энергией, видишь потенциал в каждом. Говоришь с энтузиазмом.
+Превращаешь любую задачу в вызов который хочется принять.
+Иногда добавляешь 🚀 или ⚡. Твои слова заряжают действием.
+Отвечай по-русски энергично (2-4 предложения). Без клише типа "ты можешь всё".`,
+                greeting: 'ЭЙ! {count} задач — это {count} возможностей стать лучше сегодня чем вчера! 🚀 Какую суперсилу применим первой?',
+                quickReplies: ['Зарядь меня!', 'Помоги начать', 'Я потерял мотивацию', 'Что я уже сделал хорошего?'],
+            },
+            zen: {
+                name: 'Ли — Дзен',
+                emoji: '🧘',
+                color: '#e8f5e9',
+                darkColor: '#0a2010',
+                status: 'Спокойный, мудрый, философский',
+                systemPrompt: `Ты мудрый дзен-мастер по имени Ли.
+Говоришь спокойно, с глубоким смыслом. Иногда используешь метафоры или короткие афоризмы.
+Помогаешь расставить приоритеты без паники. Не торопишь — направляешь.
+Иногда добавляешь 🧘 или 🍃. Твои слова успокаивают и проясняют.
+Отвечай по-русски медитативно, кратко (2-3 предложения).`,
+                greeting: 'Приветствую. {count} задач — как камни на пути. Но путь преодолевается шаг за шагом. 🧘 С чего начнём?',
+                quickReplies: ['Я в стрессе', 'Как расставить приоритеты?', 'Дай совет на день', 'Помоги сфокусироваться'],
+            },
+            commander: {
+                name: 'Генерал — Командир',
+                emoji: '🎖️',
+                color: '#eceff1',
+                darkColor: '#1a1f25',
+                status: 'Чёткий, дисциплинированный, стратег',
+                systemPrompt: `Ты военный командир по имени Генерал.
+Говоришь чётко, структурированно, как на брифинге. Используешь военную терминологию.
+Задачи — это миссии, день — это операция, прокрастинация — это дезертирство.
+Иногда добавляешь 🎖️ или ⚔️. Никаких эмоций — только стратегия и дисциплина.
+Отвечай по-русски чётко (2-4 предложения). Как приказ.`,
+                greeting: 'Солдат! Доклад: {count} задач ждут выполнения. 🎖️ Приступаем к планированию операции. Назови главную цель на сегодня.',
+                quickReplies: ['Доложи обстановку', 'Расставь приоритеты', 'Я сорвал план...', 'Стратегия на неделю'],
+            },
+        };
+
+        // История чата — хранится в памяти сессии + localStorage
+        let assistantHistory = []; // [{role, content, time}]
+        let currentPersona = null;
+        let assistantTyping = false;
+
+        function loadAssistantSettings() {
+            const s = JSON.parse(localStorage.getItem('assistantSettings') || '{}');
+            return { persona: s.persona || 'coach', history: s.history || [] };
+        }
+
+        function saveAssistantSettings() {
+            // Сохраняем последние 30 сообщений чтобы помнить контекст
+            const trimmed = assistantHistory.slice(-30);
+            localStorage.setItem('assistantSettings', JSON.stringify({
+                persona: currentPersona,
+                history: trimmed
+            }));
+        }
+
+        function buildAssistantContext() {
+            // Даём ассистенту знания о задачах
+            const active = tasks.filter(t => !t.completed);
+            const completed = tasks.filter(t => t.completed).length;
+            const urgent = active.filter(t => t.type === 'urgent').length;
+            const topTasks = active.slice(0, 6).map(t =>
+                `"${t.title}" [${t.priority}, ${t.type}${t.reminderTime ? ', есть напоминание' : ''}]`
+            ).join('; ');
+            return `Контекст пользователя: ${active.length} активных задач, ${completed} выполнено, ${urgent} срочных. Топ задачи: ${topTasks || 'нет задач'}.`;
+        }
+
+        function renderPersonaStrip() {
+            const strip = document.getElementById('personaStrip');
+            strip.innerHTML = Object.entries(PERSONAS).map(([id, p]) => `
+                <div class="persona-chip ${id === currentPersona ? 'active' : ''}" data-persona="${id}">
+                    <span class="persona-chip-emoji">${p.emoji}</span>
+                    <span>${p.name.split(' — ')[1]}</span>
+                </div>`).join('');
+
+            strip.querySelectorAll('.persona-chip').forEach(chip => {
+                chip.addEventListener('click', () => switchPersona(chip.dataset.persona));
+            });
+        }
+
+        function updateAssistantHeader() {
+            const p = PERSONAS[currentPersona];
+            document.getElementById('assistantAvatar').textContent = p.emoji;
+            document.getElementById('assistantAvatar').style.background =
+                document.body.classList.contains('dark') ? p.darkColor : p.color;
+            document.getElementById('assistantName').textContent = p.name;
+            document.getElementById('assistantStatus').textContent = p.status;
+        }
+
+        function renderQuickReplies() {
+            const p = PERSONAS[currentPersona];
+            const container = document.getElementById('assistantQuick');
+            container.innerHTML = (p.quickReplies || []).map(q =>
+                `<button class="quick-btn" data-q="${escapeHtml(q)}">${escapeHtml(q)}</button>`
+            ).join('');
+            container.querySelectorAll('.quick-btn').forEach(btn => {
+                btn.addEventListener('click', () => sendAssistantMessage(btn.dataset.q));
+            });
+        }
+
+        function addMessage(role, text) {
+            const now = getMskNow();
+            const time = `${String(now.getUTCHours()).padStart(2,'0')}:${String(now.getUTCMinutes()).padStart(2,'0')}`;
+            assistantHistory.push({ role, content: text, time });
+
+            const container = document.getElementById('assistantMessages');
+            const p = PERSONAS[currentPersona];
+            const isUser = role === 'user';
+
+            const div = document.createElement('div');
+            div.className = `msg ${isUser ? 'user' : 'assistant'}`;
+            div.innerHTML = `
+                ${!isUser ? `<div class="msg-avatar" style="background:${document.body.classList.contains('dark') ? p.darkColor : p.color}">${p.emoji}</div>` : ''}
+                <div>
+                    <div class="msg-bubble">${escapeHtml(text)}</div>
+                    <div class="msg-time">${time}</div>
+                </div>
+                ${isUser ? '<div class="msg-avatar" style="background:#667eea;color:white">👤</div>' : ''}
+            `;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function showTyping() {
+            const container = document.getElementById('assistantMessages');
+            const div = document.createElement('div');
+            div.className = 'msg assistant msg-typing';
+            div.id = 'typingIndicator';
+            const p = PERSONAS[currentPersona];
+            div.innerHTML = `
+                <div class="msg-avatar" style="background:${document.body.classList.contains('dark') ? p.darkColor : p.color}">${p.emoji}</div>
+                <div class="msg-bubble">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>`;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function hideTyping() {
+            document.getElementById('typingIndicator')?.remove();
+        }
+
+        async function sendAssistantMessage(text) {
+            if (!text?.trim() || assistantTyping) return;
+            const input = document.getElementById('assistantInput');
+            input.value = '';
+
+            addMessage('user', text);
+            assistantTyping = true;
+            showTyping();
+
+            try {
+                const cfg = getAiConfig();
+                if (!cfg || !cfg.key) {
+                    hideTyping();
+                    addMessage('assistant', 'Чтобы я мог отвечать — настрой AI-провайдера (кнопка 🤖 в шапке). Это займёт минуту!');
+                    assistantTyping = false;
+                    return;
+                }
+
+                const p = PERSONAS[currentPersona];
+                const context = buildAssistantContext();
+
+                // Формируем историю для API (последние 10 сообщений)
+                const apiMessages = [
+                    { role: 'system', content: `${p.systemPrompt}\n\n${context}` },
+                    ...assistantHistory.slice(-10).map(m => ({
+                        role: m.role === 'user' ? 'user' : 'assistant',
+                        content: m.content
+                    }))
+                ];
+
+                // Последнее сообщение уже добавлено через addMessage, убираем дубль
+                apiMessages.pop();
+                apiMessages.push({ role: 'user', content: text });
+
+                const headers = { 'Content-Type': 'application/json' };
+                if (cfg.key) headers['Authorization'] = `Bearer ${cfg.key}`;
+
+                const res = await fetch(cfg.url, {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify({
+                        model: cfg.model,
+                        max_tokens: 200,
+                        messages: apiMessages
+                    })
+                });
+
+                const data = await res.json();
+                const reply = data.choices?.[0]?.message?.content?.trim() || 'Хм, что-то пошло не так...';
+
+                hideTyping();
+                addMessage('assistant', reply);
+                saveAssistantSettings();
+
+            } catch(e) {
+                hideTyping();
+                addMessage('assistant', `Ошибка соединения: ${e.message}`);
+            }
+
+            assistantTyping = false;
+        }
+
+        async function switchPersona(personaId) {
+            if (!PERSONAS[personaId]) return;
+            const isNew = currentPersona !== personaId;
+            currentPersona = personaId;
+
+            // Сохраняем выбор
+            const s = loadAssistantSettings();
+            s.persona = personaId;
+            localStorage.setItem('assistantSettings', JSON.stringify({ ...s, persona: personaId }));
+
+            updateAssistantHeader();
+            renderPersonaStrip();
+            renderQuickReplies();
+
+            // Приветствие только при смене персонажа
+            if (isNew) {
+                // Очищаем историю при смене персонажа
+                assistantHistory = [];
+                document.getElementById('assistantMessages').innerHTML = '';
+
+                const p = PERSONAS[personaId];
+                const active = tasks.filter(t => !t.completed).length;
+                const greeting = p.greeting.replace('{count}', active);
+                // Небольшая задержка для реализма
+                setTimeout(() => addMessage('assistant', greeting), 300);
+            }
+        }
+
+        function openAssistant() {
+            const modal = document.getElementById('assistantModal');
+            modal.classList.add('show');
+
+            const settings = loadAssistantSettings();
+            currentPersona = settings.persona || 'coach';
+
+            // Восстанавливаем историю
+            if (settings.history?.length && assistantHistory.length === 0) {
+                assistantHistory = settings.history;
+                // Перерисовываем сообщения из истории
+                const container = document.getElementById('assistantMessages');
+                container.innerHTML = '';
+                assistantHistory.forEach(m => {
+                    const p = PERSONAS[currentPersona];
+                    const isUser = m.role === 'user';
+                    const div = document.createElement('div');
+                    div.className = `msg ${isUser ? 'user' : 'assistant'}`;
+                    div.innerHTML = `
+                        ${!isUser ? `<div class="msg-avatar" style="background:${document.body.classList.contains('dark') ? p.darkColor : p.color}">${p.emoji}</div>` : ''}
+                        <div>
+                            <div class="msg-bubble">${escapeHtml(m.content)}</div>
+                            <div class="msg-time">${m.time || ''}</div>
+                        </div>
+                        ${isUser ? '<div class="msg-avatar" style="background:#667eea;color:white">👤</div>' : ''}
+                    `;
+                    container.appendChild(div);
+                });
+                container.scrollTop = container.scrollHeight;
+            }
+
+            updateAssistantHeader();
+            renderPersonaStrip();
+            renderQuickReplies();
+
+            // Первое открытие — отправляем приветствие
+            if (assistantHistory.length === 0) {
+                switchPersona(currentPersona);
+            }
+
+            // Фокус на инпут
+            setTimeout(() => document.getElementById('assistantInput').focus(), 300);
+        }
+
+        function closeAssistant() {
+            document.getElementById('assistantModal').classList.remove('show');
+        }
+
+        function setupAssistant() {
+            document.getElementById('assistantBtn').addEventListener('click', openAssistant);
+            document.getElementById('assistantClose').addEventListener('click', closeAssistant);
+            document.getElementById('assistantModal').addEventListener('click', e => {
+                if (e.target === document.getElementById('assistantModal')) closeAssistant();
+            });
+
+            const input = document.getElementById('assistantInput');
+            const sendBtn = document.getElementById('assistantSend');
+
+            sendBtn.addEventListener('click', () => sendAssistantMessage(input.value.trim()));
+            input.addEventListener('keydown', e => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendAssistantMessage(input.value.trim());
+                }
+            });
+        }
+
+        // ══════════════════════════════════════════════════
+        // ПЛАНИРОВЩИК ЦЕЛЕЙ
+        // ══════════════════════════════════════════════════
+
+        let goalPlan = null; // текущий сгенерированный план
+
+        function openGoalModal() {
+            document.getElementById('goalModal').classList.add('show');
+            resetGoalForm();
+            setTimeout(() => document.getElementById('goalInput').focus(), 300);
+        }
+
+        function closeGoalModal() {
+            document.getElementById('goalModal').classList.remove('show');
+        }
+
+        function resetGoalForm() {
+            document.getElementById('goalInput').value = '';
+            document.getElementById('goalResult').classList.remove('show');
+            document.getElementById('goalGenerating').style.display = 'none';
+            document.getElementById('goalGenerateBtn').style.display = 'block';
+            document.getElementById('goalGenerateBtn').disabled = false;
+            goalPlan = null;
+        }
+
+        async function generateGoalPlan() {
+            const goal = document.getElementById('goalInput').value.trim();
+            if (!goal) {
+                showToast('Введи цель — например «выучить английский за 6 месяцев»');
+                document.getElementById('goalInput').focus();
+                return;
+            }
+
+            const cfg = getAiConfig();
+            if (!cfg || !cfg.key) {
+                showToast('Настрой AI-провайдера (кнопка 🤖) чтобы использовать планировщик');
+                return;
+            }
+
+            const duration   = document.getElementById('goalDuration').value;
+            const intensity  = document.getElementById('goalIntensity').value;
+
+            // Показываем прогресс
+            document.getElementById('goalGenerateBtn').style.display = 'none';
+            document.getElementById('goalGenerating').style.display = 'block';
+            document.getElementById('goalResult').classList.remove('show');
+
+            // Анимация прогресс-бара
+            const fill = document.getElementById('goalProgressFill');
+            const texts = [
+                '🤖 Анализирую цель...',
+                '📋 Строю этапы...',
+                '📅 Планирую задачи...',
+                '✨ Финальная обработка...'
+            ];
+            let textIdx = 0;
+            const textEl = document.getElementById('goalGeneratingText');
+            fill.style.width = '15%';
+            const progressInterval = setInterval(() => {
+                textIdx = (textIdx + 1) % texts.length;
+                textEl.textContent = texts[textIdx];
+                const pct = Math.min(90, parseInt(fill.style.width) + 18);
+                fill.style.width = pct + '%';
+            }, 1200);
+
+            try {
+                const mskNow = getMskNow();
+                const startDate = `${mskNow.getUTCDate()}.${mskNow.getUTCMonth()+1}.${mskNow.getUTCFullYear()}`;
+
+                const raw = await callAI(
+                    `Ты эксперт по планированию целей. Составь детальный план достижения цели.
+Верни ТОЛЬКО валидный JSON без пояснений и без markdown-блоков:
+{
+  "goalTitle": "краткое название цели",
+  "summary": "1-2 предложения о плане",
+  "stages": [
+    {
+      "name": "название этапа",
+      "duration": "сколько времени",
+      "tasks": [
+        { "title": "название задачи", "week": "Неделя 1", "priority": "high|medium|low", "category": "категория" }
+      ]
+    }
+  ]
+}
+Требования:
+- 3-5 этапов
+- В каждом этапе 3-6 конкретных задач
+- Задачи должны быть действиями (глагол + объект): "Пройти урок 1-5", "Записаться на курс", "Сделать 30 упражнений"
+- Категория задачи должна соответствовать теме цели
+- Приоритеты: первые этапы — high, последние — medium/low
+- Пиши на русском языке`,
+                    `Цель: ${goal}
+Срок: ${duration}
+Интенсивность: ${intensity}
+Дата начала: ${startDate}`,
+                    1200
+                );
+
+                clearInterval(progressInterval);
+                fill.style.width = '100%';
+
+                // Парсим JSON
+                let plan;
+                try {
+                    const clean = raw.replace(/```json|```/g, '').trim();
+                    plan = JSON.parse(clean);
+                } catch(e) {
+                    throw new Error('AI вернул неверный формат. Попробуй ещё раз.');
+                }
+
+                if (!plan.stages || !plan.stages.length) throw new Error('Не удалось построить план');
+
+                goalPlan = plan;
+                renderGoalPlan(plan, goal, duration);
+
+            } catch(e) {
+                clearInterval(progressInterval);
+                showToast('❌ ' + e.message);
+                document.getElementById('goalGenerating').style.display = 'none';
+                document.getElementById('goalGenerateBtn').style.display = 'block';
+                document.getElementById('goalGenerateBtn').disabled = false;
+            }
+        }
+
+        function renderGoalPlan(plan, originalGoal, duration) {
+            document.getElementById('goalGenerating').style.display = 'none';
+            document.getElementById('goalResult').classList.add('show');
+
+            document.getElementById('goalPlanTitle').innerHTML =
+                `📋 ${escapeHtml(plan.goalTitle || originalGoal)}<br>
+                <span style="font-size:13px;opacity:.6;font-weight:400">${escapeHtml(plan.summary || '')}</span>`;
+
+            const stagesEl = document.getElementById('goalStages');
+            stagesEl.innerHTML = plan.stages.map((stage, si) => `
+                <div class="goal-stage open" id="goalStage${si}">
+                    <div class="goal-stage-header" onclick="toggleGoalStage(${si})">
+                        <div class="goal-stage-num">${si + 1}</div>
+                        <div>
+                            <div class="goal-stage-name">${escapeHtml(stage.name)}</div>
+                            <div class="goal-stage-meta">${escapeHtml(stage.duration)} · ${stage.tasks?.length || 0} задач</div>
+                        </div>
+                        <div class="goal-stage-arrow">▼</div>
+                    </div>
+                    <div class="goal-stage-tasks">
+                        ${(stage.tasks || []).map((task, ti) => `
+                            <div class="goal-task-row">
+                                <input type="checkbox" class="goal-task-check" checked
+                                    id="gt-${si}-${ti}" data-stage="${si}" data-task="${ti}">
+                                <div>
+                                    <div class="goal-task-title">${escapeHtml(task.title)}</div>
+                                    <div class="goal-task-week">${escapeHtml(task.week || '')} · ${escapeHtml(task.category || '')} · ${escapeHtml(task.priority || 'medium')}</div>
+                                </div>
+                            </div>`).join('')}
+                    </div>
+                </div>`).join('');
+
+            // Счётчик выбранных
+            updateGoalCounter();
+            stagesEl.querySelectorAll('.goal-task-check').forEach(cb => {
+                cb.addEventListener('change', updateGoalCounter);
+            });
+        }
+
+        function toggleGoalStage(idx) {
+            document.getElementById(`goalStage${idx}`).classList.toggle('open');
+        }
+
+        function updateGoalCounter() {
+            const total    = document.querySelectorAll('.goal-task-check').length;
+            const selected = document.querySelectorAll('.goal-task-check:checked').length;
+            const btn = document.getElementById('goalAddAllBtn');
+            if (btn) btn.textContent = `➕ Добавить задачи (${selected} из ${total})`;
+        }
+
+        function addGoalTasksToList() {
+            if (!goalPlan) return;
+
+            const checked = [...document.querySelectorAll('.goal-task-check:checked')];
+            if (!checked.length) { showToast('Выбери хотя бы одну задачу'); return; }
+
+            let added = 0;
+            checked.forEach(cb => {
+                const si = parseInt(cb.dataset.stage);
+                const ti = parseInt(cb.dataset.task);
+                const stage = goalPlan.stages[si];
+                const task  = stage?.tasks[ti];
+                if (!task) return;
+
+                tasks.unshift({
+                    id: Date.now() + added,
+                    title: task.title,
+                    description: `Цель: ${goalPlan.goalTitle} · Этап: ${stage.name}`,
+                    type: 'task',
+                    category: task.category || goalPlan.goalTitle || 'Цель',
+                    priority: task.priority || 'medium',
+                    tags: ['цель', (goalPlan.goalTitle||'').toLowerCase().slice(0,20)].filter(Boolean),
+                    completed: false,
+                    createdAt: new Date().toISOString(),
+                    reminderTime: null,
+                    isRecurring: false,
+                    recurringInterval: 'weekly'
+                });
+                added++;
+            });
+
+            saveTasks();
+            renderTasks();
+            renderCategories();
+            closeGoalModal();
+            showToast(`✅ Добавлено ${added} задач из плана!`);
+        }
+
+        function setupGoalPlanner() {
+            document.getElementById('goalBtn').addEventListener('click', openGoalModal);
+            document.getElementById('goalClose').addEventListener('click', closeGoalModal);
+            document.getElementById('goalModal').addEventListener('click', e => {
+                if (e.target === document.getElementById('goalModal')) closeGoalModal();
+            });
+            document.getElementById('goalGenerateBtn').addEventListener('click', generateGoalPlan);
+            document.getElementById('goalResetBtn').addEventListener('click', resetGoalForm);
+            document.getElementById('goalAddAllBtn').addEventListener('click', addGoalTasksToList);
+
+            // Выпадающий список готовых целей
+            document.getElementById('goalPresetSelect').addEventListener('change', e => {
+                const val = e.target.value;
+                if (val) {
+                    document.getElementById('goalInput').value = val;
+                    document.getElementById('goalInput').focus();
+                    // Автоматически подбираем срок по тексту
+                    const lower = val.toLowerCase();
+                    const durationMap = [
+                        { keys: ['3 недели','неделю','2 недели'], val: '1 месяц' },
+                        { keys: ['1 месяц'], val: '1 месяц' },
+                        { keys: ['2 месяца'], val: '3 месяца' },
+                        { keys: ['3 месяца'], val: '3 месяца' },
+                        { keys: ['6 месяцев'], val: '6 месяцев' },
+                        { keys: ['год','за год','1 год'], val: '1 год' },
+                    ];
+                    for (const { keys, val: dval } of durationMap) {
+                        if (keys.some(k => lower.includes(k))) {
+                            document.getElementById('goalDuration').value = dval;
+                            break;
+                        }
+                    }
+                }
+            });
+
+            // Enter в textarea — не отправляет
+            document.getElementById('goalInput').addEventListener('keydown', e => {
+                if (e.key === 'Enter' && e.ctrlKey) generateGoalPlan();
+            });
+        }
+
+        // ══════════════════════════════════════════════════
+        // РАЗБИВКА ЗАДАЧИ НА ПОДЗАДАЧИ
+        // ══════════════════════════════════════════════════
+
+        let subtaskSourceId = null;
+        let subtaskData = [];
+
+        async function splitTask(taskId, btn) {
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+
+            const cfg = getAiConfig();
+            if (!cfg || !cfg.key) {
+                showToast('Настрой AI-провайдера (кнопка 🤖) чтобы разбивать задачи');
+                return;
+            }
+
+            // Анимация загрузки на кнопке
+            btn.textContent = '⏳';
+            btn.classList.add('loading');
+            btn.disabled = true;
+
+            try {
+                const raw = await callAI(
+                    `Ты помощник по планированию. Разбей задачу на конкретные подзадачи.
+Верни ТОЛЬКО JSON-массив без пояснений:
+[{"title":"подзадача","priority":"high|medium|low"}]
+Требования:
+- 4-8 подзадач
+- Каждая — конкретное действие (глагол + объект)
+- Логический порядок выполнения
+- Пиши на русском`,
+                    `Задача: "${task.title}"${task.description ? `\nОписание: ${task.description}` : ''}`,
+                    400
+                );
+
+                const clean = raw.replace(/```json|```/g, '').trim();
+                subtaskData = JSON.parse(clean);
+                if (!Array.isArray(subtaskData) || !subtaskData.length) throw new Error('Пустой ответ');
+
+                subtaskSourceId = taskId;
+                renderSubtaskModal(task);
+
+            } catch(e) {
+                showToast('❌ Не удалось разбить: ' + e.message);
+            } finally {
+                btn.textContent = '🪓';
+                btn.classList.remove('loading');
+                btn.disabled = false;
+            }
+        }
+
+        function renderSubtaskModal(task) {
+            document.getElementById('subtaskTitle').textContent = task.title;
+            document.getElementById('subtaskMeta').textContent =
+                `${subtaskData.length} подзадач · все отмечены для добавления`;
+
+            document.getElementById('subtaskList').innerHTML = subtaskData.map((st, i) => `
+                <div class="subtask-item">
+                    <input type="checkbox" class="subtask-check" checked id="st-${i}" data-idx="${i}">
+                    <div style="flex:1">
+                        <div class="subtask-text">${escapeHtml(st.title)}</div>
+                        <div class="subtask-priority">${st.priority === 'high' ? '🔴' : st.priority === 'medium' ? '🟡' : '🟢'} ${st.priority}</div>
+                    </div>
+                </div>`).join('');
+
+            document.getElementById('subtaskModal').classList.add('show');
+
+            // Счётчик
+            document.querySelectorAll('.subtask-check').forEach(cb => {
+                cb.addEventListener('change', () => {
+                    const n = document.querySelectorAll('.subtask-check:checked').length;
+                    document.getElementById('subtaskAdd').textContent = `➕ Добавить выбранные (${n})`;
+                });
+            });
+        }
+
+        function addSubtasks() {
+            const checked = [...document.querySelectorAll('.subtask-check:checked')];
+            if (!checked.length) { showToast('Выбери хотя бы одну подзадачу'); return; }
+
+            const parentTask = tasks.find(t => t.id === subtaskSourceId);
+            let added = 0;
+            checked.forEach(cb => {
+                const st = subtaskData[parseInt(cb.dataset.idx)];
+                if (!st) return;
+                tasks.unshift({
+                    id: Date.now() + added,
+                    title: st.title,
+                    description: parentTask ? `Подзадача: ${parentTask.title}` : '',
+                    type: parentTask?.type || 'task',
+                    category: parentTask?.category || '',
+                    priority: st.priority || 'medium',
+                    tags: [...(parentTask?.tags || [])],
+                    completed: false,
+                    createdAt: new Date().toISOString(),
+                    reminderTime: null,
+                    isRecurring: false,
+                    recurringInterval: 'daily'
+                });
+                added++;
+            });
+
+            saveTasks();
+            renderTasks();
+            renderCategories();
+            document.getElementById('subtaskModal').classList.remove('show');
+            showToast(`✅ Добавлено ${added} подзадач`);
+        }
+
+        function setupSubtaskModal() {
+            document.getElementById('subtaskClose').addEventListener('click', () =>
+                document.getElementById('subtaskModal').classList.remove('show'));
+            document.getElementById('subtaskCancel').addEventListener('click', () =>
+                document.getElementById('subtaskModal').classList.remove('show'));
+            document.getElementById('subtaskAdd').addEventListener('click', addSubtasks);
+            document.getElementById('subtaskModal').addEventListener('click', e => {
+                if (e.target === document.getElementById('subtaskModal'))
+                    document.getElementById('subtaskModal').classList.remove('show');
+            });
+        }
+
+        // ══════════════════════════════════════════════════
+        // УМНЫЕ ТЕГИ — АВТОДОПОЛНЕНИЕ
+        // ══════════════════════════════════════════════════
+
+        function getAllUsedTags() {
+            const freq = {};
+            [...tasks, ...taskArchive].forEach(t => {
+                (t.tags || []).forEach(tag => {
+                    if (tag) freq[tag] = (freq[tag] || 0) + 1;
+                });
+            });
+            // Сортируем по частоте
+            return Object.entries(freq)
+                .sort((a, b) => b[1] - a[1])
+                .map(([tag, count]) => ({ tag, count }));
+        }
+
+        function setupTagAutocomplete() {
+            const input = document.getElementById('taskTags');
+            const dropdown = document.getElementById('tagAutocomplete');
+            if (!input || !dropdown) return;
+
+            function hideDropdown() {
+                dropdown.classList.remove('show');
+            }
+
+            function showSuggestions(query) {
+                const allTags = getAllUsedTags();
+                if (!allTags.length) { hideDropdown(); return; }
+
+                const currentTags = input.value.split(',').map(t => t.trim().toLowerCase());
+                const lastTag = currentTags[currentTags.length - 1];
+                if (!lastTag) { hideDropdown(); return; }
+
+                const matches = allTags.filter(({ tag }) =>
+                    tag.toLowerCase().includes(lastTag) &&
+                    !currentTags.slice(0, -1).includes(tag.toLowerCase())
+                ).slice(0, 6);
+
+                if (!matches.length) { hideDropdown(); return; }
+
+                dropdown.innerHTML = matches.map(({ tag, count }) =>
+                    `<div class="tag-ac-item" data-tag="${escapeHtml(tag)}">
+                        #${escapeHtml(tag)}<span>${count}×</span>
+                    </div>`
+                ).join('');
+
+                dropdown.querySelectorAll('.tag-ac-item').forEach(item => {
+                    item.addEventListener('mousedown', e => {
+                        e.preventDefault(); // не теряем фокус
+                        const tag = item.dataset.tag;
+                        const parts = input.value.split(',');
+                        parts[parts.length - 1] = ' ' + tag;
+                        input.value = parts.join(',').replace(/^,\s*/, '') + ', ';
+                        hideDropdown();
+                        input.focus();
+                    });
+                });
+
+                dropdown.classList.add('show');
+            }
+
+            input.addEventListener('input', () => showSuggestions(input.value));
+            input.addEventListener('focus', () => showSuggestions(input.value));
+            input.addEventListener('blur', () => setTimeout(hideDropdown, 150));
+            input.addEventListener('keydown', e => {
+                if (e.key === 'Escape') hideDropdown();
+            });
+        }
+
+        // ══════════════════════════════════════════════════
+        // СТРИКИ И УРОВНИ
+        // ══════════════════════════════════════════════════
+
+        const STREAK_LEVELS = [
+            { min:0,   name:'Новичок',    emoji:'🌱' },
+            { min:3,   name:'Ученик',     emoji:'📚' },
+            { min:7,   name:'Практик',    emoji:'⚡' },
+            { min:14,  name:'Профи',      emoji:'🎯' },
+            { min:30,  name:'Эксперт',    emoji:'🏆' },
+            { min:60,  name:'Мастер',     emoji:'💎' },
+            { min:100, name:'Легенда',    emoji:'🔥' },
+        ];
+
+        function getStreakLevel(days) {
+            let level = STREAK_LEVELS[0];
+            for (const l of STREAK_LEVELS) { if (days >= l.min) level = l; }
+            return level;
+        }
+
+        function loadStreak() {
+            return JSON.parse(localStorage.getItem('streakData') || '{"days":0,"lastDate":"","maxDays":0}');
+        }
+
+        function saveStreak(data) {
+            localStorage.setItem('streakData', JSON.stringify(data));
+        }
+
+        // Вызывается при выполнении задачи
+        function updateStreak() {
+            const streak = loadStreak();
+            const mskNow = getMskNow();
+            const todayKey = `${mskNow.getUTCFullYear()}-${mskNow.getUTCMonth()}-${mskNow.getUTCDate()}`;
+
+            if (streak.lastDate === todayKey) return; // уже учтён сегодня
+
+            const yesterday = new Date(Date.UTC(mskNow.getUTCFullYear(), mskNow.getUTCMonth(), mskNow.getUTCDate() - 1));
+            const yesterdayKey = `${yesterday.getUTCFullYear()}-${yesterday.getUTCMonth()}-${yesterday.getUTCDate()}`;
+
+            if (streak.lastDate === yesterdayKey) {
+                streak.days += 1; // продолжаем серию
+            } else if (!streak.lastDate) {
+                streak.days = 1; // первый раз
+            } else {
+                streak.days = 1; // серия прервалась
+            }
+
+            streak.lastDate = todayKey;
+            streak.maxDays = Math.max(streak.maxDays || 0, streak.days);
+            saveStreak(streak);
+
+            renderStreakBar(streak);
+
+            // Поздравление при важных рубежах
+            const milestones = [3,7,14,30,60,100];
+            if (milestones.includes(streak.days)) {
+                const lvl = getStreakLevel(streak.days);
+                setTimeout(() => showToast(`${lvl.emoji} ${streak.days} дней подряд! Уровень: ${lvl.name}`), 500);
+            }
+        }
+
+        function renderStreakBar(streak) {
+            if (!streak) streak = loadStreak();
+            const bar = document.getElementById('streakBar');
+            if (!streak.days || streak.days < 1) { bar.style.display = 'none'; return; }
+
+            const lvl = getStreakLevel(streak.days);
+            document.getElementById('streakCount').textContent = streak.days;
+            document.getElementById('streakLabel').textContent =
+                streak.days === 1 ? 'день подряд — начало!' :
+                streak.days < 5 ? 'дня подряд' : 'дней подряд';
+            document.getElementById('streakLevel').textContent = `${lvl.emoji} ${lvl.name}`;
+            bar.style.display = 'flex';
+        }
+
+        // ══════════════════════════════════════════════════
+        // ОНБОРДИНГ
+        // ══════════════════════════════════════════════════
+
+        let onboardSlide = 0;
+
+        function shouldShowOnboarding() {
+            return !localStorage.getItem('onboardingDone');
+        }
+
+        function showOnboarding() {
+            onboardSlide = 0;
+            document.querySelectorAll('.onboard-slide').forEach((s, i) => s.classList.toggle('active', i === 0));
+            document.getElementById('onboardModal').classList.add('show');
+        }
+
+        function onboardNext() {
+            const slides = document.querySelectorAll('.onboard-slide');
+            if (onboardSlide < slides.length - 1) {
+                slides[onboardSlide].classList.remove('active');
+                onboardSlide++;
+                slides[onboardSlide].classList.add('active');
+            } else {
+                onboardSkip();
+            }
+        }
+
+        function onboardSkip() {
+            localStorage.setItem('onboardingDone', '1');
+            document.getElementById('onboardModal').classList.remove('show');
+        }
+
+        // ══════════════════════════════════════════════════
+        // WRAPPED — ИТОГИ ГОДА
+        // ══════════════════════════════════════════════════
+
+        let wrappedIdx = 0;
+        let wrappedSlides = [];
+
+        function buildWrappedSlides() {
+            const allTasks = [...tasks, ...taskArchive];
+            const completed = allTasks.filter(t => t.completed || t.deletedAt);
+            const active    = tasks.filter(t => !t.completed);
+            const streak    = loadStreak();
+            const mskNow    = getMskNow();
+            const year      = mskNow.getUTCFullYear();
+
+            // Статистика
+            const totalDone  = completed.length;
+            const totalAll   = allTasks.length;
+            const pct        = totalAll > 0 ? Math.round(totalDone / totalAll * 100) : 0;
+
+            // Самая популярная категория
+            const catFreq = {};
+            allTasks.forEach(t => { if (t.category) catFreq[t.category] = (catFreq[t.category]||0)+1; });
+            const topCat = Object.entries(catFreq).sort((a,b)=>b[1]-a[1])[0];
+
+            // Самый продуктивный день недели
+            const dayFreq = [0,0,0,0,0,0,0];
+            const dayNames = ['Воскресенье','Понедельник','Вторник','Среда','Четверг','Пятница','Суббота'];
+            completed.forEach(t => {
+                try { dayFreq[new Date(t.createdAt).getDay()]++; } catch(e) {}
+            });
+            const topDayIdx = dayFreq.indexOf(Math.max(...dayFreq));
+
+            // Самый частый тег
+            const tagFreq = {};
+            allTasks.forEach(t => (t.tags||[]).forEach(tag => { tagFreq[tag]=(tagFreq[tag]||0)+1; }));
+            const topTag = Object.entries(tagFreq).sort((a,b)=>b[1]-a[1])[0];
+
+            // Уровень
+            const lvl = getStreakLevel(streak.maxDays || 0);
+
+            // Суперсила — самый частый тип
+            const typeFreq = { task:0, idea:0, urgent:0 };
+            completed.forEach(t => { if (typeFreq[t.type]!==undefined) typeFreq[t.type]++; });
+            const topTypeEntry = Object.entries(typeFreq).sort((a,b)=>b[1]-a[1])[0];
+            const superpowers = { task:'Исполнитель', idea:'Генератор идей', urgent:'Пожарный' };
+            const superEmojis = { task:'⚡', idea:'💡', urgent:'🚨' };
+
+            const gradients = [
+                'linear-gradient(135deg,#667eea,#764ba2)',
+                'linear-gradient(135deg,#11998e,#38ef7d)',
+                'linear-gradient(135deg,#f7971e,#ffd200)',
+                'linear-gradient(135deg,#f64f59,#c471ed)',
+                'linear-gradient(135deg,#4facfe,#00f2fe)',
+                'linear-gradient(135deg,#43e97b,#38f9d7)',
+            ];
+
+            return [
+                {
+                    bg: gradients[0],
+                    html: `<div class="wrapped-label">Твой ${year} год</div>
+                           <div class="wrapped-emoji">🎯</div>
+                           <div class="wrapped-title">Это был твой год задач</div>
+                           <div class="wrapped-sub">Посмотрим что ты успел сделать</div>`
+                },
+                {
+                    bg: gradients[1],
+                    html: `<div class="wrapped-label">Всего выполнено</div>
+                           <div class="wrapped-num">${totalDone}</div>
+                           <div class="wrapped-title">задач закрыто</div>
+                           <div class="wrapped-sub">${pct}% от всего что планировал${totalDone > 50 ? ' — это очень много!' : totalDone > 20 ? ' — хороший результат!' : ' — начало положено!'}</div>`
+                },
+                {
+                    bg: gradients[2],
+                    html: `<div class="wrapped-label">Твой рекорд</div>
+                           <div class="wrapped-num">${streak.maxDays || 0}</div>
+                           <div class="wrapped-title">дней подряд</div>
+                           <div class="wrapped-sub">Максимальная серия · Уровень: ${lvl.emoji} ${lvl.name}</div>`
+                },
+                {
+                    bg: gradients[3],
+                    html: `<div class="wrapped-label">Суперсила</div>
+                           <div class="wrapped-emoji">${superEmojis[topTypeEntry?.[0]] || '⭐'}</div>
+                           <div class="wrapped-title">${superpowers[topTypeEntry?.[0]] || 'Универсал'}</div>
+                           <div class="wrapped-sub">Большинство твоих задач — это ${topTypeEntry?.[0]==='task'?'конкретные действия':topTypeEntry?.[0]==='idea'?'новые идеи':'срочные дела'}</div>`
+                },
+                {
+                    bg: gradients[4],
+                    html: `<div class="wrapped-label">Главная категория</div>
+                           <div class="wrapped-emoji">📁</div>
+                           <div class="wrapped-num" style="font-size:36px">${escapeHtml(topCat?.[0] || 'Разное')}</div>
+                           <div class="wrapped-sub">${topCat?.[1] || 0} задач · Больше всего сил вложено сюда</div>`
+                },
+                topTag ? {
+                    bg: gradients[5],
+                    html: `<div class="wrapped-label">Любимый тег</div>
+                           <div class="wrapped-emoji">🏷️</div>
+                           <div class="wrapped-num" style="font-size:36px">#${escapeHtml(topTag[0])}</div>
+                           <div class="wrapped-sub">Использован ${topTag[1]} раз — твоя главная тема</div>`
+                } : null,
+                {
+                    bg: 'linear-gradient(135deg,#0a0a1a,#1a1a3a)',
+                    html: `<div class="wrapped-label">Твой ${year} в одном слове</div>
+                           <div class="wrapped-emoji">🚀</div>
+                           <div class="wrapped-title">Продуктивность</div>
+                           <div class="wrapped-sub">${active.length} задач ждут тебя в новом году. Продолжай — ты на верном пути!</div>`
+                },
+            ].filter(Boolean);
+        }
+
+        function openWrapped() {
+            wrappedSlides = buildWrappedSlides();
+            wrappedIdx = 0;
+            renderWrappedSlide();
+            document.getElementById('wrappedModal').classList.add('show');
+        }
+
+        function closeWrapped() {
+            document.getElementById('wrappedModal').classList.remove('show');
+        }
+
+        function renderWrappedSlide() {
+            const slide = wrappedSlides[wrappedIdx];
+            if (!slide) return;
+
+            document.getElementById('wrappedSlides').innerHTML =
+                `<div class="wrapped-slide active" style="background:${slide.bg}">${slide.html}</div>`;
+
+            // Прогресс-точки
+            document.getElementById('wrappedProgress').innerHTML =
+                wrappedSlides.map((_,i) =>
+                    `<div class="wrapped-prog-dot ${i <= wrappedIdx ? 'done' : ''}"></div>`
+                ).join('');
+
+            document.getElementById('wrappedPrev').style.opacity = wrappedIdx === 0 ? '.3' : '1';
+            document.getElementById('wrappedNext').textContent   = wrappedIdx === wrappedSlides.length-1 ? '✕' : '→';
+        }
+
+        function wrappedGo(dir) {
+            if (dir === 1 && wrappedIdx === wrappedSlides.length - 1) { closeWrapped(); return; }
+            wrappedIdx = Math.max(0, Math.min(wrappedSlides.length-1, wrappedIdx + dir));
+            renderWrappedSlide();
+        }
+
+        // Свайп на мобильном
+        function setupWrappedSwipe() {
+            const panel = document.getElementById('wrappedModal');
+            let startX = 0;
+            panel.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, { passive:true });
+            panel.addEventListener('touchend', e => {
+                const dx = e.changedTouches[0].clientX - startX;
+                if (Math.abs(dx) > 50) wrappedGo(dx < 0 ? 1 : -1);
+            }, { passive:true });
+        }
+
         function init() {
-            loadTheme();
             loadTasks();
             setupEventListeners();
             setupVoiceInput();
+            setupAiModal();
+            setupArchive();
+            setupMoodMode();
+            setupNaturalDateInput();
+            setupBriefing();
+            setupAssistant();
+            setupGoalPlanner();
+            setupSubtaskModal();
+            setupTagAutocomplete();
+            setupWrappedSwipe();
             registerServiceWorker();
             requestNotificationPermission();
+            checkAutoBriefing();
+
+            // Стрик — рендерим при старте
+            renderStreakBar();
+
+            // Кнопка Wrapped
+            document.getElementById('wrappedBtn').addEventListener('click', openWrapped);
+
+            // Онбординг — показываем новым пользователям через 800мс
+            if (shouldShowOnboarding()) setTimeout(showOnboarding, 800);
+
+            // Детектор паттернов — через 3 сек после старта, потом раз в 6 часов
+            setTimeout(runPatternDetector, 3000);
+            setInterval(runPatternDetector, 6 * 60 * 60 * 1000);
             
-            // Polling будильника каждую секунду — надёжнее setTimeout
+            // Polling будильника каждую секунду
             alarmCheckInterval = setInterval(checkAlarms, 1000);
             
             // Обновляем время каждую секунду
