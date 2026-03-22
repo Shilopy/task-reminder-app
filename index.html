@@ -363,6 +363,10 @@
             font-size: 11px;
             cursor: pointer;
             transition: all 0.2s;
+            border: none;
+            outline: none;
+            -webkit-appearance: none;
+            touch-action: manipulation;
         }
         
         .search-filter-chip.active {
@@ -1344,11 +1348,11 @@
         <span>🔍</span>
         <input type="text" placeholder="Умный поиск..." id="smartSearchInput" maxlength="100">
         <div class="search-filters" id="searchFilters">
-            <span class="search-filter-chip" data-field="title">Название</span>
-            <span class="search-filter-chip" data-field="description">Описание</span>
-            <span class="search-filter-chip" data-field="tags">Теги</span>
-            <span class="search-filter-chip" data-field="category">Категория</span>
-            <span class="search-filter-chip active" data-field="all">Все поля</span>
+            <span class="search-filter-chip" data-field="title">Название</button>
+            <span class="search-filter-chip" data-field="description">Описание</button>
+            <span class="search-filter-chip" data-field="tags">Теги</button>
+            <span class="search-filter-chip" data-field="category">Категория</button>
+            <span class="search-filter-chip active" data-field="all">Все поля</button>
         </div>
     </div>
     
